@@ -6,10 +6,17 @@ import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import type { AdaptadorIA, PeticionIA, Tarea } from './adaptador';
 
-/** Model per task (spec: Sonnet to extract and neutralise; Opus for feasibility (V13)). */
+/**
+ * Model per task (spec: Sonnet to extract and neutralise; Opus for feasibility (V13)).
+ * AI barriers must run on a different model or instance than the one that generated the
+ * content: V10/V11 judge Sonnet's rewrite with Opus; V12 is a fresh call with its own prompt.
+ */
 export const MODELOS: Record<Tarea, string> = {
   'extraer-postura': 'claude-sonnet-5-5',
   neutralizar: 'claude-sonnet-5-5',
+  'verificar-fidelidad': 'claude-opus-5-5',
+  'adivinar-partido': 'claude-opus-5-5',
+  'confirmar-ausencia': 'claude-sonnet-5-5',
   'evaluar-viabilidad': 'claude-opus-5-5',
 };
 

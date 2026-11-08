@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generado": "2026-11-08T21:53:37.175Z",
+  "generado": "2026-11-08T21:55:15.651Z",
   "origen": "simulado",
   "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real.",
   "partidos": [
@@ -46,6 +46,21 @@
         "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
         "titulo": "Programa de prueba",
         "hashPdf": "a35b6b6029a114e2dc460c86018ab6cabf6258d1c74d47391cbb41829202837b"
+      },
+      "prueba": true
+    },
+    {
+      "id": "prueba-d",
+      "nombre": "Partido de prueba D",
+      "siglas": "PRD",
+      "ambito": {
+        "tipo": "estatal"
+      },
+      "programa": {
+        "estado": "publicado",
+        "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
+        "titulo": "Programa de prueba",
+        "hashPdf": "a9d649689714e15c6d464c021e990c5d3b9bb6e1490c30728999422d0bc240d6"
       },
       "prueba": true
     }
@@ -293,6 +308,14 @@
           "rubrica": "r1"
         }
       }
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "vivienda",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
     }
   ],
   "informes": [
@@ -352,6 +375,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
         },
         {
           "tema": "vivienda",
@@ -432,6 +467,18 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "vivienda",
           "barrera": "V8",
           "resultado": "pasa",
           "detalle": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
@@ -509,6 +556,18 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "vivienda",
           "barrera": "V8",
           "resultado": "pasa",
           "detalle": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
@@ -524,6 +583,35 @@
           "barrera": "V13",
           "resultado": "pasa",
           "detalle": "consenso: viable"
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "hashPdf": "a9d649689714e15c6d464c021e990c5d3b9bb6e1490c30728999422d0bc240d6",
+      "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
+      "versionPrompt": "v2",
+      "extraidas": 0,
+      "descartadas": 0,
+      "publicable": true,
+      "posturas": [
+        {
+          "tema": "vivienda",
+          "estado": "no_propone",
+          "reescrituras": 0
+        }
+      ],
+      "entradas": [
+        {
+          "barrera": "V7",
+          "resultado": "pasa",
+          "detalle": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: vivienda, alquiler, alquilar, hipoteca, desahucio, inquilin, arrendamiento, suelo, parque público, okupa; ninguna página los menciona"
         }
       ]
     }

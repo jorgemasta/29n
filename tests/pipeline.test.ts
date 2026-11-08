@@ -5,7 +5,16 @@ import { crearIAFalsa, type RespuestasFalsas } from '../src/ia/falsa';
 import { crearCacheEnMemoria } from '../src/ia/cache';
 import { construirDataset, validarDataset } from '../src/dataset';
 import { crearPdfDePrueba } from './fixtures/pdf';
-import { dominiosDePrueba, partidoEjemplo, temaVivienda, terminosDePrueba } from './fixtures/registro';
+import {
+  dominiosDePrueba,
+  partidoEjemplo,
+  partidoOtro,
+  posturaOtro,
+  posturaTercero,
+  temaVivienda,
+  terceroPartido,
+  terminosDePrueba,
+} from './fixtures/registro';
 import { VERSION_RUBRICA } from '../src/registro/rubrica';
 import type { Tema } from '../src/dataset/esquema';
 
@@ -45,6 +54,10 @@ const razones = {
 function evaluacion(nivel: string, extra: Record<string, unknown> = {}) {
   return { nivel, razones, porque: `Evaluada como ${nivel}. Depende de las comunidades.`, fuentes: [FUENTE_INE], ...extra };
 }
+const fiel = { anade: false, omite: false, cambiaSentido: false, explicacion: 'Fiel a la cita.' };
+
+/** V12 does not confirm the absence: the second pass finds a proposal. */
+const segundaPasadaEncuentra = { 'confirmar-ausencia': () => ({ propone: true, citas: [{ texto: CITA, pagina: 2 }] }) };
 const palabras = (n: number) => Array.from({ length: n }, (_, i) => `palabra${String.fromCharCode(97 + (i % 26))}`).join(' ');
 
 function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
@@ -52,6 +65,9 @@ function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
     'extraer-postura': () => ({ propone: true, citas: [{ texto: CITA, pagina: 2 }] }),
     neutralizar: () => neutroBueno,
     'evaluar-viabilidad': () => evaluacion('viable_con_matices'),
+    'verificar-fidelidad': () => fiel,
+    'adivinar-partido': () => ({ asignaciones: [] }),
+    'confirmar-ausencia': () => ({ propone: false, citas: [] }),
     ...extra,
   };
 }
@@ -107,6 +123,7 @@ describe('procesarPrograma', () => {
             propone: true,
             citas: [{ texto: 'Regalaremos una vivienda a cada joven que cumpla dieciocho años en todo el país.', pagina: 2 }],
           }),
+          ...segundaPasadaEncuentra,
         }),
       );
       expect(posturas).toEqual([expect.objectContaining({ tema: 'vivienda', estado: 'sin_verificar' })]);
@@ -147,6 +164,7 @@ describe('procesarPrograma', () => {
       const { posturas } = await procesar(
         respuestas({
           'extraer-postura': () => ({ propone: true, citas: [{ texto: 'parque público de vivienda', pagina: 2 }] }),
+          ...segundaPasadaEncuentra,
         }),
       );
       expect(posturas[0]?.estado).toBe('sin_verificar');
@@ -344,6 +362,175 @@ describe('procesarPrograma', () => {
     });
   });
 
+  describe('V10: fidelity to the quote', () => {
+    it('an independent verifier gets the quotes and the neutral text, and an addition forces a rewrite', async () => {
+      const anadido = { ...neutroBueno, como: `${neutroBueno.como.slice(0, -1)} y con ayudas.` };
+      const { posturas, ia, informe } = await procesar(
+        respuestas({
+          neutralizar: (_e, intento) => (intento === 0 ? anadido : neutroBueno),
+          'verificar-fidelidad': (entrada) =>
+            entrada.texto.como.includes('ayudas')
+              ? { anade: true, omite: false, cambiaSentido: false, explicacion: 'Las ayudas no están en la cita.' }
+              : fiel,
+        }),
+      );
+      const verificaciones = ia.llamadas.filter((l) => l.tarea === 'verificar-fidelidad');
+      expect(verificaciones[0]?.entrada).toEqual(expect.objectContaining({ citas: [{ texto: CITA, pagina: 2 }], texto: anadido }));
+      const neutralizaciones = ia.llamadas.filter((l) => l.tarea === 'neutralizar');
+      expect(neutralizaciones).toHaveLength(2);
+      expect(JSON.stringify(neutralizaciones[1]?.entrada)).toContain('Las ayudas no están en la cita.');
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: neutroBueno }));
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ tema: 'vivienda', barrera: 'V10', resultado: 'reescribir' }));
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ tema: 'vivienda', barrera: 'V10', resultado: 'pasa' }));
+    });
+
+    it.each([
+      ['omits an essential condition', { omite: true }],
+      ['changes the meaning', { cambiaSentido: true }],
+    ])('discards the postura when the text still %s after 2 rewrites', async (_caso, fallo) => {
+      const { posturas, ia, informe } = await procesar(
+        respuestas({ 'verificar-fidelidad': () => ({ ...fiel, ...fallo, explicacion: 'No es fiel.' }) }),
+      );
+      expect(ia.llamadas.filter((l) => l.tarea === 'neutralizar')).toHaveLength(3);
+      expect(posturas[0]?.estado).toBe('sin_verificar');
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ tema: 'vivienda', barrera: 'V10', resultado: 'descartar' }));
+    });
+
+    it('never verifies a text that still has identifying marks (V3 first)', async () => {
+      const { ia } = await procesar(
+        respuestas({
+          neutralizar: (_e, intento) => (intento === 0 ? { ...neutroBueno, que: 'La propuesta de OTP sobre el alquiler.' } : neutroBueno),
+        }),
+      );
+      const verificados = ia.llamadas.filter((l) => l.tarea === 'verificar-fidelidad').map((l) => JSON.stringify(l.entrada));
+      expect(verificados).toHaveLength(1);
+      expect(verificados[0]).not.toContain('OTP');
+    });
+  });
+
+  describe('V11: recognisability', () => {
+    const publicado = { partidos: [partidoOtro, terceroPartido], posturas: [posturaOtro, posturaTercero] };
+    /** Guesser that spots our postura (the one whose text is `delator`) with confidence `confianza`. */
+    const adivina =
+      (delator: string, confianza: number, rondas = Infinity) =>
+      (entrada: any, intento: number) => ({
+        asignaciones: entrada.posturas.map((p: { letra: string; texto: string }) => ({
+          letra: p.letra,
+          partido: p.texto.includes(delator) && intento < rondas ? 'pej' : 'otp',
+          confianza,
+          pista: 'Menciona las zonas tensionadas.',
+        })),
+      });
+
+    it('the guesser sees every neutral postura of the topic, anonymous and in 3 different orders', async () => {
+      const { ia } = await procesar(respuestas(), { publicado });
+      const rondas = ia.llamadas.filter((l) => l.tarea === 'adivinar-partido');
+      expect(rondas).toHaveLength(3);
+      const entrada = rondas[0]!.entrada as any;
+      expect(entrada.partidos.map((p: { id: string }) => p.id).sort()).toEqual(['otp', 'pej', 'ter']);
+      expect(entrada.posturas).toHaveLength(3);
+      for (const p of entrada.posturas) expect(Object.keys(p).sort()).toEqual(['letra', 'texto']);
+      expect(JSON.stringify(entrada.posturas)).not.toMatch(/pej|otp|ter|Partido/);
+      const ordenes = rondas.map((r) => (r.entrada as any).posturas.map((p: { texto: string }) => p.texto).join('|'));
+      expect(new Set(ordenes).size).toBe(3);
+    });
+
+    it('rewrites a postura guessed 3 of 3 times with mean confidence ≥ 0.7, passing the clue', async () => {
+      const otraVersion = { ...neutroBueno, que: 'Poner por ley un tope al precio del alquiler de vivienda en las zonas con precios más altos.' };
+      const { posturas, ia, informe } = await procesar(
+        respuestas({
+          neutralizar: (_e, intento) => (intento === 0 ? neutroBueno : otraVersion),
+          'adivinar-partido': adivina('zonas tensionadas', 0.8),
+        }),
+        { publicado },
+      );
+      const neutralizaciones = ia.llamadas.filter((l) => l.tarea === 'neutralizar');
+      expect(neutralizaciones).toHaveLength(2);
+      expect(JSON.stringify(neutralizaciones[1]?.entrada)).toContain('Menciona las zonas tensionadas.');
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: otraVersion }));
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'reescribir' }));
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'pasa' }));
+    });
+
+    it('publishes with an internal warning when the postura is still recognisable after the rewrites', async () => {
+      const { posturas, informe, publicable, ia } = await procesar(
+        respuestas({ 'adivinar-partido': adivina('alquiler', 0.9) }),
+        { publicado },
+      );
+      expect(ia.llamadas.filter((l) => l.tarea === 'neutralizar')).toHaveLength(3);
+      expect(posturas[0]?.estado).toBe('propone');
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'aviso' }));
+      expect(informe.descartadas).toBe(0);
+      expect(publicable).toBe(true);
+    });
+
+    it.each([
+      ['mean confidence is below 0.7', adivina('alquiler', 0.6)],
+      ['it is guessed only 2 of 3 times', adivina('alquiler', 0.9, 2)],
+    ])('does not flag the postura when %s', async (_caso, adivinador) => {
+      const { ia, informe } = await procesar(respuestas({ 'adivinar-partido': adivinador }), { publicado });
+      expect(ia.llamadas.filter((l) => l.tarea === 'neutralizar')).toHaveLength(1);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'pasa' }));
+    });
+
+    it('skips the guesser when the party is the only one with a proposal on the topic', async () => {
+      const { ia } = await procesar(respuestas());
+      expect(ia.llamadas.filter((l) => l.tarea === 'adivinar-partido')).toHaveLength(0);
+    });
+  });
+
+  describe('V12: confirmed absence', () => {
+    const noPropone = { 'extraer-postura': () => ({ propone: false, citas: [] }) };
+
+    it('extracts the postura when the second pass finds a proposal the first one missed', async () => {
+      const { posturas, ia, informe } = await procesar(respuestas({ ...noPropone, ...segundaPasadaEncuentra }));
+      const segunda = ia.llamadas.find((l) => l.tarea === 'confirmar-ausencia')!;
+      // Only the keyword-matching fragments (page 2 talks about vivienda/alquiler) go to the AI.
+      expect((segunda.entrada as any).paginas.map((p: { pagina: number }) => p.pagina)).toEqual([2]);
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', citas: [{ texto: CITA, pagina: 2 }] }));
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V12', resultado: 'extraer' }));
+    });
+
+    it('marks "proposes nothing" when the targeted question confirms it, recording the terms searched', async () => {
+      const { posturas, informe } = await procesar(respuestas(noPropone));
+      expect(posturas[0]?.estado).toBe('no_propone');
+      const entrada = informe.entradas.find((e) => e.barrera === 'V12')!;
+      expect(entrada.resultado).toBe('pasa');
+      expect(entrada.detalle).toContain('alquiler');
+    });
+
+    it('confirms the absence without asking the AI when no keyword appears in the programme', async () => {
+      const pdf = await crearPdfDePrueba([['Pensiones', 'Revalorizaremos las pensiones con el IPC cada año.']]);
+      const ia = crearIAFalsa(respuestas({ ...noPropone, ...segundaPasadaEncuentra }));
+      const { posturas } = await procesarPrograma(pdf, partidoEjemplo, ia, opciones());
+      expect(ia.llamadas.filter((l) => l.tarea === 'confirmar-ausencia')).toHaveLength(0);
+      expect(posturas[0]?.estado).toBe('no_propone');
+    });
+
+    it('shows a discarded postura as "proposes nothing" only when V12 confirms it', async () => {
+      const inventada = {
+        'extraer-postura': () => ({
+          propone: true,
+          citas: [{ texto: 'Regalaremos una vivienda a cada joven que cumpla dieciocho años en todo el país.', pagina: 2 }],
+        }),
+      };
+      const confirmada = await procesar(respuestas(inventada));
+      expect(confirmada.posturas[0]?.estado).toBe('no_propone');
+      expect(confirmada.informe.descartadas).toBe(1);
+
+      const sinConfirmar = await procesar(respuestas({ ...inventada, ...segundaPasadaEncuentra }));
+      expect(sinConfirmar.posturas[0]?.estado).toBe('sin_verificar');
+    });
+
+    it('a postura discarded after its quotes were verified stays "could not verify" (it does exist)', async () => {
+      const { posturas, ia } = await procesar(
+        respuestas({ neutralizar: () => ({ ...neutroBueno, que: 'La propuesta de OTP sobre el alquiler.' }) }),
+      );
+      expect(posturas[0]?.estado).toBe('sin_verificar');
+      expect(ia.llamadas.filter((l) => l.tarea === 'confirmar-ausencia')).toHaveLength(0);
+    });
+  });
+
   describe('V2: correct page', () => {
     it('fixes the declared page automatically and records the correction', async () => {
       const { posturas, informe } = await procesar(
@@ -367,6 +554,7 @@ describe('procesarPrograma', () => {
             propone: true,
             citas: [{ texto: 'Limitaremos el precio del alquiler en todas las ciudades del país sin excepción alguna.', pagina: 7 }],
           }),
+          ...segundaPasadaEncuentra,
         }),
       );
       expect(posturas[0]?.estado).toBe('sin_verificar');
@@ -571,7 +759,7 @@ describe('procesarPrograma', () => {
       ]);
       // Every barrier leaves a trace for a postura that passed them all.
       const barreras = informe.entradas.filter((e) => e.tema === 'vivienda').map((e) => e.barrera);
-      expect(new Set(barreras)).toEqual(new Set(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V8', 'V13']));
+      expect(new Set(barreras)).toEqual(new Set(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V8', 'V10', 'V11', 'V13']));
       expect(informe.entradas.filter((e) => e.barrera === 'V7')).toHaveLength(1);
     });
   });

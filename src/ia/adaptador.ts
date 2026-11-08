@@ -3,7 +3,17 @@
 import type { z } from 'zod';
 
 /** What the model is used for; production maps each to a model (see claude.ts). */
-export type Tarea = 'extraer-postura' | 'neutralizar' | 'evaluar-viabilidad';
+export type Tarea =
+  | 'extraer-postura'
+  | 'neutralizar'
+  /** V10: independent check that the neutral text is faithful to the quotes. */
+  | 'verificar-fidelidad'
+  /** V11: guess which party wrote each anonymous postura of a topic. */
+  | 'adivinar-partido'
+  /** V12: second, targeted pass before marking "proposes nothing". */
+  | 'confirmar-ausencia'
+  /** V13: blind feasibility evaluation with the public rubric (run twice, independently). */
+  | 'evaluar-viabilidad';
 
 export interface PeticionIA<T> {
   tarea: Tarea;

@@ -683,6 +683,9 @@
                     "V7",
                     "V8",
                     "V9",
+                    "V10",
+                    "V11",
+                    "V12",
                     "V13"
                   ]
                 },
@@ -693,7 +696,9 @@
                     "corregir",
                     "reescribir",
                     "descartar",
-                    "bloquear"
+                    "bloquear",
+                    "extraer",
+                    "aviso"
                   ]
                 },
                 "detalle": {

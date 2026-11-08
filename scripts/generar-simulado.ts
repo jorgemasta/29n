@@ -14,10 +14,11 @@ interface Ficticio {
   id: string;
   nombre: string;
   paginas: string[][];
-  cita: { texto: string; pagina: number };
-  neutro: { que: string; como: string; cifra: string | null };
-  /** Fake feasibility answers of evaluations 1 and 2 (fictional, for the prototype). */
-  viabilidad: [Simulada, Simulada];
+  /** null: the programme proposes nothing on vivienda (shows the "no propone nada" card). */
+  cita: { texto: string; pagina: number } | null;
+  neutro: { que: string; como: string; cifra: string | null } | null;
+  /** Fake feasibility answers of evaluations 1 and 2 (fictional); null when there is no proposal. */
+  viabilidad: [Simulada, Simulada] | null;
 }
 
 interface Simulada {
@@ -114,6 +115,17 @@ const FICTICIOS: Ficticio[] = [
       { nivel: 'viable', porque: '[Simulado] Existe marco legal estatal para ambas medidas; su aplicación depende de comunidades y ayuntamientos.' },
     ],
   },
+  {
+    id: 'prueba-d',
+    nombre: 'Partido de prueba D',
+    paginas: [
+      ['PROGRAMA DE PRUEBA D (documento ficticio para el prototipo)'],
+      ['Pensiones', 'Revalorizaremos las pensiones con el IPC cada año.'],
+    ],
+    cita: null,
+    neutro: null,
+    viabilidad: null,
+  },
 ];
 
 async function pdfFicticio(paginas: string[][]): Promise<Uint8Array> {
@@ -122,6 +134,9 @@ async function pdfFicticio(paginas: string[][]): Promise<Uint8Array> {
   doc.setCreationDate(new Date('2026-11-01T00:00:00Z'));
   doc.setModificationDate(new Date('2026-11-01T00:00:00Z'));
   const fuente = await doc.embedFont(StandardFonts.Helvetica);
+  // Fixed dates: regenerating gives byte-identical PDFs (stable hashes, no binary churn).
+  doc.setCreationDate(new Date('2026-11-01T00:00:00Z'));
+  doc.setModificationDate(new Date('2026-11-01T00:00:00Z'));
   for (const lineas of paginas) {
     const pagina = doc.addPage();
     lineas.forEach((l, i) => pagina.drawText(l, { x: 40, y: 780 - i * 14, size: 10, font: fuente }));
@@ -146,9 +161,12 @@ for (const f of FICTICIOS) {
     prueba: true,
   };
   const ia = crearIAFalsa({
-    'extraer-postura': () => ({ propone: true, citas: [f.cita] }),
+    'extraer-postura': () => (f.cita ? { propone: true, citas: [f.cita] } : { propone: false, citas: [] }),
     neutralizar: () => f.neutro,
-    'evaluar-viabilidad': (e) => ({ ...f.viabilidad[e.evaluacion === 1 ? 0 : 1], razones: RAZONES, fuentes: FUENTES }),
+    'evaluar-viabilidad': (e) => ({ ...f.viabilidad![e.evaluacion === 1 ? 0 : 1], razones: RAZONES, fuentes: FUENTES }),
+    'verificar-fidelidad': () => ({ anade: false, omite: false, cambiaSentido: false, explicacion: 'Fiel a la cita.' }),
+    'adivinar-partido': () => ({ asignaciones: [] }),
+    'confirmar-ausencia': () => ({ propone: false, citas: [] }),
   });
   const r = await procesarPrograma(pdf, partido, ia, {
     temas: TEMAS,
@@ -156,6 +174,7 @@ for (const f of FICTICIOS) {
     longitudesTema,
     // Simulated: the feasibility sources are institutional home pages; skip the network check.
     comprobarUrl: async () => true,
+    publicado: { partidos, posturas: resultados.flatMap((x) => x.posturas) },
   });
   for (const p of r.posturas) if (p.estado === 'propone') (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);
