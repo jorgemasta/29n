@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generado": "2026-11-08T21:37:13.679Z",
+  "generado": "2026-11-08T21:46:08.266Z",
   "origen": "simulado",
   "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real.",
   "partidos": [
@@ -15,7 +15,7 @@
         "estado": "publicado",
         "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
         "titulo": "Programa de prueba",
-        "hashPdf": "75740f35e55b46d3daebcdb39391761e418fc8758886e98ee795f6dc8b9c3887"
+        "hashPdf": "153683b97f2df98d653421e396ac4357aa60f6d42342987945483f7a4864b544"
       },
       "prueba": true
     },
@@ -30,7 +30,7 @@
         "estado": "publicado",
         "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
         "titulo": "Programa de prueba",
-        "hashPdf": "b2fcede1bd9afd080b50d5c8c14e2733085b3c9ca0a50e04b1e57f40dd6656be"
+        "hashPdf": "980cb857fb8801339dc64ca38c853189b9bec71351a4e240f598632dd116f309"
       },
       "prueba": true
     },
@@ -45,7 +45,7 @@
         "estado": "publicado",
         "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
         "titulo": "Programa de prueba",
-        "hashPdf": "34be22be3a7ca20aa699336e049d7f66a108d3cefc21d15181f79a33e40e1206"
+        "hashPdf": "ae097e1ea1729b68a67aa5675f3b7309b4e050abca3f537077d07a863ceb60f4"
       },
       "prueba": true
     }
@@ -64,7 +64,7 @@
       "partido": "prueba-a",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
@@ -83,12 +83,12 @@
       "partido": "prueba-b",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
-        "que": "Quitar el impuesto que se paga al comprar la primera vivienda.",
-        "como": "Además, liberar suelo público para que se construyan más viviendas.",
+        "que": "Quitar el impuesto que se paga al comprar la primera vivienda de cada hogar.",
+        "como": "Además, liberar suelo público para que se construyan más viviendas en venta y en alquiler.",
         "cifra": null
       },
       "citas": [
@@ -102,7 +102,7 @@
       "partido": "prueba-c",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
@@ -121,12 +121,25 @@
   "informes": [
     {
       "partido": "prueba-a",
-      "hashPdf": "75740f35e55b46d3daebcdb39391761e418fc8758886e98ee795f6dc8b9c3887",
-      "versionPrompt": "v1",
+      "hashPdf": "153683b97f2df98d653421e396ac4357aa60f6d42342987945483f7a4864b544",
+      "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
+      "versionPrompt": "v2",
       "extraidas": 1,
       "descartadas": 0,
       "publicable": true,
+      "posturas": [
+        {
+          "tema": "vivienda",
+          "estado": "propone",
+          "reescrituras": 0
+        }
+      ],
       "entradas": [
+        {
+          "barrera": "V7",
+          "resultado": "pasa",
+          "detalle": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
+        },
         {
           "tema": "vivienda",
           "barrera": "V1",
@@ -135,20 +148,57 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "vivienda",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         }
       ]
     },
     {
       "partido": "prueba-b",
-      "hashPdf": "b2fcede1bd9afd080b50d5c8c14e2733085b3c9ca0a50e04b1e57f40dd6656be",
-      "versionPrompt": "v1",
+      "hashPdf": "980cb857fb8801339dc64ca38c853189b9bec71351a4e240f598632dd116f309",
+      "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
+      "versionPrompt": "v2",
       "extraidas": 1,
       "descartadas": 0,
       "publicable": true,
+      "posturas": [
+        {
+          "tema": "vivienda",
+          "estado": "propone",
+          "reescrituras": 0
+        }
+      ],
       "entradas": [
+        {
+          "barrera": "V7",
+          "resultado": "pasa",
+          "detalle": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
+        },
         {
           "tema": "vivienda",
           "barrera": "V1",
@@ -157,20 +207,57 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "vivienda",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         }
       ]
     },
     {
       "partido": "prueba-c",
-      "hashPdf": "34be22be3a7ca20aa699336e049d7f66a108d3cefc21d15181f79a33e40e1206",
-      "versionPrompt": "v1",
+      "hashPdf": "ae097e1ea1729b68a67aa5675f3b7309b4e050abca3f537077d07a863ceb60f4",
+      "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
+      "versionPrompt": "v2",
       "extraidas": 1,
       "descartadas": 0,
       "publicable": true,
+      "posturas": [
+        {
+          "tema": "vivienda",
+          "estado": "propone",
+          "reescrituras": 0
+        }
+      ],
       "entradas": [
+        {
+          "barrera": "V7",
+          "resultado": "pasa",
+          "detalle": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
+        },
         {
           "tema": "vivienda",
           "barrera": "V1",
@@ -179,9 +266,33 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "vivienda",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         }
       ]
     }

@@ -5,7 +5,10 @@ import { crearIAFalsa, type RespuestasFalsas } from '../src/ia/falsa';
 import { crearCacheEnMemoria } from '../src/ia/cache';
 import { construirDataset, validarDataset } from '../src/dataset';
 import { crearPdfDePrueba } from './fixtures/pdf';
-import { partidoEjemplo, temaVivienda, terminosDePrueba } from './fixtures/registro';
+import { dominiosDePrueba, partidoEjemplo, temaVivienda, terminosDePrueba } from './fixtures/registro';
+import type { Tema } from '../src/dataset/esquema';
+
+const neutralizaciones = (ia: { llamadas: { tarea: string }[] }) => ia.llamadas.filter((l) => l.tarea === 'neutralizar');
 
 const CITA =
   'Limitaremos el precio del alquiler en las zonas tensionadas y ampliaremos el parque público de vivienda.';
@@ -20,11 +23,14 @@ const paginas = [
   ['Pensiones', 'Revalorizaremos las pensiones con el IPC cada año.'],
 ];
 
+// 15 + 14 = 29 words: inside V5's 25–70 range.
 const neutroBueno = {
-  que: 'Limitar el precio del alquiler en zonas tensionadas.',
-  como: 'Ampliando además el parque público de vivienda.',
+  que: 'Limitar por ley el precio del alquiler de vivienda en las zonas tensionadas del país.',
+  como: 'Declarando esas zonas y ampliando además el parque público de vivienda disponible para alquilar.',
   cifra: null,
 };
+
+const palabras = (n: number) => Array.from({ length: n }, (_, i) => `palabra${String.fromCharCode(97 + (i % 26))}`).join(' ');
 
 function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
   return {
@@ -37,6 +43,7 @@ function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
 const opciones = (o: Partial<OpcionesProceso> = {}): OpcionesProceso => ({
   temas: [temaVivienda],
   terminos: terminosDePrueba,
+  dominios: dominiosDePrueba,
   ...o,
 });
 
@@ -180,6 +187,250 @@ describe('procesarPrograma', () => {
       expect(informe.entradas).toContainEqual(
         expect.objectContaining({ tema: 'vivienda', barrera: 'V3', resultado: 'descartar' }),
       );
+    });
+  });
+
+  describe('V2: correct page', () => {
+    it('fixes the declared page automatically and records the correction', async () => {
+      const { posturas, informe } = await procesar(
+        respuestas({ 'extraer-postura': () => ({ propone: true, citas: [{ texto: CITA, pagina: 1 }] }) }),
+      );
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', citas: [{ texto: CITA, pagina: 2 }] }));
+      expect(informe.entradas).toContainEqual(
+        expect.objectContaining({ tema: 'vivienda', barrera: 'V2', resultado: 'corregir', detalle: expect.stringContaining('1 → 2') }),
+      );
+    });
+
+    it('records a pass when the declared page is right', async () => {
+      const { informe } = await procesar(respuestas());
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ tema: 'vivienda', barrera: 'V2', resultado: 'pasa' }));
+    });
+
+    it('discards the postura when the quote is on no page at all', async () => {
+      const { posturas } = await procesar(
+        respuestas({
+          'extraer-postura': () => ({
+            propone: true,
+            citas: [{ texto: 'Limitaremos el precio del alquiler en todas las ciudades del país sin excepción alguna.', pagina: 7 }],
+          }),
+        }),
+      );
+      expect(posturas[0]?.estado).toBe('sin_verificar');
+    });
+  });
+
+  describe('V4: traceable figures', () => {
+    const CITA_CIFRAS =
+      'Construiremos 50.000 viviendas públicas al año y limitaremos el alquiler al 30 % de los ingresos del hogar.';
+    const paginasCifras = [['Vivienda', CITA_CIFRAS]];
+    const extraerCifras = () => ({ propone: true, citas: [{ texto: CITA_CIFRAS, pagina: 1 }] });
+    const conCifras = {
+      que: 'Construir vivienda pública cada año y limitar por ley lo que pagan los hogares de alquiler.',
+      como: 'El alquiler de esas viviendas no podría superar el 30% de los ingresos de cada hogar inquilino.',
+      cifra: '50000 viviendas al año',
+    };
+
+    async function procesarCifras(r: RespuestasFalsas, o: Partial<OpcionesProceso> = {}) {
+      const pdf = await crearPdfDePrueba(paginasCifras);
+      const ia = crearIAFalsa(r);
+      return { ...(await procesarPrograma(pdf, partidoEjemplo, ia, opciones(o))), ia };
+    }
+
+    it('accepts figures that appear in a quote, whatever their format ("50000" vs "50.000", "30%" vs "30 %")', async () => {
+      const { posturas, ia, informe } = await procesarCifras(respuestas({ 'extraer-postura': extraerCifras, neutralizar: () => conCifras }));
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: conCifras }));
+      expect(neutralizaciones(ia)).toHaveLength(1);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V4', resultado: 'pasa' }));
+    });
+
+    it('rewrites a text with a figure that is in none of its quotes, telling the AI which one', async () => {
+      const { posturas, ia, informe } = await procesarCifras(
+        respuestas({
+          'extraer-postura': extraerCifras,
+          neutralizar: (_e, intento) => (intento === 0 ? { ...conCifras, como: conCifras.como.replace('30%', '40 %') } : conCifras),
+        }),
+      );
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: conCifras }));
+      expect(neutralizaciones(ia)).toHaveLength(2);
+      expect(JSON.stringify(ia.llamadas.at(-1)?.entrada)).toContain('40');
+      expect(informe.entradas).toContainEqual(
+        expect.objectContaining({ tema: 'vivienda', barrera: 'V4', resultado: 'reescribir', detalle: expect.stringContaining('40') }),
+      );
+    });
+
+    it('checks the figure field too, and discards after 2 failed rewrites', async () => {
+      const { posturas, ia, informe } = await procesarCifras(
+        respuestas({ 'extraer-postura': extraerCifras, neutralizar: () => ({ ...conCifras, cifra: '2030' }) }),
+      );
+      expect(neutralizaciones(ia)).toHaveLength(3);
+      expect(posturas[0]?.estado).toBe('sin_verificar');
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V4', resultado: 'descartar' }));
+    });
+  });
+
+  describe('V5: equal length', () => {
+    it('rewrites a text shorter than 25 words', async () => {
+      const corto = { que: 'Limitar el alquiler.', como: 'Con más vivienda pública.', cifra: null };
+      const { posturas, ia, informe } = await procesar(
+        respuestas({ neutralizar: (_e, intento) => (intento === 0 ? corto : neutroBueno) }),
+      );
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: neutroBueno }));
+      expect(neutralizaciones(ia)).toHaveLength(2);
+      expect(informe.entradas).toContainEqual(
+        expect.objectContaining({ barrera: 'V5', resultado: 'reescribir', detalle: expect.stringContaining('7 palabras') }),
+      );
+    });
+
+    it('rewrites a text longer than 70 words', async () => {
+      const largo = { ...neutroBueno, como: `${neutroBueno.como} ${palabras(60)}` };
+      const { ia, informe } = await procesar(respuestas({ neutralizar: (_e, intento) => (intento === 0 ? largo : neutroBueno) }));
+      expect(neutralizaciones(ia)).toHaveLength(2);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V5', resultado: 'reescribir' }));
+    });
+
+    it('rewrites a text outside ±25 % of the topic median, giving the AI the target range', async () => {
+      // Other parties' texts on this topic have 40 words → the text must have 30–50.
+      const largo = { ...neutroBueno, como: `${neutroBueno.como} ${palabras(15)}` }; // 44 words
+      const { posturas, ia, informe } = await procesar(
+        respuestas({ neutralizar: (_e, intento) => (intento === 0 ? neutroBueno : largo) }),
+        { longitudesTema: { vivienda: [40, 38, 42] } },
+      );
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: largo }));
+      expect(JSON.stringify(ia.llamadas.at(-1)?.entrada)).toMatch(/30.*50/);
+      expect(informe.entradas).toContainEqual(
+        expect.objectContaining({ barrera: 'V5', resultado: 'reescribir', detalle: expect.stringContaining('mediana') }),
+      );
+    });
+
+    it('discards after 2 failed rewrites', async () => {
+      const corto = { que: 'Limitar el alquiler.', como: 'Con más vivienda pública.', cifra: null };
+      const { posturas, ia } = await procesar(respuestas({ neutralizar: () => corto }));
+      expect(neutralizaciones(ia)).toHaveLength(3);
+      expect(posturas[0]?.estado).toBe('sin_verificar');
+    });
+  });
+
+  describe('V6: template', () => {
+    it('rewrites a text whose "what" field is missing', async () => {
+      const { posturas, ia, informe } = await procesar(
+        respuestas({ neutralizar: (_e, intento) => (intento === 0 ? { ...neutroBueno, que: '  ' } : neutroBueno) }),
+      );
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: neutroBueno }));
+      expect(neutralizaciones(ia)).toHaveLength(2);
+      expect(informe.entradas).toContainEqual(
+        expect.objectContaining({ barrera: 'V6', resultado: 'reescribir', detalle: expect.stringContaining('qué') }),
+      );
+    });
+
+    it('rewrites a text whose "how" field is missing, and discards it if it never arrives', async () => {
+      const { posturas, ia, informe } = await procesar(respuestas({ neutralizar: () => ({ ...neutroBueno, como: '' }) }));
+      expect(neutralizaciones(ia)).toHaveLength(3);
+      expect(posturas[0]?.estado).toBe('sin_verificar');
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V6', resultado: 'descartar', detalle: expect.stringContaining('cómo') }));
+    });
+
+    it('treats the figure as optional (an empty figure becomes null)', async () => {
+      const { posturas, ia } = await procesar(respuestas({ neutralizar: () => ({ ...neutroBueno, cifra: '' }) }));
+      expect(neutralizaciones(ia)).toHaveLength(1);
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: { ...neutroBueno, cifra: null } }));
+    });
+  });
+
+  describe('V7: official source', () => {
+    it('records the source URL, PDF hash and date of an allowed domain (subdomains included)', async () => {
+      const partido = { ...partidoEjemplo, programa: { ...partidoEjemplo.programa, url: 'https://www.ejemplo.org/docs/p.pdf' } };
+      const pdf = await crearPdfDePrueba(paginas);
+      const { informe, publicable } = await procesarPrograma(pdf, partido, crearIAFalsa(respuestas()), opciones({ fecha: '2026-11-08' }));
+      expect(publicable).toBe(true);
+      expect(informe).toEqual(
+        expect.objectContaining({ url: 'https://www.ejemplo.org/docs/p.pdf', hashPdf: expect.stringMatching(/^[0-9a-f]{64}$/), fecha: '2026-11-08' }),
+      );
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V7', resultado: 'pasa' }));
+    });
+
+    it('blocks a programme whose PDF comes from a domain not allowed for that party', async () => {
+      for (const url of ['https://otro-partido.es/programa.pdf', 'https://ejemplo.org.malo.com/p.pdf', 'https://falsoejemplo.org/p.pdf']) {
+        const partido = { ...partidoEjemplo, programa: { ...partidoEjemplo.programa, url } };
+        const pdf = await crearPdfDePrueba(paginas);
+        const ia = crearIAFalsa(respuestas());
+        const { informe, publicable, posturas } = await procesarPrograma(pdf, partido, ia, opciones({ fecha: '2026-11-08' }));
+        expect(publicable).toBe(false);
+        expect(informe.motivo).toContain('V7');
+        expect(informe).toEqual(expect.objectContaining({ url, hashPdf: expect.stringMatching(/^[0-9a-f]{64}$/), fecha: '2026-11-08' }));
+        expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V7', resultado: 'bloquear' }));
+        expect(posturas).toEqual([]);
+        expect(ia.llamadas).toHaveLength(0);
+      }
+    });
+
+    it('blocks a party with no allowed domains', async () => {
+      const { publicable } = await procesar(respuestas(), { dominios: {} });
+      expect(publicable).toBe(false);
+    });
+  });
+
+  describe('publication rule', () => {
+    const temas: Tema[] = ['vivienda', 'empleo', 'sanidad', 'energia'].map((id, i) => ({ ...temaVivienda, id, orden: i + 1 }));
+    const inventada = { texto: 'Regalaremos una vivienda a cada joven que cumpla dieciocho años en todo el país.', pagina: 2 };
+    const extraer = (malos: string[]) => (entrada: any) => ({
+      propone: true,
+      citas: [malos.includes(entrada.tema.id) ? inventada : { texto: CITA, pagina: 2 }],
+    });
+
+    it('publishes a programme with ≤ 30 % of its extracted posturas discarded', async () => {
+      const { publicable, informe } = await procesar(respuestas({ 'extraer-postura': extraer(['empleo']) }), { temas });
+      expect(informe).toEqual(expect.objectContaining({ extraidas: 4, descartadas: 1 }));
+      expect(publicable).toBe(true);
+    });
+
+    it('blocks the whole programme when more than 30 % is discarded', async () => {
+      const { publicable, informe } = await procesar(respuestas({ 'extraer-postura': extraer(['empleo']) }), { temas: temas.slice(0, 3) });
+      expect(informe).toEqual(expect.objectContaining({ extraidas: 3, descartadas: 1, publicable: false }));
+      expect(publicable).toBe(false);
+      expect(informe.motivo).toContain('33 %');
+    });
+  });
+
+  describe('verification report', () => {
+    it('summarises every postura: its final state, rewrites and why it was discarded', async () => {
+      const temas: Tema[] = ['vivienda', 'empleo', 'sanidad', 'energia'].map((id, i) => ({ ...temaVivienda, id, orden: i + 1 }));
+      const { informe } = await procesar(
+        respuestas({
+          'extraer-postura': (e) =>
+            e.tema.id === 'energia'
+              ? { propone: false, citas: [] }
+              : { propone: true, citas: [{ texto: CITA, pagina: 2 }] },
+          neutralizar: (e, intento) =>
+            e.tema.id === 'empleo'
+              ? { ...neutroBueno, que: '' }
+              : e.tema.id === 'sanidad' && intento === 0
+                ? { ...neutroBueno, cifra: '99 %' }
+                : neutroBueno,
+        }),
+        { temas },
+      );
+      expect(informe.posturas).toEqual([
+        { tema: 'vivienda', estado: 'propone', reescrituras: 0 },
+        { tema: 'empleo', estado: 'sin_verificar', reescrituras: 2, motivo: expect.stringMatching(/V6.*qué/) },
+        { tema: 'sanidad', estado: 'propone', reescrituras: 1 },
+        { tema: 'energia', estado: 'no_propone', reescrituras: 0 },
+      ]);
+      // Every barrier leaves a trace for a postura that passed them all.
+      const barreras = informe.entradas.filter((e) => e.tema === 'vivienda').map((e) => e.barrera);
+      expect(new Set(barreras)).toEqual(new Set(['V1', 'V2', 'V3', 'V4', 'V5', 'V6']));
+      expect(informe.entradas.filter((e) => e.barrera === 'V7')).toHaveLength(1);
+    });
+  });
+
+  describe('determinism', () => {
+    it('two runs over the same PDF with the cache give an identical result, rewrites included', async () => {
+      const cache = crearCacheEnMemoria();
+      const r = respuestas({ neutralizar: (_e, intento) => (intento === 0 ? { ...neutroBueno, cifra: '12 %' } : neutroBueno) });
+      const { ia: ia1, ...primera } = await procesar(r, { cache, fecha: '2026-11-08' });
+      const { ia: ia2, ...segunda } = await procesar(r, { cache, fecha: '2026-11-08' });
+      expect(neutralizaciones(ia1)).toHaveLength(2);
+      expect(ia2.llamadas).toHaveLength(0);
+      expect(segunda).toEqual(primera);
     });
   });
 

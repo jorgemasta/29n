@@ -67,24 +67,37 @@ export const Postura = z.discriminatedUnion('estado', [
   z.object({ ...basePostura, estado: z.literal('sin_verificar') }),
 ]);
 
-export const Barrera = z.enum(['V1', 'V2', 'V3', 'V9']);
+export const Barrera = z.enum(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V9']);
 
 export const EntradaInforme = z.object({
-  tema: id,
+  /** Absent for programme-level barriers (V7). */
+  tema: id.optional(),
   barrera: Barrera,
-  resultado: z.enum(['pasa', 'corregir', 'reescribir', 'descartar']),
+  resultado: z.enum(['pasa', 'corregir', 'reescribir', 'descartar', 'bloquear']),
   detalle: z.string(),
+});
+
+/** Outcome of one postura in the report: final state, rewrites asked for, why it was discarded. */
+export const ResumenPostura = z.object({
+  tema: id,
+  estado: z.enum(['propone', 'no_propone', 'sin_verificar']),
+  reescrituras: z.number().int().min(0),
+  motivo: z.string().optional(),
 });
 
 /** Public verification report, one per programme. */
 export const Informe = z.object({
   partido: id,
   hashPdf: z.string().regex(/^[0-9a-f]{64}$/),
+  /** Where the PDF was downloaded from (V7) and when. */
+  url: z.string().optional(),
+  fecha: z.string().optional(),
   versionPrompt: z.string(),
   extraidas: z.number().int().min(0),
   descartadas: z.number().int().min(0),
   publicable: z.boolean(),
   motivo: z.string().optional(),
+  posturas: z.array(ResumenPostura),
   entradas: z.array(EntradaInforme),
 });
 
@@ -128,5 +141,6 @@ export type Cita = z.infer<typeof Cita>;
 export type TextoNeutral = z.infer<typeof TextoNeutral>;
 export type Postura = z.infer<typeof Postura>;
 export type EntradaInforme = z.infer<typeof EntradaInforme>;
+export type ResumenPostura = z.infer<typeof ResumenPostura>;
 export type Informe = z.infer<typeof Informe>;
 export type Dataset = z.infer<typeof Dataset>;
