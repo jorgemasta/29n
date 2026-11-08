@@ -1,6 +1,7 @@
 // Game engine (test point B). Pure functions over the dataset, no I/O: runs in the browser.
-//   crearPartida(dataset, provincia, semilla, estado?) → Partida (immutable; actions return a new one)
-import type { Dataset, NotaViabilidad, Partido, Postura, Tema } from '../dataset/esquema';
+//   crearPartida(dataset, provincia, semilla, estado?, opciones?) → Partida (immutable; actions return a new one)
+import { aplicarModo, esSoloPrivado, fuenteDe } from '../dataset';
+import type { Dataset, Modo, NotaViabilidad, Partido, Postura, Tema, TipoFuente } from '../dataset/esquema';
 import { barajar } from './azar';
 
 export const NINGUNA = 'ninguna' as const;
@@ -11,7 +12,31 @@ export const PROVINCIAS_CANARIAS = ['35', '38'];
 
 /** Serializable state: what the voter chose per topic (party id, never leaves the browser). */
 export interface EstadoPartida {
+  /** Insertion order = order in which topics were done. */
   elecciones: Record<string, string | Ninguna>;
+}
+
+export interface OpcionesPartida {
+  /** 'publico' (default) only uses official programmes; 'privado' adds provisional sources. */
+  modo?: Modo;
+}
+
+/** Visible goal: the result is offered after this many topics; later ones are "extra". */
+export const META_TEMAS = 5;
+
+/** "Tema 2 de 5" or "Tema extra". */
+export type Posicion = { tipo: 'meta'; numero: number; meta: number } | { tipo: 'extra' };
+
+export interface ItemTema {
+  tema: Tema;
+  estado: 'sin_empezar' | 'hecho' | 'ninguna';
+}
+
+export interface ListaTemas {
+  /** The first META_TEMAS topics in the fixed order. */
+  sugeridos: ItemTema[];
+  /** The rest, alphabetically. */
+  extra: ItemTema[];
 }
 
 export interface Tarjeta {
@@ -41,6 +66,8 @@ export interface TarjetaRevelada extends Tarjeta {
   tituloPrograma: string;
   /** Blind feasibility note (V13); null if the postura has none. Only shown after choosing. */
   viabilidad: NotaViabilidad | null;
+  /** Source type; provisional sources are marked "solo privado". */
+  fuente: { tipo: TipoFuente; soloPrivado: boolean };
 }
 
 export interface Revelacion {
@@ -63,6 +90,14 @@ export interface Partida {
   elegir(temaId: string, letra: string | Ninguna): Partida;
   /** Null until the voter has chosen on this topic. */
   revelar(temaId: string): Revelacion | null;
+  /** Done topic ids, in the order they were done ("Ninguna" counts as done). */
+  hechos(): string[];
+  /** "Tema N de 5" for the goal topics, "extra" afterwards. */
+  posicion(temaId: string): Posicion;
+  /** Next topic not done yet in the fixed order, after `temaId` (wrapping); null if all done. */
+  siguiente(temaId?: string): Tema | null;
+  /** Topic list: 5 suggested topics first, then the extra ones alphabetically. */
+  lista(): ListaTemas;
 }
 
 type PosturaPropone = Extract<Postura, { estado: 'propone' }>;
@@ -73,7 +108,9 @@ export function crearPartida(
   provincia: string | null,
   semilla: string,
   estado: EstadoPartida = { elecciones: {} },
+  opciones: OpcionesPartida = {},
 ): Partida {
+  dataset = aplicarModo(dataset, opciones.modo ?? 'publico');
   const enJuego = (p: Partido) => p.ambito.tipo === 'estatal' || (provincia !== null && p.ambito.provincias.includes(provincia));
   const partidosZona = dataset.partidos.filter(enJuego);
   const publicados = partidosZona.filter((p) => p.programa.estado === 'publicado');
@@ -122,7 +159,7 @@ export function crearPartida(
         if (!b) throw new Error(`No hay tarjeta ${letra} en ${temaId}`);
         eleccion = b.postura.partido;
       }
-      return crearPartida(dataset, provincia, semilla, { elecciones: { ...estado.elecciones, [temaId]: eleccion } });
+      return crearPartida(dataset, provincia, semilla, { elecciones: { ...estado.elecciones, [temaId]: eleccion } }, opciones);
     },
     revelar(temaId) {
       const tema = buscarTema(temaId);
@@ -144,6 +181,7 @@ export function crearPartida(
             tituloPrograma: partido.programa.estado === 'publicado' ? partido.programa.titulo : '',
             citas: postura.citas.map((c) => ({ ...c, enlace: `${url}#page=${c.pagina}` })),
             viabilidad: postura.viabilidad ?? null,
+            fuente: { tipo: fuenteDe(partido)!, soloPrivado: esSoloPrivado(fuenteDe(partido)!) },
           };
         }),
         sinPropuesta: conEstado('no_propone'),
@@ -151,7 +189,38 @@ export function crearPartida(
         pendientes: pendientes.map(revelarPartido),
       };
     },
+    hechos,
+    posicion(temaId) {
+      buscarTema(temaId);
+      const lista = hechos();
+      const i = lista.indexOf(temaId);
+      const numero = (i === -1 ? lista.length : i) + 1;
+      return numero <= META_TEMAS ? { tipo: 'meta', numero, meta: META_TEMAS } : { tipo: 'extra' };
+    },
+    siguiente(temaId) {
+      const desde = temaId === undefined ? -1 : temas.indexOf(buscarTema(temaId));
+      const hecho = new Set(hechos());
+      for (let k = 1; k <= temas.length; k++) {
+        const t = temas[(desde + k) % temas.length]!;
+        if (!hecho.has(t.id)) return t;
+      }
+      return null;
+    },
+    lista() {
+      const item = (tema: Tema): ItemTema => {
+        const e = estado.elecciones[tema.id];
+        return { tema, estado: e === undefined ? 'sin_empezar' : e === NINGUNA ? 'ninguna' : 'hecho' };
+      };
+      return {
+        sugeridos: temas.slice(0, META_TEMAS).map(item),
+        extra: temas.slice(META_TEMAS).sort((a, b) => a.titulo.localeCompare(b.titulo, 'es')).map(item),
+      };
+    },
   };
+
+  function hechos(): string[] {
+    return Object.keys(estado.elecciones).filter((id) => temas.some((t) => t.id === id));
+  }
 }
 
 function aTarjeta(p: PosturaPropone, letra: string): Tarjeta {

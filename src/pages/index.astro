@@ -1,9 +1,16 @@
 ---
 import '../styles/global.css';
-import dataset from '../../data/dataset.json';
+import datos from '../../data/dataset.json';
+import { aplicarModo, type Dataset, type Modo } from '../dataset';
 
-const tema = dataset.temas[0]!;
+// Mode switch, at build time: `MODO=privado` (private prototype) also ships provisional sources
+// (2023 programmes, party documents, public statements). Anything else ships only official
+// programmes, so provisional data never reaches the public site.
+const modo: Modo = process.env.MODO === 'privado' ? 'privado' : 'publico';
+const dataset = aplicarModo(datos as Dataset, modo);
 const esPrueba = dataset.origen !== 'real';
+// Safe to inline in a <script type="application/json">: escape "<" so no "</script>" can close it.
+const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
 ---
 <!doctype html>
 <html lang="es">
@@ -15,24 +22,32 @@ const esPrueba = dataset.origen !== 'real';
     <meta name="description" content="Lee lo que proponen los partidos sin saber de quién es." />
   </head>
   <body>
-    <main id="app" data-tema={tema.id}>
+    <main id="app" data-modo={modo}>
       {esPrueba && (
         <p class="aviso-prueba" role="note">
           <strong>Prototipo con datos de prueba.</strong> {dataset.nota}
         </p>
       )}
-      <div id="tema">
-        <p class="gris">Cargando el tema {tema.titulo}…</p>
+      {modo === 'privado' && (
+        <p class="aviso-prueba" role="note">
+          <strong>Modo privado:</strong> incluye fuentes provisionales (programas de 2023, documentos y declaraciones), marcadas como «solo privado» al revelar.
+        </p>
+      )}
+      <div id="vista">
+        <p class="gris">Cargando los temas…</p>
         <noscript><p>Esta página necesita JavaScript para barajar las propuestas en tu móvil.</p></noscript>
       </div>
     </main>
     <footer class="pie">
       Proyecto personal de Jorge Masta, sin afiliación a ningún partido. Nada de lo que eliges sale de tu móvil.
     </footer>
+    <script is:inline type="application/json" id="datos" set:html={json} />
     <script>
-      import { montarTema } from '../web/tema';
+      import { montarApp } from '../web/app';
+      import type { Dataset, Modo } from '../dataset/esquema';
       const app = document.getElementById('app')!;
-      montarTema(document.getElementById('tema')!, app.dataset.tema!);
+      const dataset = JSON.parse(document.getElementById('datos')!.textContent!) as Dataset;
+      montarApp(document.getElementById('vista')!, dataset, app.dataset.modo as Modo);
     </script>
   </body>
 </html>

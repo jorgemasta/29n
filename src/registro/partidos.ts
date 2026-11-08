@@ -10,4 +10,12 @@ export const PARTIDOS: Record<string, Omit<Partido, 'programa'>> = {
     // Barcelona, Girona, Lleida, Tarragona
     ambito: { tipo: 'provincias', provincias: ['08', '17', '25', '43'] },
   },
+  // Source for #6: its 'Contrato con España' (process with --fuente programa-29n if it is its 29N
+  // programme, or --fuente documento-partido if it is a party document: private prototype only).
+  pp: {
+    id: 'pp',
+    nombre: 'Partido Popular',
+    siglas: 'PP',
+    ambito: { tipo: 'estatal' },
+  },
 };

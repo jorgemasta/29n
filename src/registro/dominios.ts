@@ -4,4 +4,5 @@ export type DominiosOficiales = Record<string, string[]>;
 
 export const DOMINIOS_OFICIALES: DominiosOficiales = {
   erc: ['esquerra.cat'],
+  pp: ['pp.es'],
 };

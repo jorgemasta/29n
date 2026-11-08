@@ -11,9 +11,20 @@ export const Ambito = z.discriminatedUnion('tipo', [
   z.object({ tipo: z.literal('provincias'), provincias: z.array(z.string()).min(1) }),
 ]);
 
+/**
+ * What kind of document a party's posturas come from. Only the official 29N programme counts in
+ * public; the others are provisional sources allowed only in the private prototype.
+ */
+export const TipoFuente = z.enum(['programa-29n', 'programa-2023', 'documento-partido', 'declaraciones']);
+export const FUENTES_PUBLICAS: readonly TipoFuente[] = ['programa-29n'];
+/** Sources usable in public ('publico') or also provisional ones ('privado', private prototype). */
+export const Modo = z.enum(['publico', 'privado']);
+
 export const Programa = z.discriminatedUnion('estado', [
   z.object({
     estado: z.literal('publicado'),
+    /** Source type of this document; absent means the official 29N programme. */
+    fuente: TipoFuente.optional(),
     url: z.url(),
     titulo: z.string(),
     hashPdf: z.string().regex(/^[0-9a-f]{64}$/).optional(),
@@ -171,6 +182,8 @@ export const Dataset = z
     }
   });
 
+export type TipoFuente = z.infer<typeof TipoFuente>;
+export type Modo = z.infer<typeof Modo>;
 export type Ambito = z.infer<typeof Ambito>;
 export type Partido = z.infer<typeof Partido>;
 export type Tema = z.infer<typeof Tema>;

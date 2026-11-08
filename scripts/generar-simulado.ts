@@ -1,6 +1,7 @@
 // Builds data/dataset.json from FICTIONAL test programmes, through the real pipeline with the
 // fake AI adapter. Used while no real programme can be processed (no credentials / PDF on this
-// machine). The dataset is marked origen: "simulado" and every party prueba: true.
+// machine). The dataset is marked origen: "simulado" and every party prueba: true. Content lives in
+// scripts/datos-simulados.ts; party D is a provisional source (private prototype only).
 //   npx tsx scripts/generar-simulado.ts
 import { mkdir, writeFile } from 'node:fs/promises';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
@@ -9,130 +10,51 @@ import { crearIAFalsa } from '../src/ia/falsa';
 import { procesarPrograma } from '../src/pipeline';
 import { TEMAS } from '../src/registro/temas';
 import { contarPalabras } from '../src/pipeline/texto';
+import { FICTICIOS } from './datos-simulados';
 
-interface Ficticio {
-  id: string;
-  nombre: string;
-  paginas: string[][];
-  /** null: the programme proposes nothing on vivienda (shows the "no propone nada" card). */
-  cita: { texto: string; pagina: number } | null;
-  neutro: { que: string; como: string; cifra: string | null } | null;
-  /** Fake feasibility answers of evaluations 1 and 2 (fictional); null when there is no proposal. */
-  viabilidad: [Simulada, Simulada] | null;
-}
-
-interface Simulada {
-  nivel: 'viable' | 'viable_con_matices' | 'dificil' | 'muy_dificil' | 'sin_concrecion';
-  porque: string;
-}
-
-const FUENTES = [
-  { titulo: 'INE: estadísticas de vivienda (portada)', url: 'https://www.ine.es/' },
-  { titulo: 'BOE: legislación consolidada (portada)', url: 'https://www.boe.es/' },
+// Simulated feasibility (V13): fictional, generic answers that vary by party and topic so the
+// reveal shows every kind of note (agreement, "sin concreción", "sin consenso").
+const NIVELES_SIMULADOS = ['viable', 'viable_con_matices', 'dificil', 'muy_dificil', 'sin_concrecion'] as const;
+const FUENTES_SIMULADAS = [
+  { titulo: 'INE: portada', url: 'https://www.ine.es/' },
+  { titulo: 'BOE: portada', url: 'https://www.boe.es/' },
 ];
-const RAZONES = {
-  competencia: '[Simulado] La vivienda es competencia autonómica; el Estado puede fijar bases y financiar.',
-  coste: '[Simulado] El coste depende del alcance; la propuesta no detalla toda la financiación.',
-  legal: '[Simulado] Encaja en el marco legal actual con cambios de ley ordinaria.',
-  precedentes: '[Simulado] Hay medidas parecidas en otros países europeos.',
-  mayoria: '[Simulado] Basta una ley ordinaria en el Congreso.',
+const RAZONES_SIMULADAS = {
+  competencia: '[Simulado] Texto de ejemplo sobre quién tiene la competencia.',
+  coste: '[Simulado] Texto de ejemplo sobre el coste y cómo se paga.',
+  legal: '[Simulado] Texto de ejemplo sobre el encaje legal.',
+  precedentes: '[Simulado] Texto de ejemplo sobre precedentes.',
+  mayoria: '[Simulado] Texto de ejemplo sobre los votos necesarios.',
 };
+function viabilidadSimulada(partido: string, tema: string, evaluacion: number) {
+  const n = [...`${partido}:${tema}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  // About one pair in 7 disagrees: the second evaluation moves one level.
+  const i = (n % 7 === 0 && evaluacion === 2 ? n + 1 : n) % NIVELES_SIMULADOS.length;
+  const nivel = NIVELES_SIMULADOS[i]!;
+  return {
+    nivel,
+    razones: RAZONES_SIMULADAS,
+    porque: `[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.`,
+    fuentes: nivel === 'sin_concrecion' ? [] : FUENTES_SIMULADAS,
+  };
+}
 
-const FICTICIOS: Ficticio[] = [
-  {
-    id: 'prueba-a',
-    nombre: 'Partido de prueba A',
-    paginas: [
-      ['PROGRAMA DE PRUEBA A (documento ficticio para el prototipo)'],
-      [
-        'Vivienda',
-        'Crearemos una empresa pública estatal de vivienda que construya 50.000 vivien-',
-        'das de alquiler asequible al año, con precios que no superen el 30 % de los ingresos.',
-      ],
-    ],
-    cita: {
-      texto: 'Crearemos una empresa pública estatal de vivienda que construya 50.000 viviendas de alquiler asequible al año, con precios que no superen el 30 % de los ingresos.',
-      pagina: 2,
-    },
-    neutro: {
-      que: 'Crear una empresa pública estatal que construya vivienda de alquiler asequible.',
-      como: 'Los alquileres de esas viviendas no superarían el 30 % de los ingresos del hogar.',
-      cifra: '50.000 viviendas al año',
-    },
-    viabilidad: [
-      { nivel: 'viable_con_matices', porque: '[Simulado] Se puede aplicar, pero exige acuerdos con las comunidades autónomas y una financiación plurianual que la propuesta no detalla.' },
-      { nivel: 'viable_con_matices', porque: '[Simulado] Es aplicable con condiciones: depende de suelo autonómico y municipal.' },
-    ],
-  },
-  {
-    id: 'prueba-b',
-    nombre: 'Partido de prueba B',
-    paginas: [
-      ['PROGRAMA DE PRUEBA B (documento ficticio para el prototipo)'],
-      ['Economía', 'Bajaremos impuestos.'],
-      [
-        'Vivienda',
-        'Eliminaremos el impuesto de transmisiones patrimoniales en la compra de la primera vivienda',
-        'y liberaremos suelo público para que se construya más vivienda.',
-      ],
-    ],
-    cita: {
-      texto: 'Eliminaremos el impuesto de transmisiones patrimoniales en la compra de la primera vivienda y liberaremos suelo público para que se construya más vivienda.',
-      pagina: 3,
-    },
-    neutro: {
-      que: 'Quitar el impuesto que se paga al comprar la primera vivienda de cada hogar.',
-      como: 'Además, liberar suelo público para que se construyan más viviendas en venta y en alquiler.',
-      cifra: null,
-    },
-    viabilidad: [
-      { nivel: 'viable', porque: '[Simulado] El impuesto está cedido a las comunidades, pero el Estado puede reformar su regulación básica.' },
-      { nivel: 'dificil', porque: '[Simulado] El impuesto lo gestionan las comunidades autónomas y quitarlo exige compensar su recaudación.' },
-    ],
-  },
-  {
-    id: 'prueba-c',
-    nombre: 'Partido de prueba C',
-    paginas: [
-      [
-        'PROGRAMA DE PRUEBA C (documento ficticio para el prototipo)',
-        'Vivienda',
-        'Limitaremos el precio del alquiler en las zonas tensionadas y penalizaremos en el IBI',
-        'las viviendas vacías durante más de dos años.',
-      ],
-    ],
-    cita: {
-      texto: 'Limitaremos el precio del alquiler en las zonas tensionadas y penalizaremos en el IBI las viviendas vacías durante más de dos años.',
-      pagina: 1,
-    },
-    neutro: {
-      que: 'Limitar el precio del alquiler en las zonas con más demanda.',
-      como: 'Y subir el IBI, el impuesto municipal sobre la casa, a viviendas vacías más de dos años.',
-      cifra: null,
-    },
-    viabilidad: [
-      { nivel: 'viable', porque: '[Simulado] La ley estatal de vivienda ya permite declarar zonas tensionadas y el recargo del IBI a viviendas vacías.' },
-      { nivel: 'viable', porque: '[Simulado] Existe marco legal estatal para ambas medidas; su aplicación depende de comunidades y ayuntamientos.' },
-    ],
-  },
-  {
-    id: 'prueba-d',
-    nombre: 'Partido de prueba D',
-    paginas: [
-      ['PROGRAMA DE PRUEBA D (documento ficticio para el prototipo)'],
-      ['Pensiones', 'Revalorizaremos las pensiones con el IPC cada año.'],
-    ],
-    cita: null,
-    neutro: null,
-    viabilidad: null,
-  },
-];
+/** Wraps a paragraph into lines that fit an A4 page in 10pt Helvetica. */
+function lineas(texto: string, max = 95): string[] {
+  const out: string[] = [];
+  let linea = '';
+  for (const palabra of texto.split(' ')) {
+    if (linea && (linea + ' ' + palabra).length > max) {
+      out.push(linea);
+      linea = palabra;
+    } else linea = linea ? `${linea} ${palabra}` : palabra;
+  }
+  if (linea) out.push(linea);
+  return out;
+}
 
 async function pdfFicticio(paginas: string[][]): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  // Fixed dates: same bytes (and hash) on every run.
-  doc.setCreationDate(new Date('2026-11-01T00:00:00Z'));
-  doc.setModificationDate(new Date('2026-11-01T00:00:00Z'));
   const fuente = await doc.embedFont(StandardFonts.Helvetica);
   // Fixed dates: regenerating gives byte-identical PDFs (stable hashes, no binary churn).
   doc.setCreationDate(new Date('2026-11-01T00:00:00Z'));
@@ -150,34 +72,46 @@ const longitudesTema: Record<string, number[]> = {};
 const resultados = [];
 await mkdir('public/programas', { recursive: true });
 for (const f of FICTICIOS) {
-  const pdf = await pdfFicticio(f.paginas);
+  // Cover page, then one page per topic the fictional party talks about.
+  const paginas: string[][] = [[`${f.titulo.toUpperCase()} (documento ficticio para el prototipo)`]];
+  const pagina: Record<string, number> = {};
+  for (const tema of TEMAS) {
+    const p = f.propuestas[tema.id];
+    if (!p) continue;
+    paginas.push([tema.titulo, ...lineas(p[0])]);
+    pagina[tema.id] = paginas.length;
+  }
+  const pdf = await pdfFicticio(paginas);
   await writeFile(`public/programas/${f.id}.pdf`, pdf);
   const partido: Partido = {
     id: f.id,
-    nombre: f.nombre,
-    siglas: `PR${f.id.slice(-1).toUpperCase()}`,
+    nombre: `Partido de prueba ${f.letra}`,
+    siglas: `PR${f.letra}`,
     ambito: { tipo: 'estatal' },
-    programa: { estado: 'publicado', url: `https://29n.jorgemasta.com/programas/${f.id}.pdf`, titulo: 'Programa de prueba' },
+    programa: { estado: 'publicado', fuente: f.fuente, url: `https://29n.jorgemasta.com/programas/${f.id}.pdf`, titulo: f.titulo },
     prueba: true,
   };
+  const de = (e: { tema: { id: string } }) => f.propuestas[e.tema.id];
   const ia = crearIAFalsa({
-    'extraer-postura': () => (f.cita ? { propone: true, citas: [f.cita] } : { propone: false, citas: [] }),
-    neutralizar: () => f.neutro,
-    'evaluar-viabilidad': (e) => ({ ...f.viabilidad![e.evaluacion === 1 ? 0 : 1], razones: RAZONES, fuentes: FUENTES }),
+    'extraer-postura': (e) => (de(e) ? { propone: true, citas: [{ texto: de(e)![0], pagina: pagina[e.tema.id]! }] } : { propone: false, citas: [] }),
+    neutralizar: (e) => ({ que: de(e)![1], como: de(e)![2], cifra: de(e)![3] }),
     'verificar-fidelidad': () => ({ anade: false, omite: false, cambiaSentido: false, explicacion: 'Fiel a la cita.' }),
     'adivinar-partido': () => ({ asignaciones: [] }),
     'confirmar-ausencia': () => ({ propone: false, citas: [] }),
+    'evaluar-viabilidad': (e) => viabilidadSimulada(f.id, e.tema.id, e.evaluacion),
   });
   const r = await procesarPrograma(pdf, partido, ia, {
     temas: TEMAS,
     dominios: { [f.id]: ['29n.jorgemasta.com'] },
     longitudesTema,
+    publicado: { partidos, posturas: resultados.flatMap((x) => x.posturas) },
     // Simulated: the feasibility sources are institutional home pages; skip the network check.
     comprobarUrl: async () => true,
-    publicado: { partidos, posturas: resultados.flatMap((x) => x.posturas) },
   });
   for (const p of r.posturas) if (p.estado === 'propone') (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);
+  const fallidas = r.posturas.filter((p) => p.estado === 'sin_verificar');
+  if (fallidas.length) throw new Error(`${f.id}: sin verificar ${fallidas.map((p) => p.tema).join(', ')}: ${JSON.stringify(r.informe.entradas.filter((e) => e.resultado === 'descartar'))}`);
   partidos.push({ ...partido, programa: { ...partido.programa, hashPdf: r.informe.hashPdf } } as Partido);
   resultados.push(r);
 }
@@ -188,7 +122,7 @@ const dataset = construirDataset({
   resultados,
   generado: new Date().toISOString(),
   origen: 'simulado',
-  nota: 'Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real.',
+  nota: 'Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado).',
 });
 const v = validarDataset(dataset);
 if (!v.valido) throw new Error(`V9: ${v.errores.join('\n')}`);
