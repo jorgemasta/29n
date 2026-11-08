@@ -2,14 +2,8 @@
 // static JSON (INE municipalities), loaded lazily: provinces and islands work before it arrives.
 import type { Partida } from '../juego';
 import { crearBuscador, PROVINCIAS, provinciaPorCodigo, type Buscador, type Lugar, type Municipios } from '../registro/territorio';
+import { h } from './dom';
 
-type Hijo = Node | string | null | undefined | false;
-function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): HTMLElement {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  for (const c of hijos) if (c) el.append(c);
-  return el;
-}
 
 let buscador: Buscador = crearBuscador({ municipios: {} });
 let cargando: Promise<void> | null = null;

@@ -634,12 +634,15 @@ describe('returning visit: news', () => {
     posturas: estado === 'pendiente' ? datasetTemas.posturas.filter((p) => p.partido !== 'dos') : datasetTemas.posturas,
   });
 
+  // Private mode: with 'dos' pending, the public sources alone would leave every topic too thin to play.
+  const privado = { modo: 'privado' as const };
+
   it('announces parties that published their programme since last visit and the done topics with a new proposal', () => {
-    let p = crearPartida(conDos('pendiente'), null, 's').marcarConocidos();
+    let p = crearPartida(conDos('pendiente'), null, 's', undefined, privado).marcarConocidos();
     p = p.elegir('vivienda', 'A').elegir('empleo', NINGUNA);
     expect(p.novedades()).toEqual({ partidos: [], temas: [] });
 
-    const vuelta = crearPartida(conDos('publicado'), null, 's', JSON.parse(JSON.stringify(p.estado)));
+    const vuelta = crearPartida(conDos('publicado'), null, 's', JSON.parse(JSON.stringify(p.estado)), privado);
     const n = vuelta.novedades();
     expect(n.partidos.map((x) => x.id)).toEqual(['dos']);
     expect(n.temas.map((t) => [t.tema.id, t.nuevas])).toEqual([['vivienda', 1], ['empleo', 1]]);
@@ -649,8 +652,8 @@ describe('returning visit: news', () => {
   });
 
   it('news are announced once; topic news last until reviewed or kept', () => {
-    let p = crearPartida(conDos('pendiente'), null, 's').marcarConocidos().elegir('vivienda', 'A').elegir('empleo', 'A');
-    p = crearPartida(conDos('publicado'), null, 's', p.estado);
+    let p = crearPartida(conDos('pendiente'), null, 's', undefined, privado).marcarConocidos().elegir('vivienda', 'A').elegir('empleo', 'A');
+    p = crearPartida(conDos('publicado'), null, 's', p.estado, privado);
     const vista = p.marcarConocidos();
     expect(vista.novedades().partidos).toEqual([]);
     expect(vista.novedades().temas).toHaveLength(2);
@@ -676,3 +679,82 @@ describe('pending parties in the reveal', () => {
 
 // The client network/privacy check (engine + web make no calls; only src/web/analitica.ts hands
 // validated events to Umami) lives in tests/analitica.test.ts.
+
+describe('topics with too few proposals', () => {
+  // vivienda: only aaa proposes in play (bbb/ccc unverified or proposing nothing).
+  const escaso: Dataset = {
+    ...datasetEjemplo,
+    posturas: datasetEjemplo.posturas.map((p) =>
+      p.tema === 'vivienda' && p.partido !== 'aaa' && p.estado === 'propone'
+        ? { partido: p.partido, tema: p.tema, estado: 'no_propone', versiones: p.versiones }
+        : p,
+    ),
+  };
+
+  it('hides a topic with fewer than 2 real proposals, listing it apart ("Pocos partidos hablan de esto")', () => {
+    const p = crearPartida(escaso, '35', 's');
+    expect(p.temas().map((t) => t.id)).toEqual(['ref']);
+    const lista = p.lista();
+    expect([...lista.sugeridos, ...lista.extra].map((i) => i.tema.id)).toEqual(['ref']);
+    expect(lista.ocultos.map((t) => t.id)).toEqual(['vivienda']);
+    expect(p.siguiente()?.id).toBe('ref');
+    expect(() => p.tema('vivienda')).toThrow();
+  });
+
+  it('counts only the parties in play: a topic can be thin in one province and not in another', () => {
+    const soloIsla: Dataset = {
+      ...escaso,
+      posturas: escaso.posturas.map((p) =>
+        p.tema === 'vivienda' && p.partido === 'aaa' ? { partido: 'aaa', tema: 'vivienda', estado: 'sin_verificar', versiones: p.versiones } : p,
+      ),
+    };
+    // Only isla (35/38) and bcn (08) propose: 1 proposal in each province.
+    expect(crearPartida(soloIsla, '35', 's').lista().ocultos.map((t) => t.id)).toEqual(['vivienda']);
+    expect(crearPartida(datasetEjemplo, '35', 's').lista().ocultos).toEqual([]);
+  });
+});
+
+describe('revealed feasibility without verifiable sources', () => {
+  it('marks a note whose evaluation was published without sources (V8 gave up)', () => {
+    const conNota = (nota: typeof notaEjemplo): Dataset => ({
+      ...datasetEjemplo,
+      posturas: datasetEjemplo.posturas.map((p) => (p.partido === 'aaa' && p.tema === 'vivienda' ? { ...p, viabilidad: nota } : p)),
+    });
+    const revelada = (ds: Dataset) =>
+      crearPartida(ds, null, 's').elegir('vivienda', NINGUNA).revelar('vivienda')!.tarjetas.find((t) => t.partido.id === 'aaa')!;
+    const ev = notaEjemplo.evaluaciones[0];
+    const fuente = ev.fuentes[0]!;
+    const consenso = (fuentes: (typeof fuente)[]): typeof notaEjemplo => ({
+      ...notaEjemplo,
+      resultado: 'viable',
+      porque: 'Una.',
+      fuentes,
+      evaluaciones: [{ ...ev, fuentes }, { ...ev, fuentes }],
+    });
+    expect(revelada(conNota(consenso([fuente]))).sinFuentes).toBe(false);
+    expect(revelada(conNota(consenso([]))).sinFuentes).toBe(true);
+    // Sin consenso: one of the two evaluations has no sources.
+    expect(revelada(conNota(notaEjemplo)).sinFuentes).toBe(true);
+    // "Sin concreción" never needs sources.
+    expect(revelada(conNota({ ...consenso([]), resultado: 'sin_concrecion', evaluaciones: [{ ...ev, nivel: 'sin_concrecion', fuentes: [] }, { ...ev, nivel: 'sin_concrecion', fuentes: [] }] })).sinFuentes).toBe(false);
+  });
+});
+
+describe('Preguntar: honest states', () => {
+  it('when every party in play failed verification, it does not say that no programme talks about it', () => {
+    const p = crearPartida(datasetPreguntas, null, 's');
+    const respuestas = ['aaa', 'bbb', 'ccc', 'nada'].map((partido) => ({
+      partido,
+      pregunta: 'luz',
+      estado: 'sin_verificar' as const,
+      versiones: { prompt: 'v1' },
+    }));
+    expect(p.pregunta('luz', respuestas)).toMatchObject({ tarjetas: [], ninguno: false, sinVerificar: 4 });
+    expect(p.revelarPregunta('luz', respuestas)).toMatchObject({ tarjetas: [], ninguno: false });
+  });
+
+  it('lists the pending parties of the zone by name, like the topics', () => {
+    const r = crearPartida(datasetEjemplo, '35', 's').revelarPregunta({ id: 'libre', texto: '¿Algo?' }, []);
+    expect(r.pendientes.map((p) => [p.id, p.regional])).toEqual([['pend', false], ['penreg', true]]);
+  });
+});

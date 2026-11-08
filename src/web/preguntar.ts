@@ -4,22 +4,17 @@
 // own flag is on); otherwise it is shown disabled ("Muy pronto"). Live answers are anonymised by the
 // same engine calls (Partida.pregunta / revelarPregunta with the answers); this only renders.
 import { PREGUNTA_LIBRE_ACTIVA, preguntarEnDirecto, type RespuestaPreguntaLibre, type SinRed } from '../cliente/api';
-import type { Partida, PartidoRevelado, PreguntaVista, RevelacionPregunta, TarjetaPreguntaRevelada, VistaPregunta } from '../juego';
+import type { Partida, PreguntaVista, RevelacionPregunta, VistaPregunta } from '../juego';
 import type { RespuestaPregunta } from '../dataset/esquema';
 import { LIMITE_SESION, MAX_CARACTERES, MIN_CARACTERES } from '../pregunta/limites';
 import { chipProvincia } from './provincia';
 import { etiquetaIA } from './ia';
+import { boton, h, type Hijo } from './dom';
+import { tarjetaGris, tarjetaRevelada } from './tarjeta';
 
 /** Questions left this session, from the last answer of the function (null = not asked yet). */
 let quedan: number | null = null;
 
-type Hijo = Node | string | null | undefined | false;
-function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): HTMLElement {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  for (const c of hijos) if (c) el.append(c);
-  return el;
-}
 
 const AVISO_IA = () =>
   h('p', { class: 'nota' }, etiquetaIA(), ' Respuestas escritas por IA a partir de los programas. Comprueba la cita.');
@@ -140,11 +135,11 @@ export function vistaRespuesta(partida: Partida, preguntaId: string | PreguntaVi
       cabecera(partida, { href: '#preguntar', texto: '← Preguntas' }),
       h('p', { class: 'antetitulo' }, 'Pregunta a los programas'),
       h('h1', { tabindex: '-1' }, vista.pregunta.texto),
-      ...(revelada || vista.ninguno ? revelacion(partida.revelarPregunta(preguntaId, respuestas)) : aCiegas(vista)),
+      ...(revelada || vista.tarjetas.length === 0 ? revelacion(partida.revelarPregunta(preguntaId, respuestas)) : aCiegas(vista)),
       h('p', { class: 'nota' }, 'Esto no cuenta para tu resultado.'),
       AVISO_IA(),
       h('div', { class: 'barra-fija' },
-        revelada || vista.ninguno ? null : boton('Ver de quién es cada una', 'principal', () => pintar(true)),
+        revelada || vista.tarjetas.length === 0 ? null : boton('Ver de quién es cada una', 'principal', () => pintar(true)),
         boton('Otra pregunta', 'secundario', () => {
           if (opciones.alVolver) opciones.alVolver(seccion);
           else location.hash = 'preguntar';
@@ -178,50 +173,16 @@ function aCiegas(v: VistaPregunta): Hijo[] {
 }
 
 function revelacion(r: RevelacionPregunta): Hijo[] {
+  const aviso = (texto: string) => h('p', { class: 'aviso-zona', role: 'status' }, h('strong', {}, texto));
   return [
-    r.ninguno ? h('p', { class: 'aviso-zona', role: 'status' }, h('strong', {}, 'Ningún programa habla de esto.')) : null,
-    ...r.tarjetas.map(tarjetaRevelada),
-    ...r.noMencionan.map((p) => filaGris(p, `El programa de ${p.nombre} no lo menciona`)),
-    ...r.sinVerificar.map((p) => filaGris(p, 'No pudimos verificar su respuesta')),
+    r.ninguno ? aviso('Ningún programa habla de esto.') : null,
+    // Not the same as "nobody talks about it": some programme may, but its answer did not pass the checks.
+    !r.ninguno && r.tarjetas.length === 0 && r.sinVerificar.length
+      ? aviso(r.noMencionan.length ? 'No hay ninguna respuesta que hayamos podido verificar.' : 'No hemos podido verificar ninguna respuesta.')
+      : null,
+    ...r.tarjetas.map((t) => tarjetaRevelada(t, { abierta: true, titulo: `La ${t.letra} es de ${t.partido.nombre}` })),
+    ...r.noMencionan.map((p) => tarjetaGris(p, `El programa de ${p.nombre} no lo menciona`)),
+    ...r.sinVerificar.map((p) => tarjetaGris(p, 'No pudimos verificar su respuesta')),
     r.pendientes.length ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${r.pendientes.map((p) => p.nombre).join(', ')}`) : null,
   ];
-}
-
-function filaGris(p: PartidoRevelado, mensaje: string): HTMLElement {
-  return h('div', { class: 'sin-propuesta', role: 'note' },
-    h('span', { class: 'partido' }, p.nombre),
-    p.prueba ? h('span', { class: 'etiqueta' }, 'PRUEBA') : null,
-    h('p', {}, mensaje),
-  );
-}
-
-function tarjetaRevelada(t: TarjetaPreguntaRevelada): HTMLElement {
-  const det = h('details', { class: 'revelada', open: '' },
-    h('summary', {},
-      h('span', { class: 'letra', 'aria-hidden': 'true' }, t.letra),
-      h('span', { class: 'partido' }, `La ${t.letra} es de ${t.partido.nombre}`),
-      t.partido.prueba ? h('span', { class: 'etiqueta' }, 'PRUEBA') : null,
-      t.fuente.soloPrivado ? h('span', { class: 'etiqueta' }, 'SOLO PRIVADO') : null,
-    ),
-    h('div', { class: 'cuerpo' },
-      h('p', { class: 'titular' }, h('strong', {}, t.titular)),
-      h('p', { class: 'detalle' }, t.detalle),
-      ...t.citas.map((c) =>
-        h('blockquote', {},
-          h('p', {}, `«${c.texto}»`),
-          h('footer', {},
-            `— ${t.tituloPrograma}, pág. ${c.pagina} · `,
-            h('a', { href: c.enlace, target: '_blank', rel: 'noopener' }, 'Abrir PDF en la página ↗'),
-          ),
-        ),
-      ),
-    ),
-  );
-  return det;
-}
-
-function boton(texto: string, clase: string, alPulsar: () => void): HTMLElement {
-  const b = h('button', { type: 'button', class: clase }, texto);
-  b.addEventListener('click', alPulsar);
-  return b;
 }

@@ -4,14 +4,8 @@
 // and the comment.
 import { enviarAviso } from '../cliente/api';
 import { MAX_COMENTARIO, MOTIVOS_REPORTE, type MotivoReporte } from '../transparencia';
+import { h } from './dom';
 
-type Hijo = Node | string | null | undefined | false;
-function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): HTMLElement {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  for (const c of hijos) if (c) el.append(c);
-  return el;
-}
 
 let contador = 0;
 

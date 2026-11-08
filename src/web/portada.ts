@@ -1,14 +1,8 @@
 // First-visit home (ux-spec screen 2): the mechanics in 5 seconds, trust, and one button to start.
 // The links of the footer ("Cómo funciona" · "Partidos y programas" · "Código abierto") are the page
 // footer, shared with every screen.
+import { h } from './dom';
 
-type Hijo = Node | string | null | undefined | false;
-function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): HTMLElement {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  for (const c of hijos) if (c) el.append(c);
-  return el;
-}
 
 /** Three face-down cards A, B, C; B lights up and turns over to show a generic mark (no party). */
 function cartas(): HTMLElement {

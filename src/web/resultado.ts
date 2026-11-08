@@ -2,20 +2,9 @@
 // the engine (Partida.resultado / novedades). Nothing here leaves the browser.
 import { META_TEMAS, MAX_PRIORITARIOS, NINGUNA, type Partida, type Resultado } from '../juego';
 import { nombreProvincia } from './provincia';
+import { boton, h } from './dom';
 
-type Hijo = Node | string | null | undefined | false;
-function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): HTMLElement {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  for (const c of hijos) if (c) el.append(c);
-  return el;
-}
 
-export function boton(texto: string, clase: string, alPulsar: () => void, attrs: Record<string, string> = {}): HTMLElement {
-  const b = h('button', { type: 'button', class: clase, ...attrs }, texto);
-  b.addEventListener('click', alPulsar);
-  return b;
-}
 
 const enlace = (texto: string, href: string, clase = '') => h('a', { href, class: clase }, texto);
 

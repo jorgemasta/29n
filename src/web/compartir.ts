@@ -13,16 +13,9 @@ import {
   type Formato,
   type Variante,
 } from '../compartir';
-import { boton } from './resultado';
 import { analiticaCompartir } from './analitica';
+import { boton, h } from './dom';
 
-type Hijo = Node | string | null | undefined | false;
-function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): HTMLElement {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  for (const c of hijos) if (c) el.append(c);
-  return el;
-}
 
 // Card colours: cream background, black ink, the app's petrol accent. Never a party colour.
 const CREMA = '#f6f1e6';

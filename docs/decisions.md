@@ -6,12 +6,14 @@ Cerradas en la sesión de *grilling* del 8-nov-2026. El detalle de la UX está e
 - **Elección**: generales de España, 29-nov-2026. La campaña va del 13 al 27-nov y el último día para publicar sondeos es el 23-nov.
 - **Núcleo: elegir a ciegas.** Para cada tema se muestran de 4 a 8 posturas anónimas (letras y orden aleatorio por usuario). El usuario elige una o "Ninguna me convence". Después se revela el partido de cada postura, con la cita literal, el enlace al PDF y la nota de viabilidad.
 - **Afinidad**: conteo simple de elecciones, con la opción de marcar 3 temas prioritarios (que valen el doble). Se enseña el ranking completo con porcentajes y aparece a partir de 5 temas.
-- **Apuesta opcional** ("¿de quién crees que es?"). Se mide la tasa de acierto agregada por tema; si pasa del 60 %, hay que reescribir la neutralización de ese tema.
+- **Apuesta opcional** ("¿de quién crees que es?"). Se mide la tasa de acierto agregada por tema; si pasa del 60 %, hay que reescribir la neutralización de ese tema. Solo cuenta a partir de 30 apuestas en el tema (`MINIMO_APUESTAS`): con menos, unas pocas pruebas de amigos dispararían el aviso. Explicado en la metodología.
 - **Pregunta libre**: pestaña aparte con preguntas sugeridas como chips. Responde solo desde los programas y siempre con cita; si no hay base, lo dice claramente.
   - 13-nov: solo 7 preguntas sugeridas, con la respuesta generada de antemano.
   - Hacia el 18-nov: se abre la caja de texto libre.
 - **Neutralización**: la postura se reescribe con una plantilla común (qué propone, cómo y cifra) y una longitud similar. La cita literal solo aparece después de revelar.
 - **Si un partido no propone nada**: se muestra la tarjeta "Este partido no propone nada sobre esto".
+- **Temas con menos de 2 propuestas** entre los partidos de la zona: no se juegan (no hay nada que elegir a ciegas). Se listan aparte con la nota "Pocos partidos hablan de esto" y no cuentan para el resultado.
+- **Pregunta sin respuestas verificadas**: si ningún programa responde pero alguno no se pudo verificar, no se dice "Ningún programa habla de esto", sino que no hemos podido verificar ninguna respuesta.
 
 ## Partidos y fuentes
 - **Criterio de inclusión**: candidatura proclamada en la provincia del usuario y representación actual en el Congreso o en el parlamento autonómico.
@@ -33,6 +35,7 @@ Cerradas en la sesión de *grilling* del 8-nov-2026. El detalle de la UX está e
 - **Proceso**: 100 % IA, sin revisión humana, y así se declara en la web. El evaluador no sabe de qué partido es la medida. Se hacen dos evaluaciones; si no coinciden, se marca "sin consenso".
 - **Cuándo se ve**: solo después de elegir. Sin semáforo de colores.
 - **Transparencia**: se publica el reparto de notas por partido desde el lanzamiento, con explicación.
+- **Fuentes (V8)**: una evaluación cuyas fuentes no pasan (dominio institucional + HTTP 200) se repite hasta 2 veces. Si sigue sin fuentes, se publica igualmente, porque la valoración por criterios sigue siendo útil, pero la tarjeta lo dice («Sin fuentes verificables») y queda en el informe.
 
 ## Verificación automática
 1. Cada cita literal debe aparecer en el PDF; la comprobación es un script, no IA. Si no aparece, la postura se descarta.

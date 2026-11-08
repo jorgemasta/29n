@@ -57,7 +57,12 @@ export interface ListaTemas {
   sugeridos: ItemTema[];
   /** The rest, alphabetically. */
   extra: ItemTema[];
+  /** Hidden: fewer than MIN_PROPUESTAS real proposals here ("Pocos partidos hablan de esto"). */
+  ocultos: Tema[];
 }
+
+/** A topic needs this many proposals among the parties in play to be played (ux-spec §4). */
+export const MIN_PROPUESTAS = 2;
 
 export interface Tarjeta {
   letra: string;
@@ -81,15 +86,21 @@ export interface PartidoRevelado {
   prueba: boolean;
 }
 
-export interface TarjetaRevelada extends Tarjeta {
+/** Who wrote a card, with its quotes linked to the PDF page (topics and questions alike). */
+export interface TarjetaDePartido extends Tarjeta {
   partido: PartidoRevelado;
-  elegida: boolean;
   citas: { texto: string; pagina: number; enlace: string }[];
   tituloPrograma: string;
-  /** Blind feasibility note (V13); null if the postura has none. Only shown after choosing. */
-  viabilidad: NotaViabilidad | null;
   /** Source type; provisional sources are marked "solo privado". */
   fuente: { tipo: TipoFuente; soloPrivado: boolean };
+}
+
+export interface TarjetaRevelada extends TarjetaDePartido {
+  elegida: boolean;
+  /** Blind feasibility note (V13); null if the postura has none. Only shown after choosing. */
+  viabilidad: NotaViabilidad | null;
+  /** The note's argument was published without verifiable sources (V8 gave up after its repeats). */
+  sinFuentes: boolean;
 }
 
 export interface Revelacion {
@@ -178,17 +189,13 @@ export interface VistaPregunta {
   tarjetas: Tarjeta[];
   /** Parties in play whose programme does not mention it. */
   noMencionan: number;
-  /** No programme in play talks about it: "Ningún programa habla de esto". */
+  /** Parties whose answer could not be verified ("No pudimos verificar su respuesta"). */
+  sinVerificar: number;
+  /** No programme in play talks about it: "Ningún programa habla de esto" (none unverified either). */
   ninguno: boolean;
 }
 
-export interface TarjetaPreguntaRevelada extends Tarjeta {
-  partido: PartidoRevelado;
-  citas: { texto: string; pagina: number; enlace: string }[];
-  tituloPrograma: string;
-  /** Source type; provisional sources are marked "solo privado". */
-  fuente: { tipo: TipoFuente; soloPrivado: boolean };
-}
+export type TarjetaPreguntaRevelada = TarjetaDePartido;
 
 /** Preguntar, after "Ver de quién es cada una". No feasibility note; does not count for the result. */
 export interface RevelacionPregunta {
@@ -198,7 +205,7 @@ export interface RevelacionPregunta {
   noMencionan: PartidoRevelado[];
   /** "No pudimos verificar su respuesta". */
   sinVerificar: PartidoRevelado[];
-  pendientes: PartidoRevelado[];
+  pendientes: PartidoZona[];
   ninguno: boolean;
 }
 
@@ -208,7 +215,7 @@ export interface Partida {
   readonly provincia: string | null;
   /** Parties in play here, alphabetically by name. */
   partidos(): PartidosZona;
-  /** Topics for this province, in their fixed order. */
+  /** Playable topics for this province, in their fixed order (thin topics are hidden). */
   temas(): Tema[];
   tema(temaId: string): VistaTema;
   /** Choose a card by letter, or NINGUNA ("Ninguna me convence"), with an optional bet. */
@@ -239,7 +246,7 @@ export interface Partida {
   posicion(temaId: string): Posicion;
   /** Next topic not done yet in the fixed order, after `temaId` (wrapping); null if all done. */
   siguiente(temaId?: string): Tema | null;
-  /** Topic list: 5 suggested topics first, then the extra ones alphabetically. */
+  /** Topic list: 5 suggested topics first, then the extra ones alphabetically, then the hidden ones. */
   lista(): ListaTemas;
   /** Suggested questions of the Preguntar tab, in their fixed order. */
   preguntas(): Pregunta[];
@@ -270,9 +277,11 @@ export function crearPartida(
   const pendientes = partidosZona.filter((p) => p.programa.estado === 'pendiente');
   const porId = new Map(publicados.map((p) => [p.id, p]));
   const esCanarias = provincia !== null && PROVINCIAS_CANARIAS.includes(provincia);
-  const temas = dataset.temas
-    .filter((t) => t.ambito === 'nacional' || esCanarias)
-    .sort((a, b) => a.orden - b.orden);
+  const propuestasEn = (temaId: string) =>
+    dataset.posturas.filter((p) => p.tema === temaId && p.estado === 'propone' && porId.has(p.partido)).length;
+  const deLaZona = dataset.temas.filter((t) => t.ambito === 'nacional' || esCanarias).sort((a, b) => a.orden - b.orden);
+  const temas = deLaZona.filter((t) => propuestasEn(t.id) >= MIN_PROPUESTAS);
+  const ocultos = deLaZona.filter((t) => !temas.includes(t));
 
   const buscarTema = (temaId: string) => {
     const tema = temas.find((t) => t.id === temaId);
@@ -324,6 +333,19 @@ export function crearPartida(
   };
 
   const zona = (p: Partido): PartidoZona => ({ ...revelarPartido(p), regional: p.ambito.tipo === 'provincias' });
+  /** A card with its author revealed: party, programme title and quotes linked to their PDF page. */
+  const conPartido = (tarjeta: Tarjeta, id: string, citas: { texto: string; pagina: number }[]): TarjetaDePartido => {
+    const partido = porId.get(id)!;
+    const programa = partido.programa.estado === 'publicado' ? partido.programa : null;
+    const tipo = fuenteDe(partido)!;
+    return {
+      ...tarjeta,
+      partido: revelarPartido(partido),
+      tituloPrograma: programa?.titulo ?? '',
+      citas: citas.map((c) => ({ ...c, enlace: `${programa?.url ?? ''}#page=${c.pagina}` })),
+      fuente: { tipo, soloPrivado: esSoloPrivado(tipo) },
+    };
+  };
   const porNombre = (a: PartidoRevelado, b: PartidoRevelado) => a.nombre.localeCompare(b.nombre, 'es');
   const pendientesZona = () => pendientes.map(zona).sort(porNombre);
   /** Same dataset, province and options; new state. */
@@ -337,8 +359,6 @@ export function crearPartida(
     const vistas = estado.vistas?.[temaId];
     return vistas ? partidosConTarjeta(temaId).filter((id) => !vistas.includes(id)).length : 0;
   };
-  /** Choice for a topic, ignoring parties no longer in play here (they add to no one). */
-  const eleccionDe = (temaId: string) => estado.elecciones[temaId];
 
   return {
     estado,
@@ -390,7 +410,7 @@ export function crearPartida(
     },
     barajarOtraVez(temaId) {
       buscarTema(temaId);
-      if (eleccionDe(temaId) !== undefined) throw new Error(`Ya has elegido en ${temaId}: usa «Volver a elegir»`);
+      if (estado.elecciones[temaId] !== undefined) throw new Error(`Ya has elegido en ${temaId}: usa «Volver a elegir»`);
       return con({ barajados: { ...estado.barajados, [temaId]: (estado.barajados?.[temaId] ?? 0) + 1 } });
     },
     marcarPrioritario(temaId, marcado) {
@@ -405,7 +425,7 @@ export function crearPartida(
     prioritarios,
     revelar(temaId) {
       const tema = buscarTema(temaId);
-      const eleccion = eleccionDe(temaId);
+      const eleccion = estado.elecciones[temaId];
       if (eleccion === undefined) return null;
       const lista = barajadas(temaId);
       const conEstado = (e: Postura['estado']) =>
@@ -414,19 +434,12 @@ export function crearPartida(
       return {
         tema,
         eleccion: eleccion === NINGUNA ? NINGUNA : (lista.find((b) => b.postura.partido === eleccion)?.tarjeta.letra ?? NINGUNA),
-        tarjetas: lista.map(({ postura, tarjeta }) => {
-          const partido = porId.get(postura.partido)!;
-          const url = partido.programa.estado === 'publicado' ? partido.programa.url : '';
-          return {
-            ...tarjeta,
-            partido: revelarPartido(partido),
-            elegida: postura.partido === eleccion,
-            tituloPrograma: partido.programa.estado === 'publicado' ? partido.programa.titulo : '',
-            citas: postura.citas.map((c) => ({ ...c, enlace: `${url}#page=${c.pagina}` })),
-            viabilidad: postura.viabilidad ?? null,
-            fuente: { tipo: fuenteDe(partido)!, soloPrivado: esSoloPrivado(fuenteDe(partido)!) },
-          };
-        }),
+        tarjetas: lista.map(({ postura, tarjeta }) => ({
+          ...conPartido(tarjeta, postura.partido, postura.citas),
+          elegida: postura.partido === eleccion,
+          viabilidad: postura.viabilidad ?? null,
+          sinFuentes: postura.viabilidad ? sinFuentes(postura.viabilidad) : false,
+        })),
         sinPropuesta: conEstado('no_propone'),
         sinVerificar: conEstado('sin_verificar'),
         pendientes: pendientesZona(),
@@ -456,12 +469,13 @@ export function crearPartida(
     },
     lista() {
       const item = (tema: Tema): ItemTema => {
-        const e = eleccionDe(tema.id);
+        const e = estado.elecciones[tema.id];
         return { tema, estado: e === undefined ? 'sin_empezar' : e === NINGUNA ? 'ninguna' : 'hecho', nuevas: nuevasEn(tema.id) };
       };
       return {
         sugeridos: temas.slice(0, META_TEMAS).map(item),
         extra: temas.slice(META_TEMAS).sort((a, b) => a.titulo.localeCompare(b.titulo, 'es')).map(item),
+        ocultos,
       };
     },
     preguntas: () => preguntas,
@@ -471,28 +485,19 @@ export function crearPartida(
         pregunta,
         tarjetas: barajadas.map((b) => b.tarjeta),
         noMencionan: conEstado('no_menciona').length,
-        ninguno: barajadas.length === 0,
+        sinVerificar: conEstado('sin_verificar').length,
+        ninguno: barajadas.length === 0 && conEstado('sin_verificar').length === 0,
       };
     },
     revelarPregunta(q, dadas) {
       const { pregunta, barajadas, conEstado } = respuestasDe(q, dadas);
       return {
         pregunta,
-        tarjetas: barajadas.map(({ respuesta, tarjeta }) => {
-          const partido = porId.get(respuesta.partido)!;
-          const url = partido.programa.estado === 'publicado' ? partido.programa.url : '';
-          return {
-            ...tarjeta,
-            partido: revelarPartido(partido),
-            tituloPrograma: partido.programa.estado === 'publicado' ? partido.programa.titulo : '',
-            citas: respuesta.citas.map((c) => ({ ...c, enlace: `${url}#page=${c.pagina}` })),
-            fuente: { tipo: fuenteDe(partido)!, soloPrivado: esSoloPrivado(fuenteDe(partido)!) },
-          };
-        }),
+        tarjetas: barajadas.map(({ respuesta, tarjeta }) => conPartido(tarjeta, respuesta.partido, respuesta.citas)),
         noMencionan: conEstado('no_menciona'),
         sinVerificar: conEstado('sin_verificar'),
-        pendientes: pendientes.map(revelarPartido),
-        ninguno: barajadas.length === 0,
+        pendientes: pendientesZona(),
+        ninguno: barajadas.length === 0 && conEstado('sin_verificar').length === 0,
       };
     },
     resultado() {
@@ -502,7 +507,7 @@ export function crearPartida(
       const puntos = new Map<string, { puntos: number; temas: number }>();
       let ninguna = 0;
       for (const t of hechosIds) {
-        const e = eleccionDe(t)!;
+        const e = estado.elecciones[t]!;
         if (e === NINGUNA) ninguna++;
         else if (porId.has(e)) {
           const p = puntos.get(e) ?? { puntos: 0, temas: 0 };
@@ -525,10 +530,10 @@ export function crearPartida(
           });
 
       const apostados = hechosIds.filter((t) => estado.apuestas?.[t] !== undefined);
-      const falladas = apostados.filter((t) => estado.apuestas![t] !== eleccionDe(t));
+      const falladas = apostados.filter((t) => estado.apuestas![t] !== estado.elecciones[t]);
       const sorpresas = new Map<string, Tema[]>();
       for (const t of falladas) {
-        const e = eleccionDe(t)!;
+        const e = estado.elecciones[t]!;
         if (porId.has(e)) sorpresas.set(e, [...(sorpresas.get(e) ?? []), buscarTema(t)]);
       }
       return {
@@ -585,12 +590,12 @@ export function crearPartida(
     const lista = hechos();
     const hasta = lista.slice(0, lista.indexOf(temaId) + 1);
     if (hasta.length === 1) return { tipo: 'primera' };
-    const e = eleccionDe(temaId)!;
+    const e = estado.elecciones[temaId]!;
     if (e === NINGUNA || !porId.has(e)) return null;
-    const antes = hasta.slice(0, -1).map(eleccionDe);
+    const antes = hasta.slice(0, -1).map((t) => estado.elecciones[t]);
     if (!antes.includes(e)) return { tipo: 'partido_nuevo', partido: revelarPartido(porId.get(e)!) };
     if (hasta.length < 3) return null;
-    const distintos = new Set(hasta.map(eleccionDe).filter((x): x is string => x !== NINGUNA && x !== undefined && porId.has(x)));
+    const distintos = new Set(hasta.map((t) => estado.elecciones[t]).filter((x): x is string => x !== NINGUNA && x !== undefined && porId.has(x)));
     return { tipo: 'distintos', temas: hasta.length, partidos: distintos.size };
   }
 }
@@ -602,6 +607,17 @@ function aTarjeta(p: { texto: PosturaPropone['texto'] }, letra: string): Tarjeta
     titular: p.texto.que,
     detalle: p.texto.cifra ? `${p.texto.como} Cifra: ${p.texto.cifra}.` : p.texto.como,
   };
+}
+
+/**
+ * The published argument lacks verifiable sources: V8 gave up after its repeats. With consensus,
+ * the published argument has none; without it, one of the two evaluations has none.
+ * "Sin concreción" never needs sources.
+ */
+function sinFuentes(nota: NotaViabilidad): boolean {
+  if (nota.resultado === 'sin_concrecion') return false;
+  if (nota.resultado === 'sin_consenso') return nota.evaluaciones.some((e) => e.nivel !== 'sin_concrecion' && e.fuentes.length === 0);
+  return nota.fuentes.length === 0;
 }
 
 function revelarPartido(p: Partido): PartidoRevelado {

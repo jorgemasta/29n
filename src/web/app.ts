@@ -2,7 +2,7 @@
 // logic lives in the game engine; this file only renders and routes (#portada, #provincia, #inicio,
 // #temas, #tema/<id>, #resultado, #compartir, #preguntar[/<id>], #datos) and drives the bottom tab bar
 // (static in index.astro). Choices, bets and the result never leave the browser.
-import type { Dataset, Modo, TipoFuente } from '../dataset/esquema';
+import type { Dataset, Modo } from '../dataset/esquema';
 import { textoPortadaReto } from '../compartir';
 import {
   crearPartida,
@@ -12,7 +12,6 @@ import {
   type EstadoPartida,
   type ItemTema,
   type Partida,
-  type PartidoRevelado,
   type Recorrido,
   type Revelacion,
   type TarjetaRevelada,
@@ -21,7 +20,7 @@ import { nuevaSemilla } from '../juego/azar';
 import { almacenamientoDisponible, borrar, guardar, leer } from './almacen';
 import { vistaPreguntas, vistaRespuesta } from './preguntar';
 import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
-import { boton, empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
+import { empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
 import { etiquetaIA } from './ia';
 import { botonReportar } from './reportar';
@@ -30,6 +29,9 @@ import { crearLector } from './escuchar';
 import { CLAVE_LETRA, letraGrande } from './letra';
 import { analiticaConfirmar, analiticaResultado, analiticaVerTema, configurarAnalitica } from './analitica';
 import { avisoReto, vistaCompartir } from './compartir';
+import { boton, h, type Hijo } from './dom';
+import { ETIQUETA_FUENTE } from './etiquetas';
+import { tarjetaGris, tarjetaRevelada } from './tarjeta';
 
 const CLAVE_SEMILLA = '29n:semilla';
 const CLAVE_ESTADO = '29n:estado';
@@ -45,20 +47,6 @@ const DURACION_AVISO_ZONA = 2000;
 const SIN_PESTANAS = new Set(['portada', 'provincia']);
 type Preferencias = { sinApuesta?: boolean; ayudaVista?: boolean };
 
-export const ETIQUETA_FUENTE: Record<TipoFuente, string> = {
-  'programa-29n': 'Programa 29N',
-  'programa-2023': 'Programa de 2023',
-  'documento-partido': 'Documento del partido',
-  declaraciones: 'Declaraciones públicas',
-};
-
-type Hijo = Node | string | null | undefined | false;
-function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): HTMLElement {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  for (const c of hijos) if (c) el.append(c);
-  return el;
-}
 
 const irA = (ruta: string) => {
   location.hash = ruta;
@@ -112,6 +100,12 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     if (b) b.replaceChildren(...etiquetaEscuchar(leyendo));
   };
 
+  /** The next pending topic, or the list when every topic is done. */
+  const irASiguiente = () => {
+    const s = partida.siguiente();
+    irA(s ? `tema/${s.id}` : 'temas');
+  };
+
   const pintar = (enfocar: string | null = 'h1') => {
     const ruta = location.hash.slice(1);
     const temaId = ruta.startsWith('tema/') ? decodeURIComponent(ruta.slice(5)) : null;
@@ -131,11 +125,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     else if (!inicioMostrado && partida.hechos().length > 0) {
       inicioMostrado = true;
       return irA('inicio');
-    } else {
-      // Start: straight to the next pending topic (vivienda first), or the list if all are done.
-      const siguiente = partida.siguiente();
-      return irA(siguiente ? `tema/${siguiente.id}` : 'temas');
-    }
+    } else return irASiguiente(); // start: the next pending topic (vivienda first), or the list if all are done
     if (mostrarAviso && ruta !== 'provincia') {
       // Once, on the screen after choosing: who is in play here. It goes away after ~2 s.
       const aviso = avisoZona(partida);
@@ -166,12 +156,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     // Parties of the new zone are shown right away (avisoZona), so they are not "news" later.
     actualizar(nueva(partida.estado).marcarConocidos());
     mostrarAviso = true;
-    const siguiente = partida.siguiente();
-    irA(siguiente ? `tema/${siguiente.id}` : 'temas');
-  };
-  const irASiguiente = () => {
-    const s = partida.siguiente();
-    irA(s ? `tema/${s.id}` : 'temas');
+    irASiguiente();
   };
   const borrarTodo = () => {
     for (const c of CLAVES) borrar(c);
@@ -256,6 +241,13 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       h('ol', { class: 'filas', role: 'list' }, ...lista.sugeridos.map(fila)),
       lista.extra.length ? h('h2', {}, 'Temas extra') : null,
       lista.extra.length ? h('ul', { class: 'filas', role: 'list' }, ...lista.extra.map(fila)) : null,
+      lista.ocultos.length
+        ? h('div', { class: 'temas-ocultos' },
+            h('h2', {}, 'Pocos partidos hablan de esto'),
+            h('p', { class: 'gris' }, 'Menos de dos partidos de tu zona hacen una propuesta sobre estos temas, así que no hay nada que elegir a ciegas.'),
+            h('ul', { class: 'filas', role: 'list' },
+              ...lista.ocultos.map((t) => h('li', { class: 'fila-tema oculto' }, h('span', { class: 'nombre' }, t.titulo)))))
+        : null,
       bloquePartidos(partida),
       partida.preguntas().length
         ? h('p', {}, h('a', { href: '#preguntar', class: 'fila-tema' }, h('span', { class: 'nombre' }, 'Pregunta a los programas'), h('span', { class: 'estado' }, '→')))
@@ -395,11 +387,11 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
             h('p', {}, nuevas === 1 ? 'Hay una propuesta nueva. ¿Sigues prefiriendo la misma?' : `Hay ${nuevas} propuestas nuevas. ¿Sigues prefiriendo la misma?`),
             boton('Volver a elegir', 'secundario', volverAElegir))
         : null,
-      mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), enCascada(tarjetaRevelada(mia, true, r.tema))) : null,
+      mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), enCascada(tarjetaTema(mia, true, r.tema))) : null,
       otras.length ? h('h2', {}, mia ? 'Las demás' : 'Todas las propuestas') : null,
-      ...otras.map((t) => enCascada(tarjetaRevelada(t, false, r.tema))),
-      ...r.sinPropuesta.map((p) => enCascada(tarjetaSinPropuesta(p, 'Este partido no propone nada sobre esto'))),
-      ...r.sinVerificar.map((p) => enCascada(tarjetaSinPropuesta(p, 'No pudimos verificar su propuesta'))),
+      ...otras.map((t) => enCascada(tarjetaTema(t, false, r.tema))),
+      ...r.sinPropuesta.map((p) => enCascada(tarjetaGris(p, 'Este partido no propone nada sobre esto'))),
+      ...r.sinVerificar.map((p) => enCascada(tarjetaGris(p, 'No pudimos verificar su propuesta'))),
       r.pendientes.length
         ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${unir(r.pendientes.map((p) => p.nombre))}. `,
             'Mientras falte, no aparece en los temas ni en tu resultado. ', h('a', { href: '/partidos/' }, 'Partidos y programas'))
@@ -521,41 +513,16 @@ function cabecera(partida: Partida, temaId: string): HTMLElement {
   );
 }
 
-/** Grey, non-interactive card: these parties have no card to choose in the blind phase. */
-function tarjetaSinPropuesta(p: PartidoRevelado, mensaje: string): HTMLElement {
-  return h('div', { class: 'sin-propuesta', role: 'note' },
-    h('span', { class: 'partido' }, p.nombre),
-    p.prueba ? h('span', { class: 'etiqueta' }, 'PRUEBA') : null,
-    h('p', {}, mensaje),
-  );
-}
-
-function tarjetaRevelada(t: TarjetaRevelada, abierta: boolean, tema: { id: string; titulo: string }): HTMLElement {
+/** A topic's revealed card: source line, feasibility note and "¿Algo no cuadra?" under the quotes. */
+function tarjetaTema(t: TarjetaRevelada, abierta: boolean, tema: { id: string; titulo: string }): HTMLElement {
   const fuente = `${ETIQUETA_FUENTE[t.fuente.tipo]}${t.fuente.soloPrivado ? ' · solo privado' : ''}`;
-  const cuerpo = h('div', { class: 'cuerpo' },
-    h('p', { class: 'titular' }, h('strong', {}, t.titular)),
-    h('p', { class: 'detalle' }, t.detalle),
-    ...t.citas.map((c) =>
-      h('blockquote', {},
-        h('p', {}, `«${c.texto}»`),
-        h('footer', {},
-          `— ${t.tituloPrograma}, pág. ${c.pagina} · `,
-          h('a', { href: c.enlace, target: '_blank', rel: 'noopener' }, 'Abrir PDF en la página ↗'),
-        ),
-      ),
-    ),
-    h('p', { class: `fuente${t.fuente.soloPrivado ? ' provisional' : ''}` }, `Fuente: ${fuente}`),
-    notaViabilidad(t.viabilidad),
-    botonReportar({ tema, partido: t.partido, letra: t.letra, paginas: t.citas.map((c) => c.pagina) }),
-  );
-  const resumen = h('summary', {},
-    h('span', { class: 'letra', 'aria-hidden': 'true' }, t.letra),
-    h('span', { class: 'partido' }, t.partido.nombre),
-    t.partido.prueba ? h('span', { class: 'etiqueta' }, 'PRUEBA') : null,
-    t.fuente.soloPrivado ? h('span', { class: 'etiqueta' }, 'SOLO PRIVADO') : null,
-    chipViabilidad(t.viabilidad),
-  );
-  const det = h('details', { class: 'revelada' }, resumen, cuerpo);
-  if (abierta) det.setAttribute('open', '');
-  return det;
+  return tarjetaRevelada(t, {
+    abierta,
+    chips: [chipViabilidad(t.viabilidad)],
+    extra: [
+      h('p', { class: `fuente${t.fuente.soloPrivado ? ' provisional' : ''}` }, `Fuente: ${fuente}`),
+      notaViabilidad(t.viabilidad, t.sinFuentes),
+      botonReportar({ tema, partido: t.partido, letra: t.letra, paginas: t.citas.map((c) => c.pagina) }),
+    ],
+  });
 }

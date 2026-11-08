@@ -3,16 +3,10 @@
 import type { Evaluacion, Fuente, NotaViabilidad } from '../dataset/esquema';
 import { CRITERIOS, FUERA_DE_ESCALA, NIVELES, nombreNivel } from '../registro/rubrica';
 import { etiquetaIA } from './ia';
+import { h } from './dom';
 
 export const URL_RUBRICA = '/rubrica/';
 
-type Hijo = Node | string | null | undefined | false;
-function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): HTMLElement {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  for (const c of hijos) if (c) el.append(c);
-  return el;
-}
 
 /** Short chip for the card header: "Viable con matices · IA". */
 export function chipViabilidad(nota: NotaViabilidad | null): HTMLElement | null {
@@ -20,8 +14,11 @@ export function chipViabilidad(nota: NotaViabilidad | null): HTMLElement | null 
   return h('span', { class: 'chip-viabilidad' }, `${nombreCorto(nota)} · IA`);
 }
 
-/** Full note: scale, "por qué" with sources, rubric reasons and method box. */
-export function notaViabilidad(nota: NotaViabilidad | null): HTMLElement | null {
+/**
+ * Full note: scale, "por qué" with sources, rubric reasons and method box. `sinFuentes`: the argument
+ * was published without verifiable sources (V8 gave up after its repeats); said up front.
+ */
+export function notaViabilidad(nota: NotaViabilidad | null, sinFuentes = false): HTMLElement | null {
   if (!nota) return null;
   const consenso = nota.resultado !== 'sin_consenso';
   const publicada = consenso ? (nota.evaluaciones.find((e) => e.porque === nota.porque) ?? nota.evaluaciones[0]) : null;
@@ -29,6 +26,10 @@ export function notaViabilidad(nota: NotaViabilidad | null): HTMLElement | null 
     h('h3', {}, 'Viabilidad ', etiquetaIA('/metodologia/#viabilidad')),
     escala(nota),
     h('p', { class: 'nivel' }, h('strong', {}, `${nombreNivel(nota.resultado)}: `), explicacion(nota)),
+    sinFuentes
+      ? h('p', { class: 'sin-fuentes' }, h('strong', {}, 'Sin fuentes verificables. '),
+          'La IA no aportó fuentes institucionales que pudiéramos comprobar, ni al repetir la evaluación. Tómalo con más cautela.')
+      : null,
     publicada
       ? porque(publicada.porque, nota.fuentes)
       : h('div', { class: 'argumentos' },
@@ -79,7 +80,7 @@ function porque(texto: string, fuentes: Fuente[]): HTMLElement {
     fuentes.length
       ? h('ul', { class: 'fuentes', 'aria-label': 'Fuentes' },
           ...fuentes.map((f) => h('li', {}, h('a', { href: f.url, target: '_blank', rel: 'noopener' }, `${f.titulo} ↗`))))
-      : h('p', { class: 'gris' }, 'Sin fuentes verificadas.'),
+      : h('p', { class: 'gris' }, 'Sin fuentes verificables.'),
   );
 }
 

@@ -20,6 +20,8 @@ const CORTO: Record<string, string> = {
   sin_concrecion: 'Sin concreción', sin_consenso: 'Sin consenso', sin_nota: 'Sin nota', no_propone: '—', sin_verificar: 'No verificada', sin_dato: '·',
 };
 const temasConDatos = reparto.porTema.filter((t) => t.celdas.some((c) => c !== 'sin_dato'));
+import { MAX_REPETICIONES_VIABILIDAD } from '../pipeline/viabilidad';
+import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
 ---
 <PaginaInfo titulo="Cómo funciona" descripcion="Metodología de 29N: de dónde salen las propuestas, cómo se verifican y cómo se valora la viabilidad.">
   <h1>Cómo funciona</h1>
@@ -75,6 +77,16 @@ const temasConDatos = reparto.porTema.filter((t) => t.celdas.some((c) => c !== '
     La viabilidad dice qué haría falta para aplicar una propuesta, no si es buena idea. Dos evaluaciones de IA
     independientes la valoran con una rúbrica pública de cinco criterios, sin saber de qué partido es.
     Si no coinciden, se publica «sin consenso» con los dos argumentos.
+  </p>
+  <p>
+    Cada fuente del «por qué» debe ser de un dominio institucional y responder al comprobarla (V8); si no, se quita.
+    Una evaluación que se queda sin fuentes se repite hasta {MAX_REPETICIONES_VIABILIDAD} veces. Si sigue sin ellas, se publica igualmente
+    (la valoración sigue siendo útil) y la tarjeta lo dice: «Sin fuentes verificables».
+  </p>
+  <p id="apuestas">
+    La apuesta opcional («¿de quién crees que es?») se cuenta de forma anónima por tema. Si en un tema se acierta más del
+    {UMBRAL_ACIERTO * 100} % de las veces, sus textos no son lo bastante neutrales y se abre una incidencia para reescribirlos.
+    Solo se mira a partir de {MINIMO_APUESTAS} apuestas en el tema: con menos, el porcentaje es ruido.
   </p>
   <p><a href="/rubrica/">Rúbrica completa, niveles, fuentes permitidas e instrucciones →</a></p>
 

@@ -114,7 +114,8 @@ describe('pregunta libre: answers', () => {
     const r = await servicio.preguntar({ pregunta: '¿Qué dicen del servicio militar obligatorio?', sesion: 's1' });
     if (r.estado !== 'ok') throw new Error(r.estado);
     expect(r.respuestas.every((x) => x.estado !== 'responde')).toBe(true);
-    expect(crearPartida(dataset, null, 's').pregunta(r.pregunta, r.respuestas).ninguno).toBe(true);
+    // ccc and nada have no usable text: unverified, so it cannot claim that no programme talks about it.
+    expect(crearPartida(dataset, null, 's').pregunta(r.pregunta, r.respuestas)).toMatchObject({ tarjetas: [], ninguno: false, sinVerificar: 2 });
     expect(llamadasResponder(ia)).toHaveLength(0);
   });
 
