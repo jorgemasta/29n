@@ -8,7 +8,7 @@ import { BARRERAS } from '../../registro/barreras';
 export function getStaticPaths() {
   return dataset.informes.map((informe) => ({ params: { partido: informe.partido }, props: { informe } }));
 }
-const r = resumenInforme(Astro.props.informe, dataset.temas);
+const r = resumenInforme(Astro.props.informe, dataset.temas, dataset.preguntas);
 const i = r.informe;
 const partido = dataset.partidos.find((p) => p.id === i.partido);
 const programa = partido?.programa.estado === 'publicado' ? partido.programa : null;
@@ -50,5 +50,19 @@ const RESULTADO: Record<string, string> = { pasa: 'pasa', corregir: 'corregido',
       </ul>
     </details>
   ))}
+  {r.preguntas.length > 0 && (
+    <>
+      <h2>Respuestas a las preguntas sugeridas</h2>
+      <p>Lo que se comprobó en cada respuesta de la pestaña Preguntar. Estas respuestas no cuentan para publicar o bloquear el programa.</p>
+      {r.preguntas.map((p) => (
+        <details class="informe-tema">
+          <summary>{p.pregunta.texto}</summary>
+          <ul class="entradas">
+            {p.entradas.map((e) => <li title={BARRERAS[e.barrera].descripcion}><strong>{e.barrera} · {e.nombre}</strong>: {RESULTADO[e.resultado]}. <span class="gris">{e.detalle}</span></li>)}
+          </ul>
+        </details>
+      ))}
+    </>
+  )}
   <p class="gris">El informe completo en JSON está en el <a href={enlaceRepo('data/dataset.json')}>dataset publicado</a>.</p>
 </PaginaInfo>

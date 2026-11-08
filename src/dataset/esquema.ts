@@ -114,11 +114,37 @@ export const Postura = z.discriminatedUnion('estado', [
   z.object({ ...basePostura, estado: z.literal('sin_verificar') }),
 ]);
 
+/**
+ * Suggested question of the "Preguntar" tab. `palabrasClave` are the public search terms used to
+ * find the candidate pages of each programme ("cómo lo buscamos").
+ */
+export const Pregunta = z.object({
+  id,
+  texto: z.string().min(1),
+  palabrasClave: z.array(z.string().min(1)).min(1),
+  /** Fixed order of the suggestion buttons. */
+  orden: z.number().int(),
+});
+
+const baseRespuesta = { partido: id, pregunta: id, versiones: Versiones };
+
+/** One party's answer to one question (precomputed by the pipeline, or live in #15). */
+export const RespuestaPregunta = z.discriminatedUnion('estado', [
+  /** Same template as a postura (que / como / cifra) and same barriers: V1, V3–V6, V10. */
+  z.object({ ...baseRespuesta, estado: z.literal('responde'), texto: TextoNeutral, citas: z.array(Cita).min(1) }),
+  /** "El programa de X no lo menciona". */
+  z.object({ ...baseRespuesta, estado: z.literal('no_menciona') }),
+  /** It talks about it, but no answer passed the barriers: "No pudimos verificar su respuesta". */
+  z.object({ ...baseRespuesta, estado: z.literal('sin_verificar') }),
+]);
+
 export const Barrera = z.enum(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13']);
 
 export const EntradaInforme = z.object({
-  /** Absent for programme-level barriers (V7). */
+  /** Absent for programme-level barriers (V7) and for answers to questions. */
   tema: id.optional(),
+  /** Suggested question this entry is about (answers, not posturas). */
+  pregunta: id.optional(),
   barrera: Barrera,
   /** `extraer`: V12 found a proposal the first pass missed. `aviso`: V11 internal warning, published anyway. */
   resultado: z.enum(['pasa', 'corregir', 'reescribir', 'descartar', 'bloquear', 'extraer', 'aviso']),
@@ -160,6 +186,9 @@ export const Dataset = z
     temas: z.array(Tema).min(1),
     posturas: z.array(Postura),
     informes: z.array(Informe),
+    /** Suggested questions of the "Preguntar" tab and their precomputed answers. */
+    preguntas: z.array(Pregunta).optional(),
+    respuestas: z.array(RespuestaPregunta).optional(),
   })
   .superRefine((d, ctx) => {
     const partidos = new Set(d.partidos.map((p) => p.id));
@@ -180,6 +209,17 @@ export const Dataset = z
           ctx.addIssue({ code: 'custom', path: ['posturas'], message: `falta el estado de ${partido.id}/${tema.id}` });
       }
     }
+    // Answers: known party and question, at most one per party × question. A missing answer is
+    // allowed (a party processed before a question was added): it is simply not shown.
+    const preguntas = new Set((d.preguntas ?? []).map((p) => p.id));
+    const respondidas = new Set<string>();
+    (d.respuestas ?? []).forEach((r, i) => {
+      const clave = `${r.partido}/${r.pregunta}`;
+      if (!partidos.has(r.partido)) ctx.addIssue({ code: 'custom', path: ['respuestas', i, 'partido'], message: `partido desconocido: ${r.partido}` });
+      if (!preguntas.has(r.pregunta)) ctx.addIssue({ code: 'custom', path: ['respuestas', i, 'pregunta'], message: `pregunta desconocida: ${r.pregunta}` });
+      if (respondidas.has(clave)) ctx.addIssue({ code: 'custom', path: ['respuestas', i], message: `más de una respuesta para ${clave}` });
+      respondidas.add(clave);
+    });
   });
 
 export type TipoFuente = z.infer<typeof TipoFuente>;
@@ -195,6 +235,8 @@ export type ResultadoViabilidad = z.infer<typeof ResultadoViabilidad>;
 export type Fuente = z.infer<typeof Fuente>;
 export type Evaluacion = z.infer<typeof Evaluacion>;
 export type NotaViabilidad = z.infer<typeof NotaViabilidad>;
+export type Pregunta = z.infer<typeof Pregunta>;
+export type RespuestaPregunta = z.infer<typeof RespuestaPregunta>;
 export type EntradaInforme = z.infer<typeof EntradaInforme>;
 export type ResumenPostura = z.infer<typeof ResumenPostura>;
 export type Informe = z.infer<typeof Informe>;

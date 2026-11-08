@@ -9,6 +9,8 @@ import {
   urlReportarError,
 } from '../src/transparencia';
 import { BARRERAS } from '../src/registro/barreras';
+import { crearAvisos, LIMITE_AVISOS } from '../src/transparencia/avisos';
+import { crearAlmacenEnMemoria } from '../src/pregunta/libre';
 import { Barrera, type Dataset, type Informe, type NotaViabilidad, type Postura } from '../src/dataset/esquema';
 import { datasetEjemplo, notaEjemplo } from './fixtures/dataset-ejemplo';
 
@@ -115,6 +117,27 @@ describe('resumenInforme', () => {
     expect(r.publicadas).toBe(1);
   });
 
+  it('groups the checks of the answers to suggested questions apart, in the questions\' order', () => {
+    const conRespuestas: Informe = {
+      ...informe,
+      entradas: [
+        ...informe.entradas,
+        { pregunta: 'mili', barrera: 'V12', resultado: 'pasa', detalle: 'no lo menciona' },
+        { pregunta: 'luz', barrera: 'V1', resultado: 'pasa', detalle: 'ok' },
+      ],
+    };
+    const preguntas = [
+      { id: 'mili', texto: '¿Servicio militar?', palabrasClave: ['mili'], orden: 2 },
+      { id: 'luz', texto: '¿IVA de la luz?', palabrasClave: ['luz'], orden: 1 },
+    ];
+    const r = resumenInforme(conRespuestas, datasetEjemplo.temas, preguntas);
+    expect(r.programa.map((e) => e.barrera)).toEqual(['V7']);
+    expect(r.preguntas.map((p) => [p.pregunta.texto, p.entradas.map((e) => e.barrera)])).toEqual([
+      ['¿IVA de la luz?', ['V1']],
+      ['¿Servicio militar?', ['V12']],
+    ]);
+  });
+
   it('labels each entry with its barrier name', () => {
     const r = resumenInforme(informe, datasetEjemplo.temas);
     expect(r.programa[0]!.nombre).toBe(BARRERAS.V7.nombre);
@@ -169,5 +192,76 @@ describe('urlFaltaPartido', () => {
     expect(`${u.origin}${u.pathname}`).toBe('https://github.com/jorgemasta/29n/issues/new');
     expect(u.searchParams.get('title')).toMatch(/Falta un partido/);
     expect(u.searchParams.get('body')).toMatch(/criterio/i);
+  });
+});
+
+describe('avisos sin cuenta de GitHub (Cloudflare function, POST /api/avisar)', () => {
+  const reporte = {
+    tipo: 'reporte' as const,
+    tema: { id: 'vivienda', titulo: 'Vivienda y alquiler' },
+    partido: { id: 'aaa', nombre: 'Partido AAA' },
+    letra: 'B',
+    paginas: [7, 9],
+    motivo: 'cita' as const,
+    comentario: 'La página es la 8.',
+  };
+  const falta = { tipo: 'falta-partido' as const, partido: 'Partido Nuevo', provincias: 'Teruel', motivo: 'Candidatura proclamada (BOE).', enlace: 'https://ejemplo.org/programa.pdf' };
+
+  function montar(conToken = true) {
+    const creados: { titulo: string; cuerpo: string; etiquetas: string[] }[] = [];
+    const almacen = crearAlmacenEnMemoria();
+    const avisos = crearAvisos({
+      almacen,
+      crearIssue: conToken
+        ? async (i) => {
+            creados.push(i);
+            return { url: `https://github.com/jorgemasta/29n/issues/${creados.length}` };
+          }
+        : undefined,
+    });
+    return { avisos, creados, almacen };
+  }
+
+  it('files the report as a GitHub issue with the same content as the prefilled link', async () => {
+    const { avisos, creados } = montar();
+    const r = await avisos.enviar(reporte, 's1');
+    expect(r).toEqual({ estado: 'creado', url: 'https://github.com/jorgemasta/29n/issues/1' });
+    const enlace = new URL(urlReportarError(reporte));
+    expect(creados[0]!.titulo).toBe(enlace.searchParams.get('title'));
+    expect(creados[0]!.cuerpo).toContain(enlace.searchParams.get('body')!);
+    expect(creados[0]!.etiquetas).toEqual(['reporte']);
+  });
+
+  it('files "Falta un partido" with what the voter wrote', async () => {
+    const { avisos, creados } = montar();
+    expect(await avisos.enviar(falta, 's1')).toMatchObject({ estado: 'creado' });
+    expect(creados[0]!.titulo).toBe('[Falta un partido] Partido Nuevo');
+    expect(creados[0]!.cuerpo).toContain('Teruel');
+    expect(creados[0]!.cuerpo).toContain('https://ejemplo.org/programa.pdf');
+    expect(creados[0]!.etiquetas).toEqual(['falta-partido']);
+  });
+
+  it('without a token, tells the page to fall back to the prefilled GitHub link', async () => {
+    const { avisos } = montar(false);
+    expect(await avisos.enviar(reporte, 's1')).toEqual({ estado: 'no_disponible', alternativa: urlReportarError(reporte) });
+    expect(await avisos.enviar(falta, 's1')).toMatchObject({ estado: 'no_disponible', alternativa: expect.stringContaining('/issues/new') });
+  });
+
+  it('rejects malformed requests and never mentions GitHub users', async () => {
+    const { avisos, creados } = montar();
+    for (const malo of [{}, { ...reporte, motivo: 'nada' }, { ...reporte, comentario: 'x'.repeat(301) }, { ...falta, partido: '' }, { ...falta, enlace: 'javascript:alert(1)' }])
+      expect(await avisos.enviar(malo, 's1')).toMatchObject({ estado: 'invalido' });
+    expect(creados).toHaveLength(0);
+    await avisos.enviar({ ...reporte, comentario: 'Avisad a @alguien' }, 's1');
+    expect(creados[0]!.cuerpo).not.toMatch(/@alguien/);
+  });
+
+  it('limits notices per session and falls back to the link when GitHub fails', async () => {
+    const { avisos, almacen } = montar();
+    for (let i = 0; i < LIMITE_AVISOS; i++) expect(await avisos.enviar(reporte, 's1')).toMatchObject({ estado: 'creado' });
+    expect(await avisos.enviar(reporte, 's1')).toMatchObject({ estado: 'limite', alternativa: expect.stringContaining('github.com') });
+    expect(JSON.stringify(almacen.volcado())).not.toContain('s1');
+    const caido = crearAvisos({ crearIssue: async () => { throw new Error('502'); } });
+    expect(await caido.enviar(reporte, 's2')).toMatchObject({ estado: 'error', alternativa: expect.stringContaining('/issues/new') });
   });
 });

@@ -3,10 +3,10 @@
 // feasibility breakdown per party and topic, verification reports and who makes it.
 import PaginaInfo from '../components/PaginaInfo.astro';
 import { dataset } from '../transparencia/datos';
-import { PROMPTS, REPO, enlaceRepo, repartoViabilidad, programas } from '../transparencia';
+import { PROMPTS, PROMPTS_PREGUNTA_LIBRE, REPO, enlaceRepo, repartoViabilidad, programas } from '../transparencia';
 import { BARRERAS } from '../registro/barreras';
 import { nombreNivel } from '../registro/rubrica';
-import { MODELOS } from '../ia/claude';
+import { MODELOS, MODELOS_PREGUNTA_LIBRE } from '../ia/claude';
 import { VERSION_PROMPT } from '../pipeline/prompts';
 import { VERSION_PROMPT_VIABILIDAD } from '../pipeline/prompts-viabilidad';
 import { VERSION_RUBRICA } from '../registro/rubrica';
@@ -93,6 +93,12 @@ const temasConDatos = reparto.porTema.filter((t) => t.celdas.some((c) => c !== '
           <td><code>{MODELOS[p.tarea]}</code></td>
         </tr>
       ))}
+      {PROMPTS_PREGUNTA_LIBRE.map((p) => (
+        <tr>
+          <th scope="row"><a href={enlaceRepo(p.archivo)}>{p.que}</a></th>
+          <td><code>{MODELOS_PREGUNTA_LIBRE[p.tarea]?.modelo}</code></td>
+        </tr>
+      ))}
     </tbody>
   </table>
 
@@ -169,7 +175,49 @@ const temasConDatos = reparto.porTema.filter((t) => t.celdas.some((c) => c !== '
 
   <h2 id="privacidad">Privacidad</h2>
   <p>
-    No hay cuentas ni registro. Lo que eliges se guarda solo en tu móvil y nunca se envía. Si avisas de un error,
-    solo se envía el tema, la tarjeta y lo que escribas.
+    No hay cuentas ni registro. Lo que eliges, tus apuestas y tu resultado se guardan solo en tu móvil y nunca se envían.
   </p>
+  <p>
+    Para saber dónde abandona la gente, contamos de forma anónima y sin cookies (Umami, servidores en la UE)
+    cuándo se empieza, se completa un tema, se llega a 5, se ve el resultado y se comparte. Si apuestas, solo
+    se cuenta en qué tema y si acertaste o no, para detectar propuestas que se reconocen demasiado. Nunca qué
+    propuesta o partido eliges, a quién apuestas, tu provincia ni tu resultado.
+    <a href="https://github.com/jorgemasta/29n/blob/main/src/analitica/eventos.ts">Ver la lista exacta de eventos</a>.
+  </p>
+  <h3>Si avisas de un error o de que falta un partido</h3>
+  <p>
+    Solo se envía el tema, la tarjeta y lo que escribas (nunca qué elegiste ni tu provincia). Se publica como un aviso
+    público en el repositorio del proyecto en GitHub, sin tu nombre. Si el envío directo no está disponible, te damos
+    un enlace para hacerlo tú con tu cuenta de GitHub.
+  </p>
+  <h3>Si escribes tu propia pregunta</h3>
+  <ul>
+    <li>
+      El texto de tu pregunta se envía, sin ningún dato tuyo, a <strong>Anthropic</strong> (el modelo Claude Haiku 5.5 la
+      responde y Claude Sonnet 5.5 comprueba la respuesta) junto con las páginas de los programas que hablan del tema. Pasa por
+      Cloudflare AI Gateway con el registro de peticiones desactivado. Nuestra función no lee tu IP ni guarda registros.
+    </li>
+    <li>
+      Para el límite de preguntas por sesión, tu navegador genera un identificador aleatorio que se borra al cerrar la
+      pestaña; la función solo guarda un resumen cifrado (hash) con un contador que caduca en 24 horas.
+    </li>
+    <li>
+      Las preguntas frecuentes se guardan con su respuesta hasta 14 días, sin asociarlas a nadie, para responderlas gratis.
+      Una pregunta hecha más de una vez puede aparecer en la lista de frecuentes que ven otras personas: no escribas datos personales.
+    </li>
+    <li>
+      <strong>Qué hace Anthropic con ella.</strong> Según su documentación, en la API borra automáticamente las entradas y
+      salidas en un plazo de 30 días, salvo que se marquen por infringir su política de uso (hasta 2 años) o lo exija la ley
+      (<a href="https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data">plazo de conservación</a>),
+      y no entrena modelos con ellas (<a href="https://www.anthropic.com/legal/commercial-terms">condiciones comerciales</a>).
+      Existe la <strong>retención cero</strong> (no guardar nada tras responder), pero hay que pedirla a su equipo comercial y
+      Anthropic decide si la concede (<a href="https://platform.claude.com/docs/en/build-with-claude/zero-data-retention">retención cero</a>).
+      Este proyecto <strong>no tiene retención cero</strong>: aplica el plazo de 30 días.
+    </li>
+    <li>
+      Cloudflare documenta cómo desactivar el registro de cada petición en AI Gateway
+      (<a href="https://developers.cloudflare.com/ai-gateway/observability/logging/">registro de AI Gateway</a>), pero no hemos
+      encontrado en sus fuentes oficiales si su registro incluye la IP ni cuánto conserva Cloudflare otros datos de la petición.
+    </li>
+  </ul>
 </PaginaInfo>

@@ -135,6 +135,14 @@ try {
     zonasTactiles('portada');
   });
 
+  paso('portada con ?r=reto: la línea del reto va encima del titular', () => {
+    ab('open', BASE + '?r=reto');
+    esperarA(`document.querySelector('.portada h1')`, 'portada con reto');
+    assert.equal(js<string>(`document.querySelector('.portada h1').previousElementSibling?.className`), 'aviso-reto');
+    ab('open', BASE);
+    esperarA(`document.querySelector('.portada h1')`, 'portada');
+  });
+
   paso('animación de portada: giro, y estática con reduced motion', () => {
     assert.notEqual(js<string>(`getComputedStyle(document.querySelector('.cartas .gira')).animationName`), 'none');
     ab('set', 'media', 'light', 'reduced-motion');

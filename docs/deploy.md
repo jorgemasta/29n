@@ -1,6 +1,9 @@
 # Despliegue (paso humano)
 
-La web es estática: Cloudflare sirve `dist/` como *static assets* de un Worker (`wrangler.jsonc`).
+La web es estática: Cloudflare sirve `dist/` como *static assets* de un Worker (`wrangler.jsonc`). El Worker
+(`src/worker/index.ts`) solo atiende `/api/preguntar` (pregunta libre), `/api/avisar` (avisos sin cuenta),
+bloquea `/textos/*` y, en `/` con `?r=reto`, cambia el og:title de la vista previa del enlace; todo lo demás va
+directo a los ficheros estáticos. La imagen og (`public/og.png`, 1200×630) se regenera con `npm run og`.
 No hay credenciales de Cloudflare ni de Anthropic en el repo.
 
 1. `npx wrangler login` (o `CLOUDFLARE_API_TOKEN` con permiso de Workers y DNS de `jorgemasta.com`).
@@ -11,6 +14,46 @@ No hay credenciales de Cloudflare ni de Anthropic en el repo.
      declaraciones), marcadas «solo privado» al revelar. `npm run deploy` (modo público, por defecto) las
      excluye del todo: esos partidos salen como «⏳ programa pendiente» y sus datos no se publican.
 3. Comprobar `https://29n.jorgemasta.com/` y que `robots.txt` devuelve `Disallow: /` (prototipo privado, sin enlazar).
+
+## Pregunta libre y avisos sin cuenta (Cloudflare function)
+
+Por defecto, **la pregunta libre está cerrada** (`PREGUNTA_LIBRE = "0"` en `wrangler.jsonc`) y la caja de texto
+sale desactivada («Muy pronto»). Sin `GITHUB_TOKEN`, «Reportar error» y «Falta un partido» enlazan al aviso
+prerrellenado de GitHub (como antes). Nada de esto rompe el despliegue si falta.
+
+**Pasos humanos para abrir la pregunta libre (~18-nov):**
+
+1. **KV** (contadores por sesión, gasto del mes y caché de frecuentes):
+   `npx wrangler kv namespace create PREGUNTAS` y descomentar `kv_namespaces` en `wrangler.jsonc` con el id.
+2. **AI Gateway** (Cloudflare → AI → AI Gateway → crear un gateway): en *Settings* desactivar **Logs**
+   (además, cada petición manda `cf-aig-collect-log: false`). Si se activa *Authenticated Gateway*, guardar su token
+   como `CF_AIG_TOKEN`. La URL es `https://gateway.ai.cloudflare.com/v1/<cuenta>/<gateway>/anthropic`.
+3. **Anthropic**: crear una API key en un *workspace* propio con un **límite de gasto mensual** (≈ 150 €) en la
+   Console. Es el tope duro; el de la función (`TOPE_MENSUAL`) es una estimación por llamada (`COSTE_ESTIMADO` en
+   `src/pregunta/libre.ts`) que deja de aceptar preguntas nuevas al llegar y sigue sirviendo las frecuentes.
+4. Secretos del Worker (no van en el repo):
+   | Secreto / variable | Uso |
+   |---|---|
+   | `npx wrangler secret put ANTHROPIC_API_KEY` | Claude (Haiku 5.5 responde, Sonnet 5.5 hace la V10). |
+   | `npx wrangler secret put AI_GATEWAY_URL` (o `vars`) | URL del gateway del paso 2. Sin ella llama a la API directamente. |
+   | `npx wrangler secret put CF_AIG_TOKEN` | Opcional: gateway autenticado. |
+   | `npx wrangler secret put GITHUB_TOKEN` | Avisos sin cuenta: *fine-grained token* solo de `jorgemasta/29n` con **Issues: read and write**. Crear antes las etiquetas `reporte` y `falta-partido`. |
+   | `vars.PREGUNTA_LIBRE` | `"1"` abre la pregunta libre. |
+   | `vars.TOPE_MENSUAL` | Tope en euros (150). |
+5. Construir la web con la caja activa y desplegar: `PUBLIC_PREGUNTA_LIBRE=1 npm run deploy` (con
+   `PREGUNTA_LIBRE = "1"` en `wrangler.jsonc`). Las dos banderas deben ir juntas.
+6. **Privacidad**: Workers Logs y trazas están desactivados (`observability.enabled = false`); no activar
+   *Logpush* ni *Tail* para este Worker. La función no lee la IP ni escribe en consola.
+7. **Retención de Anthropic**: 30 días por defecto (sin retención cero). Para pedir **retención cero** hay que
+   contactar con ventas (https://claude.com/contact-sales); Anthropic decide si la concede. Si se consigue, actualizar
+   el apartado de privacidad de `src/pages/metodologia.astro`.
+
+Los textos de los programas (`public/textos/<partido>.json`) los escriben `npm run procesar`, el vigilante y
+`generar-simulado`; la función los lee por el binding `ASSETS` y comprueba que su `hashPdf` coincide con el dataset.
+Para un programa procesado antes de #15, relanzarlo (con la caché de IA, gratis) para generar su texto: sin él, ese
+partido sale como «No pudimos verificar su respuesta» en la pregunta libre.
+
+Comprobar sin desplegar: `npx wrangler deploy --dry-run` (empaqueta el Worker).
 
 ## Procesar un programa real (necesita `ANTHROPIC_API_KEY`)
 
@@ -65,3 +108,29 @@ caché de IA el resultado es idéntico y gratis). En local: `npx tsx scripts/vig
 --forzar --sin-publicar` (sin git, sin despliegue, avisos por consola; sí descarga y llama a Claude).
 
 Node: Astro está fijado a 7.4.1 porque esta máquina tiene Node 22.23.2 (Astro ≥ 7.4.2 exige 22.23.4).
+
+## Analítica (Umami Cloud, región UE) — opcional, desactivada por defecto
+
+Eventos (lista cerrada en `src/analitica/eventos.ts`, validados antes de enviarse; `src/web/analitica.ts`
+es el único módulo del cliente que habla con Umami, vía `window.umami.track`): `empezo`,
+`tema-completado {tema}`, `cinco-temas`, `vio-resultado`, `compartio {variante}`,
+`apuesta-acierto {tema}`, `apuesta-fallo {tema}`. Nunca el partido elegido o apostado, la provincia ni el
+ranking. El script no registra la query (`?provincia=`, `?r=`) ni el hash, y respeta Do Not Track.
+
+**Sin `UMAMI_WEBSITE_ID` en el build no se carga el script de Umami y no se envía nada.** Pasos humanos:
+
+1. Crear la cuenta en Umami Cloud eligiendo la **región UE** (sin cookies por defecto). Añadir el sitio
+   `29n.jorgemasta.com` y copiar su *website id*.
+2. Build/deploy a mano con `UMAMI_WEBSITE_ID=<website id> npm run deploy`. El vigilante (`vigilante.yml`)
+   lo lee de la **variable del repo** `UMAMI_WEBSITE_ID` (paso 3): sin ella, sus despliegues quitan la analítica.
+   Opcionales: `UMAMI_SCRIPT_URL` (por defecto `https://cloud.umami.is/script.js`; usar la URL del
+   script que muestre Umami para la región UE si es distinta) y `UMAMI_DOMAINS` (por defecto
+   `29n.jorgemasta.com`: los builds en otros dominios no envían nada).
+3. Comprobación periódica de apuestas (`.github/workflows/apuestas.yml`, lunes 06:41 UTC):
+   - Variable del repo (Settings → Secrets and variables → Actions → *Variables*): `UMAMI_WEBSITE_ID`;
+     opcional `UMAMI_API_URL` (por defecto `https://api.umami.is/v1`, la API de Umami Cloud).
+   - Secreto: `UMAMI_API_KEY` (Umami Cloud → Settings → API keys).
+   - El job usa `github.token` (permiso `issues: write`) y crea la etiqueta `reneutralizar` si no existe.
+   - Abre un issue por cada tema con más del 60 % de acierto y al menos 30 apuestas en los últimos 30 días,
+     salvo que ya haya uno abierto para ese tema. Sin las dos variables, el job termina sin hacer nada.
+   - En local: `UMAMI_API_KEY=… UMAMI_WEBSITE_ID=… npx tsx scripts/apuestas.ts --sin-publicar`.

@@ -68,6 +68,7 @@ function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
     'verificar-fidelidad': () => fiel,
     'adivinar-partido': () => ({ asignaciones: [] }),
     'confirmar-ausencia': () => ({ propone: false, citas: [] }),
+    'responder-pregunta': () => ({ menciona: false, que: '', como: '', cifra: null, citas: [] }),
     ...extra,
   };
 }
@@ -78,6 +79,8 @@ const opciones = (o: Partial<OpcionesProceso> = {}): OpcionesProceso => ({
   // V8 checks HTTP 200; tests never hit the network.
   comprobarUrl: async () => true,
   dominios: dominiosDePrueba,
+  // Suggested questions are tested on their own (see "suggested questions").
+  preguntas: [],
   ...o,
 });
 
@@ -105,6 +108,13 @@ describe('procesarPrograma', () => {
     expect(informe.partido).toBe('pej');
     expect(informe.hashPdf).toMatch(/^[0-9a-f]{64}$/);
     expect(informe.descartadas).toBe(0);
+  });
+
+  it('publishes the page text of the programme, for the live free question (#15)', async () => {
+    const { texto, informe } = await procesar(respuestas());
+    expect(texto).toEqual({ partido: 'pej', hashPdf: informe.hashPdf, paginas: expect.any(Array) });
+    expect(texto!.paginas).toHaveLength(paginas.length);
+    expect(texto!.paginas[1]).toContain('Limitaremos el precio');
   });
 
   it('records when a party proposes nothing on a topic', async () => {
@@ -719,6 +729,7 @@ describe('procesarPrograma', () => {
         expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V7', resultado: 'bloquear' }));
         expect(posturas).toEqual([]);
         expect(ia.llamadas).toHaveLength(0);
+        expect((await procesarPrograma(pdf, partido, ia, opciones())).texto).toBeNull();
       }
     });
 
@@ -849,6 +860,144 @@ describe('procesarPrograma', () => {
       const ia = crearIAFalsa(respuestas());
       await procesarPrograma(pdf, partidoEjemplo, ia, opciones({ cache }));
       expect(ia.llamadas.length).toBeGreaterThan(0);
+    });
+  });
+  describe('suggested questions (Preguntar): precomputed answers', () => {
+    const CITA_PENSIONES = 'Revalorizaremos las pensiones con el IPC cada año.';
+    const jubilacion = { id: 'jubilacion', texto: '¿Qué pasa con la edad de jubilación?', palabrasClave: ['jubilación', 'pensiones'], orden: 1 };
+    const mili = { id: 'mili', texto: '¿Qué dicen sobre el servicio militar?', palabrasClave: ['servicio militar', 'mili'], orden: 2 };
+    // 13 + 21 = 34 words, no figures, no marks.
+    const respuestaBuena = {
+      menciona: true,
+      que: 'Subir todas las pensiones cada año al mismo ritmo que suben los precios de consumo.',
+      como: 'La subida sería automática y anual, ligada a los precios, para que las personas jubiladas no pierdan poder de compra con el tiempo.',
+      cifra: null,
+      citas: [{ texto: CITA_PENSIONES, pagina: 3 }],
+    };
+    const llamadasPregunta = (ia: { llamadas: { tarea: string; entrada: any }[] }, id: string) =>
+      ia.llamadas.filter((l) => l.tarea === 'responder-pregunta' && l.entrada.pregunta.id === id);
+
+    it('answers each suggested question with a neutral text and a verified literal quote', async () => {
+      const { respuestas: rs, informe } = await procesar(respuestas({ 'responder-pregunta': () => respuestaBuena }), { preguntas: [jubilacion] });
+      expect(rs).toEqual([
+        expect.objectContaining({
+          partido: 'pej',
+          pregunta: 'jubilacion',
+          estado: 'responde',
+          texto: { que: respuestaBuena.que, como: respuestaBuena.como, cifra: null },
+          citas: [{ texto: CITA_PENSIONES, pagina: 3 }],
+        }),
+      ]);
+      for (const b of ['V1', 'V3', 'V10'])
+        expect(informe.entradas).toContainEqual(expect.objectContaining({ pregunta: 'jubilacion', barrera: b, resultado: 'pasa' }));
+    });
+
+    it('answers with the suggested questions of the registry by default', async () => {
+      const { respuestas: rs } = await procesar(respuestas(), { preguntas: undefined });
+      expect(rs.length).toBe(7);
+    });
+
+    it('only sends the AI the pages that talk about the question', async () => {
+      const { ia } = await procesar(respuestas({ 'responder-pregunta': () => respuestaBuena }), { preguntas: [jubilacion] });
+      expect(llamadasPregunta(ia, 'jubilacion')[0]!.entrada.paginas.map((p: { pagina: number }) => p.pagina)).toEqual([3]);
+    });
+
+    it('a programme with no page about the question "does not mention it", without asking the AI', async () => {
+      const { respuestas: rs, ia } = await procesar(respuestas({ 'responder-pregunta': () => respuestaBuena }), { preguntas: [mili] });
+      expect(rs).toEqual([expect.objectContaining({ pregunta: 'mili', estado: 'no_menciona' })]);
+      expect(llamadasPregunta(ia, 'mili')).toHaveLength(0);
+    });
+
+    it('"does not mention it" when the AI finds nothing in the candidate pages', async () => {
+      const { respuestas: rs } = await procesar(respuestas(), { preguntas: [jubilacion] });
+      expect(rs).toEqual([expect.objectContaining({ pregunta: 'jubilacion', estado: 'no_menciona' })]);
+    });
+
+    it('removes an invented quote and keeps the verified one (V1)', async () => {
+      const inventada = { texto: 'Bajaremos la edad de jubilación a los sesenta años para todo el mundo.', pagina: 3 };
+      const { respuestas: rs, informe } = await procesar(
+        respuestas({ 'responder-pregunta': () => ({ ...respuestaBuena, citas: [inventada, ...respuestaBuena.citas] }) }),
+        { preguntas: [jubilacion] },
+      );
+      expect(rs).toEqual([expect.objectContaining({ estado: 'responde', citas: [{ texto: CITA_PENSIONES, pagina: 3 }] })]);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ pregunta: 'jubilacion', barrera: 'V1', resultado: 'descartar' }));
+    });
+
+    it('an answer whose quotes are all invented is asked again, then not published (V1)', async () => {
+      const inventada = { texto: 'Bajaremos la edad de jubilación a los sesenta años para todo el mundo.', pagina: 3 };
+      const { respuestas: rs, ia, publicable } = await procesar(
+        respuestas({ 'responder-pregunta': () => ({ ...respuestaBuena, citas: [inventada] }) }),
+        { preguntas: [jubilacion] },
+      );
+      expect(rs).toEqual([expect.objectContaining({ pregunta: 'jubilacion', estado: 'sin_verificar' })]);
+      expect(rs[0]).not.toHaveProperty('citas');
+      expect(llamadasPregunta(ia, 'jubilacion')).toHaveLength(3);
+      // Answers never block the programme.
+      expect(publicable).toBe(true);
+    });
+
+    it('rewrites an answer with identifying marks and, if they persist after 2 retries, does not publish it (V3)', async () => {
+      const { respuestas: rs, ia } = await procesar(
+        respuestas({ 'responder-pregunta': () => ({ ...respuestaBuena, que: `Como propone OTP, ${respuestaBuena.que}` }) }),
+        { preguntas: [jubilacion] },
+      );
+      const llamadas = llamadasPregunta(ia, 'jubilacion');
+      expect(llamadas).toHaveLength(3);
+      expect(llamadas[1]!.entrada.evitar).toContain('OTP');
+      expect(rs).toEqual([expect.objectContaining({ estado: 'sin_verificar' })]);
+    });
+
+    it('a rewrite that removes the marks is published (V3)', async () => {
+      const { respuestas: rs } = await procesar(
+        respuestas({
+          'responder-pregunta': (_e, intento) => (intento === 0 ? { ...respuestaBuena, que: `Bruno Jefe quiere ${respuestaBuena.que}` } : respuestaBuena),
+        }),
+        { preguntas: [jubilacion] },
+      );
+      expect(rs).toEqual([expect.objectContaining({ estado: 'responde', texto: expect.objectContaining({ que: respuestaBuena.que }) })]);
+      expect(JSON.stringify(rs)).not.toMatch(/Bruno Jefe/);
+    });
+
+    it('rewrites an answer the independent verifier finds unfaithful to the quote (V10)', async () => {
+      const { respuestas: rs, ia, informe } = await procesar(
+        respuestas({
+          'responder-pregunta': () => respuestaBuena,
+          'verificar-fidelidad': (_e, intento) =>
+            intento === 0 ? { ...fiel, anade: true, explicacion: 'Habla de poder de compra.' } : fiel,
+        }),
+        { preguntas: [jubilacion] },
+      );
+      expect(llamadasPregunta(ia, 'jubilacion')).toHaveLength(2);
+      expect(llamadasPregunta(ia, 'jubilacion')[1]!.entrada.corregir.join(' ')).toMatch(/poder de compra/);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ pregunta: 'jubilacion', barrera: 'V10', resultado: 'reescribir' }));
+      expect(rs[0]!.estado).toBe('responde');
+    });
+
+    it('answers go into a dataset that validates (V9)', async () => {
+      const { posturas, informe, respuestas: rs } = await procesar(
+        respuestas({ 'responder-pregunta': () => respuestaBuena }),
+        { preguntas: [jubilacion, mili] },
+      );
+      const dataset = construirDataset({
+        partidos: [partidoEjemplo],
+        temas: [temaVivienda],
+        preguntas: [jubilacion, mili],
+        resultados: [{ posturas, informe, respuestas: rs }],
+        generado: '2026-11-08T00:00:00.000Z',
+        origen: 'prueba',
+      });
+      expect(validarDataset(dataset)).toEqual({ valido: true, errores: [] });
+      expect(validarDataset({ ...dataset, respuestas: [...rs, ...rs] }).valido).toBe(false);
+      expect(validarDataset({ ...dataset, respuestas: rs.map((r) => ({ ...r, pregunta: 'otra' })) }).valido).toBe(false);
+    });
+
+    it('two runs with the cache give identical answers', async () => {
+      const cache = crearCacheEnMemoria();
+      const r = respuestas({ 'responder-pregunta': () => respuestaBuena });
+      const primera = await procesar(r, { cache, preguntas: [jubilacion, mili] });
+      const segunda = await procesar(r, { cache, preguntas: [jubilacion, mili] });
+      expect(segunda.ia.llamadas).toHaveLength(0);
+      expect(segunda.respuestas).toEqual(primera.respuestas);
     });
   });
 });

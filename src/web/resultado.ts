@@ -141,9 +141,9 @@ function bloqueRanking(partida: Partida, r: Resultado, acciones: AccionesResulta
   );
 }
 
-/** Placeholder for #9 (share card): the button lives here so the share ticket only fills it in. */
-function aCompartir(): HTMLElement | null {
-  return null;
+/** Opens screen 11 (#compartir): the card is made there, on the phone. */
+function aCompartir(): HTMLElement {
+  return enlace('Compartir', '#compartir', 'principal boton-enlace');
 }
 
 export interface AccionesVuelta {

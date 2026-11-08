@@ -28,6 +28,7 @@ function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
     'verificar-fidelidad': () => ({ anade: false, omite: false, cambiaSentido: false, explicacion: '' }),
     'adivinar-partido': () => ({ asignaciones: [] }),
     'confirmar-ausencia': () => ({ propone: false, citas: [] }),
+    'responder-pregunta': () => ({ menciona: false, que: '', como: '', cifra: null, citas: [] }),
     ...extra,
   };
 }
@@ -126,6 +127,8 @@ describe('vigilar', () => {
     ]);
     expect(ds.posturas).toEqual([expect.objectContaining({ partido: 'pej', tema: 'vivienda', estado: 'propone' })]);
     expect(json(cambio, 'data/informes/pej.json')).toEqual(expect.objectContaining({ partido: 'pej', publicable: true }));
+    // Page text for the live free question, from the same PDF.
+    expect(json(cambio, 'public/textos/pej.json')).toEqual({ partido: 'pej', hashPdf: ds.partidos[0]!.programa.estado === 'publicado' ? ds.partidos[0]!.programa.hashPdf : '', paginas: expect.any(Array) });
     expect(m.dataset).toEqual(ds);
     expect(m.avisos).toEqual([expect.objectContaining({ tipo: 'publicado', titulo: expect.stringContaining('PEJ') })]);
   });
@@ -204,6 +207,7 @@ describe('vigilar', () => {
       expect(m.guardados[0]?.desplegar).toBe(false);
       expect(Object.keys(m.guardados[0]!.archivos)).not.toContain('data/dataset.json');
       expect(Object.keys(m.guardados[0]!.archivos)).not.toContain('data/informes/pej.json');
+      expect(Object.keys(m.guardados[0]!.archivos)).not.toContain('public/textos/pej.json');
       expect(json(m.guardados[0], 'data/informes/bloqueados/pej.json')).toEqual(expect.objectContaining({ publicable: false }));
       expect(m.avisos).toEqual([expect.objectContaining({ tipo: 'fallo', mensaje: expect.stringContaining('descart') })]);
     });

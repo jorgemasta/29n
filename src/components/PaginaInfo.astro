@@ -4,6 +4,7 @@ import '../styles/global.css';
 import { dataset } from '../transparencia/datos';
 import { REPO } from '../transparencia';
 import LetraInicial from './LetraInicial.astro';
+import Umami from './Umami.astro';
 interface Props { titulo: string; descripcion: string; volver?: { href: string; texto: string } }
 const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Astro.props;
 ---
@@ -16,6 +17,7 @@ const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Ast
     <title>{titulo} · 29N</title>
     <meta name="description" content={descripcion} />
     <LetraInicial />
+    <Umami />
   </head>
   <body>
     <main class="info">

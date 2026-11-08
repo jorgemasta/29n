@@ -1,8 +1,9 @@
 // Client app: first-visit home → province → topic (blind choice → confirm/bet → reveal) → result. All
 // logic lives in the game engine; this file only renders and routes (#portada, #provincia, #inicio,
-// #temas, #tema/<id>, #resultado, #preguntar, #datos) and drives the bottom tab bar (static in
-// index.astro). Choices, bets and the result never leave the browser.
+// #temas, #tema/<id>, #resultado, #compartir, #preguntar[/<id>], #datos) and drives the bottom tab bar
+// (static in index.astro). Choices, bets and the result never leave the browser.
 import type { Dataset, Modo, TipoFuente } from '../dataset/esquema';
+import { textoPortadaReto } from '../compartir';
 import {
   crearPartida,
   META_TEMAS,
@@ -18,6 +19,7 @@ import {
 } from '../juego';
 import { nuevaSemilla } from '../juego/azar';
 import { almacenamientoDisponible, borrar, guardar, leer } from './almacen';
+import { vistaPreguntas, vistaRespuesta } from './preguntar';
 import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
 import { boton, empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
@@ -25,6 +27,8 @@ import { botonReportar } from './reportar';
 import { vistaPortada } from './portada';
 import { crearLector } from './escuchar';
 import { CLAVE_LETRA, letraGrande } from './letra';
+import { analiticaConfirmar, analiticaResultado, analiticaVerTema, configurarAnalitica } from './analitica';
+import { avisoReto, vistaCompartir } from './compartir';
 
 const CLAVE_SEMILLA = '29n:semilla';
 const CLAVE_ESTADO = '29n:estado';
@@ -68,6 +72,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
   // Without storage (private mode…) everything works in memory; we say so once.
   const hayAlmacen = almacenamientoDisponible();
   let avisoAlmacen = !hayAlmacen;
+  let reto = textoPortadaReto(location.search);
   let semilla = leer<string>(CLAVE_SEMILLA);
   if (!semilla) {
     semilla = nuevaSemilla();
@@ -80,6 +85,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
   };
   const nueva = (estado?: EstadoPartida) => crearPartida(dataset, provincia ?? null, semilla!, estado, { modo });
   let partida: Partida = nueva(leer<EstadoPartida>(CLAVE_ESTADO) ?? undefined);
+  configurarAnalitica(dataset.partidos.map((p) => p.id));
   /** Saved on every confirmed action; an unconfirmed round is never saved. */
   const actualizar = (p: Partida) => {
     partida = p;
@@ -114,10 +120,13 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     else if (ruta === 'portada') raiz.replaceChildren(vistaPortada(() => (provincia === undefined ? irA('provincia') : irASiguiente())));
     else if (provincia === undefined) return irA('portada'); // first visit: the home page, then the province
     else if (ruta === 'inicio') raiz.replaceChildren(vistaVueltaApp());
-    else if (ruta === 'preguntar') raiz.replaceChildren(vistaPreguntar());
     else if (ruta === 'temas') raiz.replaceChildren(vistaLista());
-    else if (ruta === 'resultado') raiz.replaceChildren(vistaResultadoApp());
-    else if (existe) raiz.replaceChildren(vistaTema(temaId!));
+    else if (ruta === 'preguntar') raiz.replaceChildren(vistaPreguntas(partida));
+    else if (ruta.startsWith('preguntar/') && partida.preguntas().some((p) => p.id === decodeURIComponent(ruta.slice(10))))
+      raiz.replaceChildren(vistaRespuesta(partida, decodeURIComponent(ruta.slice(10))));
+    else if (ruta === 'resultado') raiz.replaceChildren(vistaResultadoApp()), analiticaResultado(partida);
+    else if (ruta === 'compartir') raiz.replaceChildren(vistaCompartirApp());
+    else if (existe) raiz.replaceChildren(vistaTema(temaId!)), analiticaVerTema(partida);
     else if (!inicioMostrado && partida.hechos().length > 0) {
       inicioMostrado = true;
       return irA('inicio');
@@ -132,6 +141,14 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       raiz.prepend(aviso);
       retirarTras(aviso, DURACION_AVISO_ZONA);
       mostrarAviso = false;
+    }
+    if (reto) {
+      // ?r=reto: once, on the first screen shown; on the first-visit home, above its headline.
+      const linea = avisoReto(reto);
+      const titular = ruta === 'portada' ? raiz.querySelector('h1') : null;
+      if (titular) titular.before(linea);
+      else raiz.prepend(linea);
+      reto = null;
     }
     pintarPestanas(ruta);
     if (avisoAlmacen) {
@@ -192,6 +209,12 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       }, avisoPrioridad),
     );
 
+  const vistaCompartirApp = () =>
+    h('div', {},
+      h('header', { class: 'cabecera' }, h('a', { href: '#resultado', class: 'volver' }, '← Mi resultado')),
+      vistaCompartir(partida),
+    );
+
   const vistaDatosApp = () =>
     h('div', {},
       h('header', { class: 'cabecera' }, h('a', { href: '#temas', class: 'volver' }, '← Temas')),
@@ -233,6 +256,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       lista.extra.length ? h('h2', {}, 'Temas extra') : null,
       lista.extra.length ? h('ul', { class: 'filas', role: 'list' }, ...lista.extra.map(fila)) : null,
       bloquePartidos(partida),
+      partida.preguntas().length
+        ? h('p', {}, h('a', { href: '#preguntar', class: 'fila-tema' }, h('span', { class: 'nombre' }, 'Pregunta a los programas'), h('span', { class: 'estado' }, '→')))
+        : null,
       h('p', {}, h('a', { href: '#datos' }, 'Tus datos')),
       hechos ? empezarDeCero(borrarTodo) : null,
     );
@@ -295,7 +321,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
   /** Confirm + optional bet in one tap: a chip reveals with that bet, the big button without. */
   const hojaConfirmar = (temaId: string, valor: string): HTMLElement => {
     const confirmar = (apuesta?: string) => {
+      const antes = partida;
       actualizar(partida.elegir(temaId, valor, apuesta ? { apuesta } : undefined));
+      analiticaConfirmar(antes, partida, temaId);
       seleccion = null;
       lector.parar();
       animarRevelacion = true;
@@ -428,14 +456,6 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     return capa;
   };
 
-  /** Placeholder for #14 (Preguntar tab with precomputed questions). */
-  const vistaPreguntar = () =>
-    h('section', { class: 'preguntar' },
-      h('h1', { tabindex: '-1' }, 'Preguntar'),
-      h('p', {}, 'Muy pronto podrás preguntar qué propone cada partido sobre algo concreto, con la cita de su programa.'),
-      h('a', { href: '#temas', class: 'secundario boton-enlace' }, 'Volver a los temas'),
-    );
-
   pintar();
 }
 
@@ -457,7 +477,7 @@ function pintarPestanas(ruta: string): void {
     observada = true;
     new ResizeObserver(() => document.documentElement.style.setProperty('--alto-pestanas', `${nav.offsetHeight}px`)).observe(nav);
   }
-  const actual = ruta.startsWith('tema/') ? null : ruta;
+  const actual = ruta.startsWith('tema/') ? null : ruta.split('/')[0];
   for (const a of nav.querySelectorAll('a')) {
     if (a.getAttribute('href') === `#${actual}`) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');

@@ -5,6 +5,7 @@
 // AI answers are cached in data/cache/ia (commit it: re-runs are then free and identical).
 // Writes the dataset only if the programme is publishable and the dataset passes V9.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { rutaTexto } from '../src/pregunta/textos';
 import { parseArgs } from 'node:util';
 import { Dataset, TipoFuente, type Partido } from '../src/dataset';
 import { crearCacheEnDisco } from '../src/ia/cache-disco';
@@ -68,4 +69,7 @@ if (!fusion.ok) {
 await mkdir('data/informes', { recursive: true });
 await writeFile(`data/informes/${partido.id}.json`, JSON.stringify(resultado.informe, null, 2) + '\n');
 await writeFile(values.dataset, JSON.stringify(fusion.dataset, null, 2) + '\n');
+// Page text for the live free question (read by the Cloudflare function, see docs/deploy.md).
+await mkdir('public/textos', { recursive: true });
+await writeFile(`public/${rutaTexto(partido.id)}`, JSON.stringify(resultado.texto) + '\n');
 console.log(`${partido.id}: ${resultado.posturas.length} postura(s) publicadas en ${values.dataset}`);

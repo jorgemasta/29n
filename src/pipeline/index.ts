@@ -2,8 +2,22 @@
 //   procesarPrograma(pdf, partido, ia) → { posturas, informe, publicable }
 // Stages: V7 (source) → PDF text by page → extract postura per topic (V12 confirms absences) →
 // V1/V2 → neutralise → V3–V6 + V10 (rewrite loop) → V11 → V9 → publication decision.
-import type { Cita, EntradaInforme, Informe, Partido, Postura, ResumenPostura, Tema, TextoNeutral } from '../dataset/esquema';
-import { Postura as EsquemaPostura } from '../dataset/esquema';
+// Then the answers to the suggested questions (src/pregunta: V1, V3–V6, V10), which never block.
+import type {
+  Cita,
+  EntradaInforme,
+  Informe,
+  Partido,
+  Postura,
+  Pregunta,
+  RespuestaPregunta,
+  ResumenPostura,
+  Tema,
+  TextoNeutral,
+} from '../dataset/esquema';
+import { Postura as EsquemaPostura, RespuestaPregunta as EsquemaRespuesta } from '../dataset/esquema';
+import { responderPregunta, VERSION_PROMPT_PREGUNTA } from '../pregunta';
+import { PREGUNTAS_SUGERIDAS } from '../registro/preguntas';
 import type { AdaptadorIA } from '../ia/adaptador';
 import { comprobacionConCache, conCache, type AlmacenCache } from '../ia/cache';
 import { TEMAS } from '../registro/temas';
@@ -16,6 +30,7 @@ import { verificarFidelidad } from './fidelidad';
 import { verificarFuente } from './fuente';
 import { limpiarTexto, revisarTexto, type BarreraTexto, type FalloTexto } from './texto';
 import { extraerPaginas, hashPdf } from './pdf';
+import type { TextoPrograma } from '../pregunta/textos';
 import {
   INSTRUCCIONES_EXTRAER,
   INSTRUCCIONES_NEUTRALIZAR,
@@ -43,12 +58,21 @@ export interface OpcionesProceso {
   longitudesTema?: Record<string, number[]>;
   /** Capture date of the PDF, recorded with its hash (V7). Defaults to the programme's date. */
   fecha?: string;
+  /** Suggested questions to precompute answers for (default: registro/preguntas). */
+  preguntas?: Pregunta[];
 }
 
 export interface ResultadoProceso {
   posturas: Postura[];
   informe: Informe;
   publicable: boolean;
+  /** One answer per suggested question (anonymous until revealed in the Preguntar tab). */
+  respuestas: RespuestaPregunta[];
+  /**
+   * Page text of the programme, published next to the site (public/textos/<partido>.json) so the
+   * live free question can answer and run V1/V2 on it. Null when blocked before reading the PDF (V7).
+   */
+  texto: TextoPrograma | null;
 }
 
 /** Max rewrites after a failed rewrite-barrier before the postura is discarded. */
@@ -97,7 +121,8 @@ export async function procesarPrograma(
   // V7: official source. A non-official PDF blocks the programme before any AI call.
   const fuente = verificarFuente(partido, opciones.dominios ?? DOMINIOS_OFICIALES);
   entradas.push({ barrera: 'V7', resultado: fuente.ok ? 'pasa' : 'bloquear', detalle: fuente.detalle });
-  if (!fuente.ok) return { posturas, publicable: false, informe: informe(false, [`V7: ${fuente.detalle}`], fuente.url) };
+  if (!fuente.ok)
+    return { posturas, respuestas: [], texto: null, publicable: false, informe: informe(false, [`V7: ${fuente.detalle}`], fuente.url) };
 
   const paginas = await extraerPaginas(pdf);
 
@@ -286,9 +311,30 @@ export async function procesarPrograma(
     resumen.push({ tema: tema.id, estado: 'propone', reescrituras });
   }
 
-  // V9: every postura validates against the schema.
+  // Suggested questions: one answer per question, with the same quote/marks/fidelity barriers.
+  // They never count towards the publication rule (a programme is not about our questions).
+  const respuestas: RespuestaPregunta[] = [];
+  for (const pregunta of opciones.preguntas ?? PREGUNTAS_SUGERIDAS) {
+    const r = await responderPregunta(ia, pregunta, paginas, {
+      terminos,
+      anotar: (barrera, resultado, detalle) => entradas.push({ pregunta: pregunta.id, barrera, resultado, detalle }),
+    });
+    const base = { partido: partido.id, pregunta: pregunta.id, versiones: { prompt: VERSION_PROMPT_PREGUNTA } };
+    if (r.estado === 'responde') respuestas.push({ ...base, estado: 'responde', texto: r.texto, citas: r.citas });
+    else {
+      if (r.estado === 'no_menciona') entradas.push({ pregunta: pregunta.id, barrera: 'V12', resultado: 'pasa', detalle: `no lo menciona: ${r.detalle}` });
+      respuestas.push({ ...base, estado: r.estado });
+    }
+  }
+
+  // V9: every postura validates against the schema (an invalid answer is just not published).
   const invalidas = posturas.filter((p) => !EsquemaPostura.safeParse(p).success);
   for (const p of invalidas) entradas.push({ tema: p.tema, barrera: 'V9', resultado: 'descartar', detalle: 'no valida contra el esquema' });
+  const respuestasValidas = respuestas.filter((r) => {
+    const ok = EsquemaRespuesta.safeParse(r).success;
+    if (!ok) entradas.push({ pregunta: r.pregunta, barrera: 'V9', resultado: 'descartar', detalle: 'la respuesta no valida contra el esquema' });
+    return ok;
+  });
 
   // Publication rule: blocked if more than MAX_DESCARTE of the extracted posturas were discarded.
   const motivos: string[] = [];
@@ -297,5 +343,6 @@ export async function procesarPrograma(
     motivos.push(`descartado el ${Math.round((descartadas / extraidas) * 100)} % de las posturas extraídas (máximo ${MAX_DESCARTE * 100} %)`);
   const publicable = motivos.length === 0;
 
-  return { posturas, publicable, informe: informe(publicable, motivos, fuente.url) };
+  const texto: TextoPrograma = { partido: partido.id, hashPdf: hash, paginas };
+  return { posturas, respuestas: respuestasValidas, texto, publicable, informe: informe(publicable, motivos, fuente.url) };
 }

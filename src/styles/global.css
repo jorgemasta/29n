@@ -158,6 +158,15 @@ a { color: var(--acento); }
 .tabla-rubrica th, .tabla-rubrica td { text-align: left; vertical-align: top; padding: 0.5rem; border-bottom: 1px solid var(--borde); }
 pre.prompt { white-space: pre-wrap; background: var(--piedra-2); padding: 0.75rem; border-radius: 0.5rem; font-size: 0.8rem; }
 
+/* Preguntar (#14) */
+.tarjeta-respuesta { cursor: default; }
+.tarjeta-respuesta .gris { font-size: 0.85rem; font-style: italic; }
+.pregunta-libre { margin: 1.5rem 0 1rem; display: grid; gap: 0.5rem; }
+.pregunta-libre textarea:disabled, .pregunta-libre button:disabled { opacity: 0.6; cursor: not-allowed; }
+.esqueleto { min-height: 4.5rem; background: linear-gradient(90deg, var(--acento-claro), transparent, var(--acento-claro)); background-size: 200% 100%; animation: esqueleto 1.2s linear infinite; }
+@keyframes esqueleto { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .esqueleto { animation: none; } }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* Game flow (#8): confirm + bet, result, returning visit, your data. */
 .hoja { max-height: 60vh; overflow-y: auto; }
 .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -295,3 +304,11 @@ dialog.ayuda p { margin: 0 0 1rem; }
 /* Reflow: the reveal summary wraps instead of pushing the feasibility chip off-screen. */
 .revelada summary { flex-wrap: wrap; }
 .chip-viabilidad { white-space: normal; max-width: 100%; }
+/* Share (screen 11) and ?r=reto */
+.aviso-reto { font-weight: 700; color: var(--acento); background: var(--acento-claro); border-left: 4px solid var(--acento); padding: 0.75rem; border-radius: 0.25rem; margin: 0 0 0.5rem; }
+.vista-previa { display: grid; place-items: center; margin: 0 0 1rem; }
+.tarjeta-compartir { display: block; max-width: 100%; height: auto; max-height: 60vh; border: 1px solid var(--borde); border-radius: 0.5rem; box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
+.selector { border: none; padding: 0; margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.selector legend { font-weight: 600; margin-bottom: 0.5rem; padding: 0; }
+.selector .opcion { flex: 1; min-height: 3rem; display: flex; align-items: center; gap: 0.5rem; border: 2px solid var(--borde); border-radius: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer; }
+.selector .opcion:has(input:checked) { border-color: var(--acento); background: var(--acento-claro); }
