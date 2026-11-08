@@ -2,6 +2,7 @@
 // "sin concreción" and "sin consenso" sit outside the scale with their own icon. Always labelled IA.
 import type { Evaluacion, Fuente, NotaViabilidad } from '../dataset/esquema';
 import { CRITERIOS, FUERA_DE_ESCALA, NIVELES, nombreNivel } from '../registro/rubrica';
+import { etiquetaIA } from './ia';
 
 export const URL_RUBRICA = '/rubrica/';
 
@@ -25,7 +26,7 @@ export function notaViabilidad(nota: NotaViabilidad | null): HTMLElement | null 
   const consenso = nota.resultado !== 'sin_consenso';
   const publicada = consenso ? (nota.evaluaciones.find((e) => e.porque === nota.porque) ?? nota.evaluaciones[0]) : null;
   return h('section', { class: 'viabilidad', 'aria-label': 'Viabilidad' },
-    h('h3', {}, 'Viabilidad ', h('span', { class: 'etiqueta-ia' }, 'IA')),
+    h('h3', {}, 'Viabilidad ', etiquetaIA('/metodologia/#viabilidad')),
     escala(nota),
     h('p', { class: 'nivel' }, h('strong', {}, `${nombreNivel(nota.resultado)}: `), explicacion(nota)),
     publicada

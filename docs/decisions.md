@@ -55,12 +55,14 @@ Cerradas en la sesión de *grilling* del 8-nov-2026. El detalle de la UX está e
   - Tope de 150 €/mes. Al alcanzarlo, la pregunta libre solo muestra preguntas frecuentes ya respondidas.
   - Retención de la API de Anthropic (comprobado el 8-nov-2026 en fuentes oficiales): borrado en 30 días por defecto
     (hasta 2 años si se marca por la política de uso), sin entrenamiento con los datos de la API. La retención cero existe,
-    pero se pide a ventas y la aprueba Anthropic: el proyecto no la tiene. Fuentes y texto en la metodología (#privacidad).
+    pero se pide a ventas y la aprueba Anthropic: el proyecto no la tiene. Fuentes y texto en la página de privacidad (`/privacidad/#pregunta`).
   - Límite por sesión: 8 preguntas respondidas por IA (las de la caché no cuentan). Sesión = id aleatorio en
     `sessionStorage`, guardado solo como hash con caducidad de 24 h. Sin IP.
   - El tope se aplica con un coste estimado por llamada; el tope duro es el límite de gasto del *workspace* de Anthropic.
   - La V10 de la pregunta libre la hace Sonnet 5.5 (esfuerzo bajo): toda barrera con IA usa un modelo distinto del que genera.
 - **Privacidad**: todo se procesa en el navegador. Sin cuentas, sin guardar elecciones y sin estadísticas agregadas de afinidad. La tarjeta para compartir se genera en el cliente.
+  Página propia `/privacidad/` (incluye Umami, avisos, pregunta libre y retención de Anthropic) y aviso de contenido generado por IA (`/privacidad/#ia`); cada etiqueta «IA» de la app enlaza ahí (la de viabilidad, a la metodología). Una prueba (`tests/lanzamiento.test.ts`) impide que nada fuera del cliente calcule el resultado de afinidad.
+- **Lanzamiento (#16)**: solo el build de producción (`PRODUCCION=1`, `npm run deploy`) es indexable y falla con datos de prueba, partidos fuera del registro o fuentes no oficiales; las fuentes provisionales se excluyen con aviso. El prototipo privado va a otro Worker (`29n-privado`, workers.dev), nunca al dominio público. Licencias: código MIT (`LICENSE`), datos CC BY 4.0 (`data/LICENSE.md`; las citas literales son de cada partido).
 - **Analítica**: Umami Cloud (región UE), con eventos de embudo y la tasa de acierto de la apuesta. Nunca qué partido elige cada usuario.
 
 ## Proyecto

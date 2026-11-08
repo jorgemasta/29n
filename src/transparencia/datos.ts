@@ -1,10 +1,18 @@
-// Build-time dataset for the static transparency pages, filtered by MODO exactly like the game page
-// (src/pages/index.astro): the public build never ships provisional sources.
+// Build-time dataset for every static page, through the launch rules (src/lanzamiento): the public build
+// never ships provisional sources, and the production build (PRODUCCION=1) fails unless the data is real.
 import datos from '../../data/dataset.json';
-import { aplicarModo, type Dataset, type Modo } from '../dataset';
+import type { Dataset, Modo } from '../dataset';
+import { configurarPublicacion } from '../lanzamiento';
 
-export const modo: Modo = process.env.MODO === 'privado' ? 'privado' : 'publico';
-export const dataset: Dataset = aplicarModo(datos as Dataset, modo);
+const publicacion = configurarPublicacion(datos as Dataset, process.env);
+if (publicacion.errores.length) {
+  throw new Error(`Build de producción bloqueado (docs/deploy.md, «Lanzamiento»):\n- ${publicacion.errores.join('\n- ')}`);
+}
+
+export const modo: Modo = publicacion.modo;
+export const dataset: Dataset = publicacion.dataset;
+/** Only the checked production build lets search engines in (meta robots, robots.txt). */
+export const indexable = publicacion.indexable;
 
 /** "14 nov, 09:30" (Europe/Madrid). */
 export const fechaCorta = (iso: string) =>

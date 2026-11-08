@@ -22,5 +22,15 @@
   // Needed for the free question and the per-session limits (docs/deploy.md). Uncomment with the
   // id printed by `npx wrangler kv namespace create PREGUNTAS`:
   // "kv_namespaces": [{ "binding": "PREGUNTAS", "id": "<id>" }],
-  "routes": [{ "pattern": "29n.jorgemasta.com", "custom_domain": true }]
+  "routes": [{ "pattern": "29n.jorgemasta.com", "custom_domain": true }],
+  "env": {
+    // Private prototype (`npm run deploy:privado`, MODO=privado): its own Worker on workers.dev, never the
+    // public domain, so it can't overwrite the production site. Free question stays closed.
+    "privado": {
+      "name": "29n-privado",
+      "routes": [],
+      "workers_dev": true,
+      "vars": { "PREGUNTA_LIBRE": "0", "TOPE_MENSUAL": "0", "MODO": "privado" }
+    }
+  }
 }

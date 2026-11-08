@@ -14,8 +14,9 @@
     "procesar": "tsx scripts/procesar.ts",
     "municipios": "tsx scripts/generar-municipios.ts",
     "og": "tsx scripts/generar-og.ts",
-    "deploy": "npm run build && wrangler deploy",
-    "deploy:privado": "npm run build:privado && wrangler deploy",
+    "build:produccion": "PRODUCCION=1 astro build",
+    "deploy": "npm run build:produccion && wrangler deploy",
+    "deploy:privado": "npm run build:privado && wrangler deploy --env privado",
     "e2e": "npm run build && tsx tests/e2e/humo.e2e.ts"
   },
   "dependencies": {

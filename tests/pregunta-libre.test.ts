@@ -312,7 +312,8 @@ describe('Cloudflare function (src/worker)', () => {
   it('never serves the page texts directly, and passes everything else to the static site', async () => {
     const f = await manejador();
     expect((await f(new Request(`${ORIGEN}/textos/prueba-a.json`), { ASSETS: assets })).status).toBe(404);
-    expect((await f(new Request(`${ORIGEN}/robots.txt`), { ASSETS: assets })).status).toBe(200);
+    // robots.txt is generated at build time now (#16): use a file that lives in public/.
+    expect((await f(new Request(`${ORIGEN}/og.png`), { ASSETS: assets })).status).toBe(200);
   });
 
   it('keeps the /?r=reto link preview (#9): only the og title of "/" changes', async () => {

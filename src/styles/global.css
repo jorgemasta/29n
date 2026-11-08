@@ -140,7 +140,9 @@ a { color: var(--acento); }
 .chip-viabilidad { margin-left: auto; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--borde); border-radius: 1rem; padding: 0.1rem 0.6rem; white-space: nowrap; }
 .viabilidad { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--borde); }
 .viabilidad h3 { font-size: 1rem; margin: 0 0 0.5rem; }
-.etiqueta-ia { font-size: 0.7rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; vertical-align: middle; }
+.etiqueta-ia { font-size: 0.7rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; vertical-align: middle; color: inherit; text-decoration: none; }
+a.etiqueta-ia:hover, a.etiqueta-ia:focus-visible { text-decoration: underline; }
+.pie p { margin: 0.25rem 0; }
 .escala { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; list-style: none; padding: 0; margin: 0 0 0.5rem; font-size: 0.7rem; }
 .escala li { border: 2px solid var(--acento); border-radius: 0.25rem; padding: 0.2rem; text-align: center; color: var(--tinta-suave); }
 .escala li.actual { background: var(--acento); color: var(--piedra); font-weight: 700; }

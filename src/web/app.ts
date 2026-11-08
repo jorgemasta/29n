@@ -23,6 +23,7 @@ import { vistaPreguntas, vistaRespuesta } from './preguntar';
 import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
 import { boton, empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
+import { etiquetaIA } from './ia';
 import { botonReportar } from './reportar';
 import { vistaPortada } from './portada';
 import { crearLector } from './escuchar';
@@ -307,6 +308,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       utilidades(vista.tarjetas),
       lista,
       h('p', { class: 'gris' }, `Hay ${vista.tarjetas.length} propuestas.${sinPropuesta}`),
+      h('p', { class: 'gris nota-ia' }, etiquetaIA(), ' Reescritas con IA en el mismo estilo y largo parecido. El texto original lo verás después de elegir.'),
       ayudaPrimeraVez(temaId),
       h('p', { class: 'gris' }, `El orden y las letras se barajan para ti en cada tema. Tu barajado: #${vista.barajado} `,
         boton('Barajar otra vez', 'enlace', () => {
@@ -402,7 +404,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
         ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${unir(r.pendientes.map((p) => p.nombre))}. `,
             'Mientras falte, no aparece en los temas ni en tu resultado. ', h('a', { href: '/partidos/' }, 'Partidos y programas'))
         : null,
-      h('p', { class: 'nota' }, 'Las propuestas están reescritas con IA en un estilo común. La cita es el texto literal del documento.'),
+      h('p', { class: 'nota' }, etiquetaIA(), ' Las propuestas están reescritas con IA en un estilo común. La cita es el texto literal del documento.'),
       r.tarjetas.some((t) => t.viabilidad)
         ? h('p', { class: 'nota' }, 'La viabilidad dice qué haría falta para aplicarla, no si es buena idea.')
         : null,

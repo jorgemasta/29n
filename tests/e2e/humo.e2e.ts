@@ -1,4 +1,5 @@
-// End-to-end smoke test (ticket #12): portada → provincia → 1 tema → revelación, plus basic
+// End-to-end smoke test (tickets #12, #16): portada → provincia → 5 temas → resultado → compartir →
+// preguntar → tus datos → privacy page and footers, on a phone and a desktop viewport, plus basic
 // accessibility checks (axe contrast and serious violations, focus on the heading, touch targets,
 // 'Aa', reflow at 320 px, reduced motion). Drives a real Chrome through agent-browser against the
 // static build in dist/. Run with `npm run e2e` (builds first). Not part of `npm test`.
@@ -7,8 +8,8 @@
 // unpacked to ~/.agent-browser/libs/root (see docs/e2e.md); this script adds that dir to
 // LD_LIBRARY_PATH when it exists.
 import { execFileSync, spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import assert from 'node:assert/strict';
 
@@ -75,11 +76,18 @@ const ruta = () => js<string>('location.hash');
 const textoFoco = () => js<string>('document.activeElement?.tagName + ":" + (document.activeElement?.textContent ?? "").trim()');
 
 let pasos = 0;
+let prefijo = '';
 function paso(nombre: string, f: () => void) {
   f();
   pasos++;
-  console.log(`  ✓ ${nombre}`);
+  console.log(`  ✓ ${prefijo}${nombre}`);
 }
+
+/** Phone and desktop: the full journey runs at both sizes. */
+const VISTAS = [
+  { nombre: 'móvil', ancho: '390', alto: '844' },
+  { nombre: 'escritorio', ancho: '1280', alto: '800' },
+];
 
 /** axe (bundled with agent-browser): no contrast failures and no serious/critical violations. */
 function sinViolaciones(donde: string) {
@@ -113,9 +121,10 @@ function sinDesbordar(donde: string) {
   assert.ok(ancho.doc <= ancho.vista, `desborda en ${donde}: ${ancho.doc} > ${ancho.vista} (${culpables.join(', ')})`);
 }
 
-try {
-  console.log(`Prueba de humo en ${BASE}`);
-  ab('set', 'viewport', '390', '844');
+/** The whole journey, from a first visit, at one viewport size. */
+function recorrido(v: { nombre: string; ancho: string; alto: string }) {
+  prefijo = `[${v.nombre}] `;
+  ab('set', 'viewport', v.ancho, v.alto);
   ab('open', BASE);
   js('localStorage.clear()');
   ab('open', BASE);
@@ -163,7 +172,7 @@ try {
     sinDesbordar('portada, letra grande, 320 px');
     ab('click', '#aa');
     assert.equal(js<string>(`getComputedStyle(document.documentElement).fontSize`), '18px');
-    ab('set', 'viewport', '390', '844');
+    ab('set', 'viewport', v.ancho, v.alto);
   });
 
   paso('provincia: foco en el titular, buscador por municipio', () => {
@@ -255,8 +264,81 @@ try {
     zonasTactiles('lista de temas');
   });
 
+  paso('cinco temas: etiqueta IA enlazada a ciegas y al revelar', () => {
+    for (let n = 0; n < 4; n++) {
+      ab('click', '.pestanas a[href="#temas"]');
+      esperarA(`document.querySelector('a.fila-tema.sin_empezar')`, 'un tema sin empezar');
+      js(`document.querySelector('a.fila-tema.sin_empezar').click(); true`);
+      esperarA(`document.querySelector('.tarjeta[data-valor]')`, 'tarjetas');
+      assert.equal(js<string>(`document.querySelector('.nota-ia a.etiqueta-ia')?.getAttribute('href')`), '/privacidad/#ia', 'IA a ciegas');
+      js(`document.querySelector('.tarjeta[data-valor]').click(); true`);
+      esperarA(`document.querySelector('.barra-fija button.principal')`, 'barra de confirmación');
+      js(`document.querySelector('.barra-fija button.principal').click(); true`);
+      esperarA(`document.querySelector('.revelacion')`, 'revelación');
+      const etiquetas = js<string[]>(`[...document.querySelectorAll('.revelacion a.etiqueta-ia')].map((a) => a.getAttribute('href'))`);
+      assert.ok(etiquetas.includes('/privacidad/#ia'), `IA al revelar: ${etiquetas}`);
+    }
+    sinDesbordar('quinta revelación');
+  });
+
+  paso('Mi resultado (calculado en el móvil) y Compartir', () => {
+    ab('click', '.pestanas a[href="#resultado"]');
+    esperarA(`location.hash === '#resultado' && document.querySelector('.ranking .fila-ranking')`, 'ranking');
+    assert.match(textoFoco(), /^H1:Mi resultado/);
+    sinViolaciones('resultado');
+    zonasTactiles('resultado');
+    sinDesbordar('resultado');
+    js(`location.hash = '#compartir'; true`);
+    esperarA(`document.querySelector('h1')?.textContent === 'Compartir'`, 'compartir');
+    sinViolaciones('compartir');
+    zonasTactiles('compartir');
+    sinDesbordar('compartir');
+  });
+
+  paso('Preguntar: etiqueta IA y respuesta a una pregunta sugerida', () => {
+    ab('click', '.pestanas a[href="#preguntar"]');
+    esperarA(`document.querySelector('a.fila-pregunta')`, 'preguntas sugeridas');
+    assert.equal(js<string>(`document.querySelector('.preguntar a.etiqueta-ia')?.getAttribute('href')`), '/privacidad/#ia');
+    sinViolaciones('preguntar');
+    zonasTactiles('preguntar');
+    js(`document.querySelector('a.fila-pregunta').click(); true`);
+    esperarA(`location.hash.startsWith('#preguntar/') && document.querySelector('h1')`, 'respuesta');
+    sinViolaciones('respuesta');
+    sinDesbordar('respuesta');
+  });
+
+  paso('Tus datos, y nada ha salido del navegador', () => {
+    js(`location.hash = '#datos'; true`);
+    esperarA(`document.querySelector('h1')?.textContent === 'Tus datos'`, 'tus datos');
+    sinViolaciones('tus datos');
+    zonasTactiles('tus datos');
+    const fuera = js<string[]>(`performance.getEntriesByType('resource').map((e) => e.name).filter((u) => new URL(u).origin !== location.origin)`);
+    assert.deepEqual(fuera, [], 'peticiones a otros dominios');
+  });
+
+  paso('privacidad y pie con licencias en todas las páginas', () => {
+    for (const pagina of ['', 'privacidad/', 'metodologia/', 'partidos/', 'rubrica/']) {
+      ab('open', BASE + pagina);
+      esperarA(`document.querySelector('footer.pie')`, `pie de /${pagina}`);
+      const pie = js<{ texto: string; enlaces: string[] }>(`({ texto: document.querySelector('footer.pie').textContent,
+        enlaces: [...document.querySelectorAll('footer.pie a')].map((a) => a.getAttribute('href')) })`);
+      assert.match(pie.texto, /licencia MIT/, `MIT en /${pagina}`);
+      assert.match(pie.texto, /CC BY 4\.0/, `CC BY en /${pagina}`);
+      assert.match(pie.texto, /Jorge Masta, sin afiliación/, `autoría en /${pagina}`);
+      assert.ok(pie.enlaces.includes('/privacidad/'), `enlace a privacidad en /${pagina}`);
+    }
+    ab('open', BASE + 'privacidad/');
+    esperarA(`document.querySelector('h1')`, 'privacidad');
+    const texto = js<string>('document.querySelector("main").textContent');
+    for (const t of ['nunca salen del navegador', 'Umami', 'Anthropic', '30 días', 'retención cero', 'art. 69 de la LOREG'])
+      assert.ok(texto.includes(t), `privacidad menciona «${t}»`);
+    assert.ok(js<boolean>(`!!document.getElementById('ia')`), 'ancla #ia');
+    sinViolaciones('privacidad');
+    sinDesbordar('privacidad');
+  });
+
   paso("páginas de información: contraste y 'Aa'", () => {
-    for (const pagina of ['metodologia/', 'partidos/', 'rubrica/']) {
+    for (const pagina of ['metodologia/', 'partidos/', 'rubrica/', 'privacidad/']) {
       ab('open', BASE + pagina);
       esperarA(`document.querySelector('h1')`, pagina);
       sinViolaciones(pagina);
@@ -266,7 +348,35 @@ try {
     assert.equal(js<string>(`getComputedStyle(document.documentElement).fontSize`), '22px');
     ab('click', '#aa');
   });
+}
 
+try {
+  console.log(`Prueba de humo en ${BASE}`);
+
+  paso('el build de producción se niega a publicar los datos de prueba', () => {
+    const salida = mkdtempSync(join(tmpdir(), '29n-prod-'));
+    let fallo = '';
+    try {
+      execFileSync(resolve('node_modules/.bin/astro'), ['build', '--outDir', salida], {
+        env: { ...process.env, PRODUCCION: '1' }, encoding: 'utf8', stdio: 'pipe', timeout: 300_000,
+      });
+    } catch (e) {
+      const { stdout, stderr } = e as { stdout?: string; stderr?: string };
+      fallo = `${stdout ?? ''}${stderr ?? ''}`;
+    } finally {
+      rmSync(salida, { recursive: true, force: true });
+    }
+    assert.match(fallo, /Build de producción bloqueado/, 'PRODUCCION=1 con el dataset simulado debe fallar');
+    assert.match(fallo, /simulado/);
+  });
+
+  paso('vista previa: no indexable (robots.txt y meta robots)', () => {
+    assert.match(readFileSync(join(DIST, 'robots.txt'), 'utf8'), /Disallow: \//);
+    for (const f of ['index.html', 'privacidad/index.html', 'metodologia/index.html'])
+      assert.match(readFileSync(join(DIST, f), 'utf8'), /<meta name="robots" content="noindex, nofollow"/, f);
+  });
+
+  for (const v of VISTAS) recorrido(v);
   console.log(`Prueba de humo: ${pasos} pasos correctos.`);
 } catch (e) {
   console.error(`✗ Falla tras ${pasos} pasos:`, e instanceof Error ? e.message : e);

@@ -2,9 +2,10 @@
 // Shell of the static information pages (methodology, parties, reports, rubric).
 import '../styles/global.css';
 import { dataset } from '../transparencia/datos';
-import { REPO } from '../transparencia';
 import LetraInicial from './LetraInicial.astro';
 import Umami from './Umami.astro';
+import Robots from './Robots.astro';
+import Pie from './Pie.astro';
 interface Props { titulo: string; descripcion: string; volver?: { href: string; texto: string } }
 const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Astro.props;
 ---
@@ -13,7 +14,7 @@ const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Ast
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
+    <Robots />
     <title>{titulo} · 29N</title>
     <meta name="description" content={descripcion} />
     <LetraInicial />
@@ -30,12 +31,7 @@ const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Ast
       )}
       <slot />
     </main>
-    <footer class="pie">
-      <nav class="enlaces-pie" aria-label="Información">
-        <a href="/metodologia/">Cómo funciona</a> · <a href="/partidos/">Partidos y programas</a> · <a href={REPO}>Código abierto</a>
-      </nav>
-      <p>Proyecto personal de Jorge Masta, sin afiliación a ningún partido.</p>
-    </footer>
+    <Pie />
     <script>
       import { montarBotonLetra } from '../web/letra';
       montarBotonLetra(document.getElementById('aa') as HTMLButtonElement);

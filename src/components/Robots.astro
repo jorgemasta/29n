@@ -1,0 +1,5 @@
+---
+// Search engines only index the checked production build (src/lanzamiento).
+import { indexable } from '../transparencia/datos';
+---
+<meta name="robots" content={indexable ? 'index, follow' : 'noindex, nofollow'} />

@@ -8,6 +8,7 @@ import type { Partida, PartidoRevelado, PreguntaVista, RevelacionPregunta, Tarje
 import type { RespuestaPregunta } from '../dataset/esquema';
 import { LIMITE_SESION, MAX_CARACTERES, MIN_CARACTERES } from '../pregunta/limites';
 import { chipProvincia } from './provincia';
+import { etiquetaIA } from './ia';
 
 /** Questions left this session, from the last answer of the function (null = not asked yet). */
 let quedan: number | null = null;
@@ -21,7 +22,7 @@ function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): H
 }
 
 const AVISO_IA = () =>
-  h('p', { class: 'nota' }, h('span', { class: 'etiqueta-ia' }, 'IA'), ' Respuestas escritas por IA a partir de los programas. Comprueba la cita.');
+  h('p', { class: 'nota' }, etiquetaIA(), ' Respuestas escritas por IA a partir de los programas. Comprueba la cita.');
 
 const cabecera = (partida: Partida, volver: { href: string; texto: string }) =>
   h('header', { class: 'cabecera' },
@@ -71,7 +72,7 @@ function formularioLibre(partida: Partida): HTMLElement {
     enviar,
     h('p', { id: 'privacidad-pregunta', class: 'nota' },
       'Tu pregunta se envía a Anthropic (Claude) sin datos tuyos para buscar la respuesta en los programas. No guardamos registros. ',
-      h('a', { href: '/metodologia/#privacidad' }, 'Más detalles')),
+      h('a', { href: '/privacidad/#pregunta' }, 'Más detalles')),
     estado,
   ) as HTMLFormElement;
 

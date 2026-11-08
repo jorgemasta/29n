@@ -55,6 +55,8 @@ jobs:
           NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
           # Without it the deploy ships the site with analytics off (docs/deploy.md).
           UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
+          # "1" once the free question is open (docs/deploy.md); otherwise its deploys close the box again.
+          PUBLIC_PREGUNTA_LIBRE: ${{ vars.PUBLIC_PREGUNTA_LIBRE }}
           PUSH: '1'
           PARTIDO: ${{ inputs.partido }}
           FORZAR: ${{ inputs.forzar }}

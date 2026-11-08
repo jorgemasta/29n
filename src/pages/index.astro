@@ -1,16 +1,15 @@
 ---
 import '../styles/global.css';
-import datos from '../../data/dataset.json';
-import { aplicarModo, type Dataset, type Modo } from '../dataset';
+import { dataset, modo } from '../transparencia/datos';
 import LetraInicial from '../components/LetraInicial.astro';
 import Umami from '../components/Umami.astro';
+import Robots from '../components/Robots.astro';
+import Pie from '../components/Pie.astro';
 import { OG } from '../compartir';
 
-// Mode switch, at build time: `MODO=privado` (private prototype) also ships provisional sources
-// (2023 programmes, party documents, public statements). Anything else ships only official
-// programmes, so provisional data never reaches the public site.
-const modo: Modo = process.env.MODO === 'privado' ? 'privado' : 'publico';
-const dataset = aplicarModo(datos as Dataset, modo);
+// Mode switch, at build time (src/lanzamiento): `MODO=privado` (private prototype) also ships provisional
+// sources (2023 programmes, party documents, public statements). Anything else ships only official
+// programmes, so provisional data never reaches the public site; PRODUCCION=1 also refuses test data.
 const esPrueba = dataset.origen !== 'real';
 // Safe to inline in a <script type="application/json">: escape "<" so no "</script>" can close it.
 const imagenOg = new URL(OG.imagen.ruta, Astro.site).href;
@@ -21,7 +20,7 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
+    <Robots />
     <title>29N · Elige a ciegas</title>
     <meta name="description" content="Lee lo que proponen los partidos sin saber de quién es." />
     <LetraInicial />
@@ -69,12 +68,7 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
       <a href="#preguntar"><span aria-hidden="true">💬</span> Preguntar</a>
       <a href="#resultado"><span aria-hidden="true">📊</span> Mi resultado</a>
     </nav>
-    <footer class="pie">
-      <nav class="enlaces-pie" aria-label="Información">
-        <a href="/metodologia/">Cómo funciona</a> · <a href="/partidos/">Partidos y programas</a> · <a href="https://github.com/jorgemasta/29n">Código abierto</a>
-      </nav>
-      Proyecto personal de Jorge Masta, sin afiliación a ningún partido. Nada de lo que eliges sale de tu móvil.
-    </footer>
+    <Pie nota="Nada de lo que eliges sale de tu móvil." />
     <script is:inline type="application/json" id="datos" set:html={json} />
     <script>
       import { montarApp } from '../web/app';
