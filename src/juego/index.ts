@@ -1,7 +1,7 @@
 // Game engine (test point B). Pure functions over the dataset, no I/O: runs in the browser.
 //   crearPartida(dataset, provincia, semilla, estado?, opciones?) → Partida (immutable; actions return a new one)
 import { aplicarModo, esSoloPrivado, fuenteDe } from '../dataset';
-import type { Dataset, Modo, NotaViabilidad, Partido, Postura, Tema, TipoFuente } from '../dataset/esquema';
+import type { Dataset, Modo, NotaViabilidad, Partido, Postura, Pregunta, RespuestaPregunta, Tema, TipoFuente } from '../dataset/esquema';
 import { barajar } from './azar';
 
 export const NINGUNA = 'ninguna' as const;
@@ -169,6 +169,39 @@ export interface PartidosZona {
   pendientes: PartidoZona[];
 }
 
+/** Question to answer: a suggested one (dataset) or a live free question (#15). */
+export type PreguntaVista = Pick<Pregunta, 'id' | 'texto'>;
+
+/** Preguntar, blind phase: anonymous answers A, B, C… ("Cita disponible al descubrir"). */
+export interface VistaPregunta {
+  pregunta: PreguntaVista;
+  tarjetas: Tarjeta[];
+  /** Parties in play whose programme does not mention it. */
+  noMencionan: number;
+  /** No programme in play talks about it: "Ningún programa habla de esto". */
+  ninguno: boolean;
+}
+
+export interface TarjetaPreguntaRevelada extends Tarjeta {
+  partido: PartidoRevelado;
+  citas: { texto: string; pagina: number; enlace: string }[];
+  tituloPrograma: string;
+  /** Source type; provisional sources are marked "solo privado". */
+  fuente: { tipo: TipoFuente; soloPrivado: boolean };
+}
+
+/** Preguntar, after "Ver de quién es cada una". No feasibility note; does not count for the result. */
+export interface RevelacionPregunta {
+  pregunta: PreguntaVista;
+  tarjetas: TarjetaPreguntaRevelada[];
+  /** "El programa de X no lo menciona". */
+  noMencionan: PartidoRevelado[];
+  /** "No pudimos verificar su respuesta". */
+  sinVerificar: PartidoRevelado[];
+  pendientes: PartidoRevelado[];
+  ninguno: boolean;
+}
+
 export interface Partida {
   readonly estado: EstadoPartida;
   /** INE province code, or null for "Prefiero no decirlo" (national parties only). */
@@ -208,6 +241,16 @@ export interface Partida {
   siguiente(temaId?: string): Tema | null;
   /** Topic list: 5 suggested topics first, then the extra ones alphabetically. */
   lista(): ListaTemas;
+  /** Suggested questions of the Preguntar tab, in their fixed order. */
+  preguntas(): Pregunta[];
+  /**
+   * Anonymous answers to a suggested question (by id, answers from the dataset), or to any
+   * question with the given answers (live free question, #15). Same province and pending rules
+   * as the topics; order shuffled stably per seed and question.
+   */
+  pregunta(pregunta: string | PreguntaVista, respuestas?: RespuestaPregunta[]): VistaPregunta;
+  /** Who wrote each answer, with quotes. Revealing never changes the game state. */
+  revelarPregunta(pregunta: string | PreguntaVista, respuestas?: RespuestaPregunta[]): RevelacionPregunta;
 }
 
 type PosturaPropone = Extract<Postura, { estado: 'propone' }>;
@@ -252,6 +295,24 @@ export function crearPartida(
       postura,
       tarjeta: aTarjeta(postura, LETRAS[i]!),
     }));
+  };
+
+  const preguntas = [...(dataset.preguntas ?? [])].sort((a, b) => a.orden - b.orden);
+  /** Answers of the parties in play, in their shuffled order (stable per seed and question). */
+  const respuestasDe = (q: string | PreguntaVista, dadas?: RespuestaPregunta[]) => {
+    const pregunta = typeof q === 'string' ? preguntas.find((p) => p.id === q) : q;
+    if (!pregunta) throw new Error(`Pregunta no disponible: ${String(q)}`);
+    const todas = (dadas ?? dataset.respuestas ?? []).filter((r) => r.pregunta === pregunta.id && porId.has(r.partido));
+    const conRespuesta = todas
+      .filter((r): r is Extract<RespuestaPregunta, { estado: 'responde' }> => r.estado === 'responde')
+      .sort((a, b) => a.partido.localeCompare(b.partido));
+    const barajadas = barajar(conRespuesta, `${semilla}:pregunta:${pregunta.id}`).map((respuesta, i) => ({
+      respuesta,
+      tarjeta: aTarjeta(respuesta, LETRAS[i]!),
+    }));
+    const conEstado = (e: RespuestaPregunta['estado']) =>
+      todas.filter((r) => r.estado === e).map((r) => revelarPartido(porId.get(r.partido)!)).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    return { pregunta: { id: pregunta.id, texto: pregunta.texto }, barajadas, conEstado };
   };
 
   const zona = (p: Partido): PartidoZona => ({ ...revelarPartido(p), regional: p.ambito.tipo === 'provincias' });
@@ -395,6 +456,37 @@ export function crearPartida(
         extra: temas.slice(META_TEMAS).sort((a, b) => a.titulo.localeCompare(b.titulo, 'es')).map(item),
       };
     },
+    preguntas: () => preguntas,
+    pregunta(q, dadas) {
+      const { pregunta, barajadas, conEstado } = respuestasDe(q, dadas);
+      return {
+        pregunta,
+        tarjetas: barajadas.map((b) => b.tarjeta),
+        noMencionan: conEstado('no_menciona').length,
+        ninguno: barajadas.length === 0,
+      };
+    },
+    revelarPregunta(q, dadas) {
+      const { pregunta, barajadas, conEstado } = respuestasDe(q, dadas);
+      return {
+        pregunta,
+        tarjetas: barajadas.map(({ respuesta, tarjeta }) => {
+          const partido = porId.get(respuesta.partido)!;
+          const url = partido.programa.estado === 'publicado' ? partido.programa.url : '';
+          return {
+            ...tarjeta,
+            partido: revelarPartido(partido),
+            tituloPrograma: partido.programa.estado === 'publicado' ? partido.programa.titulo : '',
+            citas: respuesta.citas.map((c) => ({ ...c, enlace: `${url}#page=${c.pagina}` })),
+            fuente: { tipo: fuenteDe(partido)!, soloPrivado: esSoloPrivado(fuenteDe(partido)!) },
+          };
+        }),
+        noMencionan: conEstado('no_menciona'),
+        sinVerificar: conEstado('sin_verificar'),
+        pendientes: pendientes.map(revelarPartido),
+        ninguno: barajadas.length === 0,
+      };
+    },
     resultado() {
       const hechosIds = hechos();
       const peso = (t: string) => (prioritarios().includes(t) ? 2 : 1);
@@ -495,7 +587,8 @@ export function crearPartida(
   }
 }
 
-function aTarjeta(p: PosturaPropone, letra: string): Tarjeta {
+/** Same card text for a postura and for an answer (both use the que / como / cifra template). */
+function aTarjeta(p: { texto: PosturaPropone['texto'] }, letra: string): Tarjeta {
   return {
     letra,
     titular: p.texto.que,

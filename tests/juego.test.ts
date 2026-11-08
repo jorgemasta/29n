@@ -4,6 +4,7 @@ import { crearPartida, NINGUNA } from '../src/juego';
 import { validarDataset } from '../src/dataset';
 import { datasetEjemplo, notaEjemplo } from './fixtures/dataset-ejemplo';
 import { datasetTemas } from './fixtures/dataset-temas';
+import { datasetPreguntas } from './fixtures/dataset-preguntas';
 import type { Dataset } from '../src/dataset/esquema';
 import datasetPublicado from '../data/dataset.json';
 
@@ -318,6 +319,112 @@ describe('where the voter votes', () => {
       const ids = crearPartida(ds, prov, 's', undefined, { modo: 'privado' }).temas().map((t) => t.id);
       for (const id of canarios) expect(ids).not.toContain(id);
     }
+  });
+});
+
+describe('Preguntar: suggested questions with precomputed answers', () => {
+  const ids = (l: { id: string }[]) => l.map((p) => p.id).sort();
+  const reveladas = (p: ReturnType<typeof crearPartida>, id = 'luz') => p.revelarPregunta(id).tarjetas.map((t) => t.partido.id).sort();
+
+  it('uses a valid example dataset', () => {
+    expect(validarDataset(datasetPreguntas)).toEqual({ valido: true, errores: [] });
+  });
+
+  it('lists the suggested questions in their fixed order', () => {
+    expect(crearPartida(datasetPreguntas, null, 's').preguntas().map((p) => p.id)).toEqual(['luz', 'mili']);
+    expect(crearPartida(datasetEjemplo, null, 's').preguntas()).toEqual([]);
+  });
+
+  it('shows each party\'s answer as an anonymous card A, B, C…', () => {
+    const vista = crearPartida(datasetPreguntas, null, 's').pregunta('luz');
+    expect(vista.pregunta.texto).toBe('¿Quién propone bajar el IVA de la luz?');
+    expect(vista.tarjetas.map((t) => t.letra)).toEqual(['A', 'B']);
+    for (const t of vista.tarjetas) {
+      expect(Object.keys(t).sort()).toEqual(['detalle', 'letra', 'titular']);
+      expect(JSON.stringify(t)).not.toMatch(/aaa|ccc|AAA|CCC|Cita literal/);
+    }
+    expect(vista.noMencionan).toBe(1);
+    expect(vista.ninguno).toBe(false);
+  });
+
+  it('shuffles the answers stably per seed and question', () => {
+    const orden = (semilla: string) => crearPartida(datasetPreguntas, '35', semilla).pregunta('luz').tarjetas.map((t) => t.titular).join('|');
+    expect(orden('s1')).toBe(orden('s1'));
+    expect(new Set(['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'].map(orden)).size).toBeGreaterThan(1);
+  });
+
+  it('reveals whose answer each one was, with its quote and PDF page, and who does not mention it', () => {
+    const p = crearPartida(datasetPreguntas, null, 's');
+    const anonimas = p.pregunta('luz').tarjetas;
+    const r = p.revelarPregunta('luz');
+    expect(r.tarjetas.map(({ letra, titular, detalle }) => ({ letra, titular, detalle }))).toEqual(anonimas);
+    const aaa = r.tarjetas.find((t) => t.partido.id === 'aaa')!;
+    expect(aaa.partido.nombre).toBe('Partido AAA');
+    expect(aaa.citas).toEqual([{ texto: expect.stringContaining('Cita literal'), pagina: 3, enlace: 'https://ejemplo.org/aaa.pdf#page=3' }]);
+    expect(aaa.tituloPrograma).toBe('Programa 2026');
+    expect(aaa).not.toHaveProperty('viabilidad');
+    expect(ids(r.noMencionan)).toEqual(['bbb']);
+    expect(ids(r.sinVerificar)).toEqual(['nada']);
+    expect(r.ninguno).toBe(false);
+  });
+
+  it('says when no programme talks about it', () => {
+    const p = crearPartida(datasetPreguntas, null, 's');
+    expect(p.pregunta('mili')).toMatchObject({ tarjetas: [], ninguno: true });
+    expect(p.revelarPregunta('mili')).toMatchObject({ tarjetas: [], ninguno: true });
+    expect(ids(p.revelarPregunta('mili').noMencionan)).toEqual(['aaa', 'bbb', 'ccc', 'nada']);
+  });
+
+  it('respects the province: regional parties only answer where they run', () => {
+    expect(reveladas(crearPartida(datasetPreguntas, null, 's'))).toEqual(['aaa', 'ccc']);
+    expect(reveladas(crearPartida(datasetPreguntas, '35', 's'))).toEqual(['aaa', 'ccc', 'isla']);
+    expect(reveladas(crearPartida(datasetPreguntas, '08', 's'))).toEqual(['aaa', 'bcn', 'ccc']);
+  });
+
+  it('pending parties never answer and are reported as pending', () => {
+    const r = crearPartida(datasetPreguntas, '35', 's').revelarPregunta('luz');
+    expect(ids(r.pendientes)).toEqual(['pend', 'penreg']);
+  });
+
+  it('answers of a party that only has a provisional source are hidden in public', () => {
+    const conProvisional: Dataset = {
+      ...datasetPreguntas,
+      partidos: datasetPreguntas.partidos.map((p) =>
+        p.id === 'aaa' && p.programa.estado === 'publicado' ? { ...p, programa: { ...p.programa, fuente: 'programa-2023' } } : p,
+      ),
+    };
+    expect(reveladas(crearPartida(conProvisional, null, 's'))).toEqual(['ccc']);
+    expect(reveladas(crearPartida(conProvisional, null, 's', undefined, { modo: 'privado' }))).toEqual(['aaa', 'ccc']);
+  });
+
+  it('answering does not count as a topic done', () => {
+    const p = crearPartida(datasetPreguntas, null, 's');
+    p.revelarPregunta('luz');
+    expect(p.hechos()).toEqual([]);
+  });
+
+  it('anonymises answers that do not come from the dataset (live free question, #15) the same way', () => {
+    const p = crearPartida(datasetPreguntas, '08', 's');
+    const libre = { id: 'libre', texto: '¿Qué proponen sobre bicicletas?' };
+    const deDataset = datasetPreguntas.respuestas!.filter((r) => r.pregunta === 'luz').map((r) => ({ ...r, pregunta: 'libre' }));
+    const vista = p.pregunta(libre, deDataset);
+    expect(vista.pregunta.texto).toBe('¿Qué proponen sobre bicicletas?');
+    expect(vista.tarjetas).toHaveLength(3);
+    expect(reveladasLibre()).toEqual(['aaa', 'bcn', 'ccc']);
+    function reveladasLibre() {
+      return p.revelarPregunta(libre, deDataset).tarjetas.map((t) => t.partido.id).sort();
+    }
+  });
+
+  it('the published dataset answers the 7 suggested questions', () => {
+    const p = crearPartida(datasetPublicado as Dataset, null, 's', undefined, { modo: 'privado' });
+    expect(p.preguntas()).toHaveLength(7);
+    for (const q of p.preguntas()) {
+      const r = p.revelarPregunta(q.id);
+      expect(r.tarjetas.length + r.noMencionan.length + r.sinVerificar.length, q.id).toBe(p.partidos().conPrograma.length);
+    }
+    expect(p.preguntas().some((q) => p.pregunta(q.id).ninguno)).toBe(true);
+    expect(p.preguntas().filter((q) => p.pregunta(q.id).tarjetas.length >= 2).length).toBeGreaterThanOrEqual(4);
   });
 });
 

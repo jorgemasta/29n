@@ -2,7 +2,7 @@
 // Keyword search over the programme's pages → targeted question to the AI about the candidates.
 import { z } from 'zod';
 import type { AdaptadorIA } from '../ia/adaptador';
-import { normalizarTermino } from './normalizar';
+import { paginasCandidatas } from './fragmentos';
 
 export const INSTRUCCIONES_AUSENCIA = `Eres un segundo lector de un programa electoral. Una primera lectura concluyó que el
 programa NO propone nada sobre el tema indicado. Recibes solo los fragmentos (páginas) donde aparecen
@@ -25,13 +25,7 @@ export async function confirmarAusencia(
   paginas: string[],
   palabras: string[],
 ): Promise<ResultadoAusencia> {
-  const patrones = palabras.map((p) => new RegExp(`(?<![\\p{L}\\p{N}])${escapar(normalizarTermino(p))}`, 'u'));
-  const candidatas = paginas
-    .map((texto, i) => ({ pagina: i + 1, texto }))
-    .filter((p) => {
-      const n = normalizarTermino(p.texto);
-      return patrones.some((re) => re.test(n));
-    });
+  const candidatas = paginasCandidatas(paginas, palabras);
   const buscadas = `términos buscados: ${palabras.join(', ')}`;
   if (candidatas.length === 0) return { confirmada: true, detalle: `${buscadas}; ninguna página los menciona` };
 
@@ -46,8 +40,4 @@ export async function confirmarAusencia(
     confirmada: true,
     detalle: `${buscadas}; revisadas las páginas ${candidatas.map((c) => c.pagina).join(', ')} sin propuesta`,
   };
-}
-
-function escapar(texto: string): string {
-  return texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

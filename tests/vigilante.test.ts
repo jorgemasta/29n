@@ -28,6 +28,7 @@ function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
     'verificar-fidelidad': () => ({ anade: false, omite: false, cambiaSentido: false, explicacion: '' }),
     'adivinar-partido': () => ({ asignaciones: [] }),
     'confirmar-ausencia': () => ({ propone: false, citas: [] }),
+    'responder-pregunta': () => ({ menciona: false, que: '', como: '', cifra: null, citas: [] }),
     ...extra,
   };
 }

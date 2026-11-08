@@ -1,6 +1,6 @@
 // Client app: topic list ↔ topic (blind choice → confirm/bet → reveal) → result. All logic lives in the
 // game engine; this file only renders and routes (#provincia, #inicio, #temas, #tema/<id>, #resultado,
-// #datos). Choices, bets and the result never leave the browser.
+// #datos, #preguntar[/<id>]). Choices, bets and the result never leave the browser.
 import type { Dataset, Modo, TipoFuente } from '../dataset/esquema';
 import {
   crearPartida,
@@ -17,6 +17,7 @@ import {
 } from '../juego';
 import { nuevaSemilla } from '../juego/azar';
 import { almacenamientoDisponible, borrar, guardar, leer } from './almacen';
+import { vistaPreguntas, vistaRespuesta } from './preguntar';
 import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
 import { boton, empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
@@ -89,6 +90,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     else if (provincia === undefined) return irA('provincia'); // first visit: ask where they vote
     else if (ruta === 'inicio') raiz.replaceChildren(vistaVueltaApp());
     else if (ruta === 'temas') raiz.replaceChildren(vistaLista());
+    else if (ruta === 'preguntar') raiz.replaceChildren(vistaPreguntas(partida));
+    else if (ruta.startsWith('preguntar/') && partida.preguntas().some((p) => p.id === decodeURIComponent(ruta.slice(10))))
+      raiz.replaceChildren(vistaRespuesta(partida, decodeURIComponent(ruta.slice(10))));
     else if (ruta === 'resultado') raiz.replaceChildren(vistaResultadoApp()), analiticaResultado(partida);
     else if (existe) raiz.replaceChildren(vistaTema(temaId!)), analiticaVerTema(partida);
     else if (!inicioMostrado && partida.hechos().length > 0) {
@@ -205,6 +209,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       lista.extra.length ? h('h2', {}, 'Temas extra') : null,
       lista.extra.length ? h('ul', { class: 'filas', role: 'list' }, ...lista.extra.map(fila)) : null,
       bloquePartidos(partida),
+      partida.preguntas().length
+        ? h('p', {}, h('a', { href: '#preguntar', class: 'fila-tema' }, h('span', { class: 'nombre' }, 'Pregunta a los programas'), h('span', { class: 'estado' }, '→')))
+        : null,
       h('p', {}, h('a', { href: '#datos' }, 'Tus datos')),
       hechos ? empezarDeCero(borrarTodo) : null,
     );

@@ -474,3 +474,124 @@ FICTICIOS.push({
 export const PENDIENTES_FICTICIOS = [
   { id: 'prueba-f', letra: 'F', ambito: { tipo: 'provincias', provincias: ['35', '38'] } as Ambito },
 ];
+
+/**
+ * FICTIONAL answers to the suggested questions (Preguntar), per party and question id:
+ * [literal text added to the party's fictional PDF, neutral answer: que, como, cifra].
+ * A missing question means "El programa de X no lo menciona"; nobody talks about the military
+ * service, to show "Ningún programa habla de esto".
+ */
+export const RESPUESTAS_SIMULADAS: Record<string, Record<string, Propuesta>> = {
+  'prueba-a': {
+    'iva-luz': [
+      'Bajaremos el IVA de la factura de la luz del 21 % al 5 % de forma permanente para todos los hogares y pequeños comercios.',
+      'Bajar el IVA de la factura de la luz de forma permanente.',
+      'La rebaja sería permanente, no temporal, y se aplicaría a todos los hogares y también a los pequeños comercios en su factura de electricidad.',
+      'Del 21 % al 5 %',
+    ],
+    'semana-4-dias': [
+      'Abriremos un programa piloto de semana laboral de cuatro días, con 32 horas y el mismo sueldo, en las empresas que se presenten voluntariamente.',
+      'Probar la semana laboral de cuatro días con el mismo sueldo.',
+      'Sería un programa piloto, no una obligación: solo participarían las empresas que se presenten de forma voluntaria, con una jornada de 32 horas semanales.',
+      '32 horas',
+    ],
+    'edad-jubilacion': [
+      'Mantendremos la edad legal de jubilación en 67 años y permitiremos jubilarse a los 63 sin recorte de la pensión a quien haya cotizado 40 años.',
+      'Mantener la edad legal de jubilación y permitir adelantarla sin recorte.',
+      'La edad legal seguiría en 67 años. Quien haya cotizado 40 años podría jubilarse a los 63 sin que le recorten la pensión.',
+      'Jubilación a los 63 con 40 años cotizados',
+    ],
+    'cuidado-mayores': [
+      'Garantizaremos la ayuda a domicilio pública a todas las personas mayores dependientes en un plazo máximo de tres meses desde que la soliciten.',
+      'Garantizar la ayuda a domicilio pública a las personas mayores dependientes.',
+      'Sería un derecho para todas ellas, con un plazo máximo de tres meses desde que hacen la solicitud hasta que empiezan a recibir la ayuda en casa.',
+      null,
+    ],
+    'ley-electoral': [
+      'Reformaremos la ley electoral para que el reparto de escaños sea proporcional a los votos en todo el país, con una circunscripción única.',
+      'Cambiar la ley electoral para que los escaños sean proporcionales a los votos.',
+      'El reparto se haría con una circunscripción única para todo el país, en lugar de repartir los escaños provincia a provincia como se hace ahora.',
+      null,
+    ],
+  },
+  'prueba-b': {
+    'iva-luz': [
+      'Rebajaremos el IVA de la electricidad al 10 % durante los meses de invierno para las familias con menos ingresos.',
+      'Rebajar el IVA de la electricidad durante los meses de invierno.',
+      'La rebaja sería solo para las familias con menos ingresos y se aplicaría únicamente durante los meses de invierno de cada año, no el resto del año.',
+      'IVA del 10 %',
+    ],
+    'semana-4-dias': [
+      'No impondremos por ley una semana laboral de cuatro días: la jornada de cada sector se pactará en su convenio colectivo.',
+      'No imponer por ley una semana laboral de cuatro días.',
+      'La duración de la jornada se decidiría en cada sector, mediante su convenio colectivo, negociado entre las empresas y los representantes de los trabajadores.',
+      null,
+    ],
+    'edad-jubilacion': [
+      'Fomentaremos la jubilación flexible: se podrá seguir trabajando a partir de los 65 años y cobrar a la vez la mitad de la pensión.',
+      'Permitir una jubilación flexible a partir de los 65 años.',
+      'Quien quiera podría seguir trabajando desde esa edad y, al mismo tiempo, cobrar la mitad de su pensión, en lugar de tener que elegir entre una cosa y otra.',
+      'La mitad de la pensión',
+    ],
+    'cuidado-mayores': [
+      'Aprobaremos una deducción fiscal de hasta 3.000 euros al año para las familias que cuiden en casa a una persona mayor dependiente.',
+      'Crear una deducción fiscal para las familias que cuidan a un mayor.',
+      'La deducción sería para las familias que cuidan en su propia casa a una persona mayor dependiente, y se descontaría cada año en la declaración de impuestos.',
+      'Hasta 3.000 euros al año',
+    ],
+  },
+  'prueba-c': {
+    'alquiler-turistico': [
+      'Daremos a los ayuntamientos la competencia para prohibir nuevos pisos turísticos en los barrios donde falte vivienda para los residentes.',
+      'Permitir a los ayuntamientos prohibir nuevos pisos turísticos en algunos barrios.',
+      'Podrían hacerlo en los barrios donde falte vivienda para las personas que viven allí, porque tendrían la competencia para decidirlo ellos mismos.',
+      null,
+    ],
+    'cuidado-mayores': [
+      'Crearemos una red pública de residencias con 60.000 plazas nuevas y un precio máximo ligado a la pensión de cada residente.',
+      'Crear una red pública de residencias para personas mayores.',
+      'Tendría plazas nuevas y un precio máximo para cada residente, que dependería de la pensión que cobre, de modo que nadie pague más de lo que puede.',
+      '60.000 plazas nuevas',
+    ],
+    'ley-electoral': [
+      'Propondremos listas desbloqueadas en las elecciones generales para que los votantes puedan ordenar a los candidatos de cada candidatura.',
+      'Usar listas desbloqueadas en las elecciones generales.',
+      'Los votantes podrían cambiar el orden de los candidatos dentro de la lista que votan, en lugar de aceptar el orden que decide cada candidatura antes de las elecciones.',
+      null,
+    ],
+  },
+  'prueba-d': {
+    'iva-luz': [
+      'Mantendremos el IVA de la luz en el tipo general y destinaremos lo recaudado a ampliar el bono social eléctrico.',
+      'Mantener el IVA de la luz en el tipo general, sin rebajas.',
+      'Lo recaudado por ese impuesto en la factura se destinaría a ampliar el bono social eléctrico, que reciben los hogares que cumplen ciertos requisitos.',
+      null,
+    ],
+    'edad-jubilacion': [
+      'Permitiremos retrasar voluntariamente la jubilación hasta los 72 años con un incremento del 4 % de la pensión por cada año adicional trabajado.',
+      'Permitir retrasar la jubilación de forma voluntaria hasta una edad más alta.',
+      'Por cada año más que se trabaje, la pensión subiría un 4 %. Sería voluntario: nadie estaría obligado a retrasar su jubilación hasta los 72 años.',
+      'Hasta los 72 años',
+    ],
+    'cuidado-mayores': [
+      'Crearemos una red pública de centros de día en todos los municipios de más de 10.000 habitantes para personas mayores dependientes.',
+      'Crear centros de día públicos para personas mayores dependientes.',
+      'Habría al menos uno en cada municipio de más de 10.000 habitantes, para que las personas mayores dependientes puedan pasar el día atendidas cerca de casa.',
+      null,
+    ],
+  },
+  'prueba-e': {
+    'alquiler-turistico': [
+      'Limitaremos las nuevas licencias de vivienda vacacional en las islas para que el alquiler turístico no reduzca la vivienda disponible para residentes.',
+      'Limitar las nuevas licencias de pisos turísticos en las islas.',
+      'El objetivo sería que el alquiler a turistas no reduzca la cantidad de viviendas disponibles para las personas que viven de forma habitual en las islas.',
+      null,
+    ],
+    'iva-luz': [
+      'Pediremos que el impuesto canario sobre la electricidad se mantenga en el 0 % en todas las islas y de forma permanente.',
+      'Mantener sin impuesto indirecto la electricidad en las islas.',
+      'Se pediría que el impuesto canario equivalente al IVA siga en el 0 % para la luz, de forma permanente y en todas las islas, no solo en algunas.',
+      '0 %',
+    ],
+  },
+};
