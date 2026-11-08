@@ -427,3 +427,250 @@ describe('Preguntar: suggested questions with precomputed answers', () => {
     expect(p.preguntas().filter((q) => p.pregunta(q.id).tarjetas.length >= 2).length).toBeGreaterThanOrEqual(4);
   });
 });
+
+// ---- #8: the full game (bet, affinity, priorities, re-shuffle, news) ----
+
+type P = ReturnType<typeof crearPartida>;
+/** The letter a party's card has in this topic for this partida (read through a throwaway reveal). */
+const letraDe = (p: P, tema: string, partido: string) =>
+  p.elegir(tema, NINGUNA).revelar(tema)!.tarjetas.find((t) => t.partido.id === partido)!.letra;
+/** Choose a party's card (and optionally bet on a party). */
+const elegirPartido = (p: P, tema: string, partido: string, apuesta?: string) =>
+  p.elegir(tema, letraDe(p, tema, partido), apuesta ? { apuesta } : undefined);
+const privada = (estado?: Parameters<typeof crearPartida>[3]) =>
+  crearPartida(datasetTemas, null, 's', estado, { modo: 'privado' });
+
+describe('confirming with an optional bet', () => {
+  it('offers as bet chips the parties with a card in the topic, by name', () => {
+    expect(privada().opcionesApuesta('vivienda').map((p) => p.id)).toEqual(['dichos', 'dos', 'uno', 'viejo']);
+    const ejemplo = crearPartida(datasetEjemplo, null, 's').opcionesApuesta('vivienda').map((p) => p.id);
+    expect(ejemplo).toEqual(['aaa', 'bbb', 'ccc']); // never the party that proposes nothing, nor a pending one
+  });
+
+  it('the reveal says whether the bet was right', () => {
+    const acierto = elegirPartido(privada(), 'vivienda', 'uno', 'uno').revelar('vivienda')!;
+    expect(acierto.apuesta).toEqual({ partido: expect.objectContaining({ id: 'uno' }), acertada: true });
+    const fallo = elegirPartido(privada(), 'vivienda', 'uno', 'dos').revelar('vivienda')!;
+    expect(fallo.apuesta).toEqual({ partido: expect.objectContaining({ id: 'dos', nombre: 'Partido dos' }), acertada: false });
+  });
+
+  it('betting is optional', () => {
+    expect(elegirPartido(privada(), 'vivienda', 'uno').revelar('vivienda')!.apuesta).toBeNull();
+  });
+
+  it('rejects a bet on a party without a card, and a bet with "Ninguna me convence"', () => {
+    const p = crearPartida(datasetEjemplo, null, 's');
+    expect(() => elegirPartido(p, 'vivienda', 'aaa', 'nada')).toThrow();
+    expect(() => elegirPartido(p, 'vivienda', 'aaa', 'pend')).toThrow();
+    expect(() => p.elegir('vivienda', NINGUNA, { apuesta: 'aaa' })).toThrow();
+  });
+
+  it('the bet is saved in the state and survives a JSON round-trip', () => {
+    const p = elegirPartido(privada(), 'vivienda', 'uno', 'dos');
+    expect(privada(JSON.parse(JSON.stringify(p.estado))).revelar('vivienda')!.apuesta?.acertada).toBe(false);
+  });
+});
+
+describe('the factual journey label in the reveal', () => {
+  it('first choice, first time a party is chosen, then "N temas, K partidos distintos"', () => {
+    let p = elegirPartido(privada(), 'vivienda', 'uno');
+    expect(p.revelar('vivienda')!.recorrido).toEqual({ tipo: 'primera' });
+    p = elegirPartido(p, 'empleo', 'dos');
+    expect(p.revelar('empleo')!.recorrido).toEqual({ tipo: 'partido_nuevo', partido: expect.objectContaining({ id: 'dos' }) });
+    p = elegirPartido(p, 'sanidad', 'uno');
+    expect(p.revelar('sanidad')!.recorrido).toEqual({ tipo: 'distintos', temas: 3, partidos: 2 });
+  });
+
+  it('no label for a repeated party before topic 3, nor for "Ninguna" after the first', () => {
+    let p = elegirPartido(privada(), 'vivienda', 'uno');
+    p = elegirPartido(p, 'empleo', 'uno');
+    expect(p.revelar('empleo')!.recorrido).toBeNull();
+    p = p.elegir('sanidad', NINGUNA);
+    expect(p.revelar('sanidad')!.recorrido).toBeNull();
+  });
+});
+
+describe('affinity result', () => {
+  const cinco = (): P => {
+    let p = privada();
+    p = elegirPartido(p, 'vivienda', 'uno');
+    p = elegirPartido(p, 'empleo', 'uno');
+    p = elegirPartido(p, 'sanidad', 'dos');
+    p = elegirPartido(p, 'pensiones', 'viejo');
+    return p.elegir('impuestos', NINGUNA);
+  };
+
+  it('is not offered before 5 topics', () => {
+    let p = privada();
+    for (const t of ['vivienda', 'empleo', 'sanidad', 'pensiones']) {
+      p = elegirPartido(p, t, 'uno');
+      expect(p.resultado().disponible).toBe(false);
+    }
+    expect(p.resultado().temas).toBe(4);
+    expect(p.elegir('impuestos', NINGUNA).resultado().disponible).toBe(true);
+  });
+
+  it('ranks every party in play with a percentage, including 0 %, ties alphabetically with the same place', () => {
+    const r = cinco().resultado();
+    expect(r.ranking.map((f) => [f.partido.id, f.puesto, f.porcentaje, f.temas, f.empate])).toEqual([
+      ['uno', 1, 40, 2, false],
+      ['dos', 2, 20, 1, true],
+      ['viejo', 2, 20, 1, true],
+      ['dichos', 4, 0, 0, false],
+    ]);
+  });
+
+  it('"Ninguna me convence" adds to no party and is counted apart', () => {
+    const r = cinco().resultado();
+    expect(r.temas).toBe(5);
+    expect(r.ninguna).toBe(1);
+    expect(r.ranking.reduce((s, f) => s + f.puntos, 0)).toBe(4);
+    expect(r.partidosDistintos).toBe(3);
+  });
+
+  it('when every choice is "Ninguna" there is no ranking', () => {
+    const p = ['vivienda', 'empleo', 'sanidad', 'pensiones', 'impuestos'].reduce((acc, t) => acc.elegir(t, NINGUNA), privada());
+    const r = p.resultado();
+    expect(r.disponible).toBe(true);
+    expect(r.todoNinguna).toBe(true);
+    expect(r.ranking).toEqual([]);
+  });
+
+  it('up to 3 priority topics count double', () => {
+    const p = cinco().marcarPrioritario('sanidad', true).marcarPrioritario('pensiones', true);
+    expect(p.prioritarios()).toEqual(['sanidad', 'pensiones']);
+    const r = p.resultado();
+    // weights: vivienda 1, empleo 1, sanidad 2, pensiones 2, impuestos 1 → 7 points possible
+    expect(r.ranking.map((f) => [f.partido.id, f.puntos, f.porcentaje])).toEqual([
+      ['dos', 2, 29],
+      ['uno', 2, 29],
+      ['viejo', 2, 29],
+      ['dichos', 0, 0],
+    ]);
+    expect(p.marcarPrioritario('sanidad', false).prioritarios()).toEqual(['pensiones']);
+  });
+
+  it('refuses a 4th priority topic and topics not done yet', () => {
+    const p = cinco().marcarPrioritario('vivienda', true).marcarPrioritario('empleo', true).marcarPrioritario('sanidad', true);
+    expect(() => p.marcarPrioritario('pensiones', true)).toThrow(/3/);
+    expect(() => cinco().marcarPrioritario('defensa', true)).toThrow();
+    expect(p.marcarPrioritario('vivienda', true).prioritarios()).toHaveLength(3);
+  });
+
+  it('warns about parties with a pending programme and about the missing province', () => {
+    const publica = ['vivienda', 'empleo', 'sanidad', 'pensiones', 'impuestos'].reduce(
+      (acc, t) => elegirPartido(acc, t, 'uno'),
+      crearPartida(datasetTemas, null, 's'),
+    );
+    const r = publica.resultado();
+    expect(r.pendientes.map((p) => p.id)).toEqual(['dichos', 'viejo']);
+    expect(r.sinProvincia).toBe(true);
+    expect(r.ranking.map((f) => f.partido.id)).toEqual(['uno', 'dos']);
+    expect(crearPartida(datasetEjemplo, '28', 's').resultado().sinProvincia).toBe(false);
+  });
+
+  it('summarises the bets: how many times the chosen card was not from the party guessed', () => {
+    let p = privada();
+    p = elegirPartido(p, 'vivienda', 'uno', 'dos');
+    p = elegirPartido(p, 'empleo', 'uno', 'uno');
+    p = elegirPartido(p, 'sanidad', 'dos', 'viejo');
+    p = elegirPartido(p, 'pensiones', 'dos');
+    const a = p.resultado().apuestas;
+    expect(a.total).toBe(3);
+    expect(a.falladas).toBe(2);
+    expect(a.sorpresas.map((s) => [s.partido.id, s.temas.map((t) => t.id)])).toEqual([
+      ['dos', ['sanidad']],
+      ['uno', ['vivienda']],
+    ]);
+  });
+});
+
+describe('choosing again', () => {
+  it('"Volver a elegir" forgets the choice and re-shuffles the cards', () => {
+    const p = elegirPartido(privada(), 'vivienda', 'uno', 'dos');
+    const antes = p.tema('vivienda');
+    const otra = p.volverAElegir('vivienda');
+    expect(otra.revelar('vivienda')).toBeNull();
+    expect(otra.hechos()).toEqual([]);
+    const despues = otra.tema('vivienda');
+    expect(despues.barajado).not.toBe(antes.barajado);
+    // with 4 cards some re-shuffle within a few tries changes the order
+    let q = otra;
+    const ordenes = new Set([antes.tarjetas.map((t) => t.titular).join('|')]);
+    for (let i = 0; i < 6; i++) {
+      ordenes.add(q.tema('vivienda').tarjetas.map((t) => t.titular).join('|'));
+      q = q.barajarOtraVez('vivienda');
+    }
+    expect(ordenes.size).toBeGreaterThan(1);
+  });
+
+  it('the re-shuffled order is stable after a JSON round-trip', () => {
+    const p = elegirPartido(privada(), 'vivienda', 'uno').volverAElegir('vivienda');
+    expect(privada(JSON.parse(JSON.stringify(p.estado))).tema('vivienda')).toEqual(p.tema('vivienda'));
+  });
+
+  it('"Barajar otra vez" only before choosing', () => {
+    expect(() => elegirPartido(privada(), 'vivienda', 'uno').barajarOtraVez('vivienda')).toThrow();
+  });
+});
+
+describe('returning visit: news', () => {
+  const conDos = (estado: 'publicado' | 'pendiente'): Dataset => ({
+    ...datasetTemas,
+    partidos: datasetTemas.partidos.map((p) =>
+      p.id === 'dos' && estado === 'pendiente' ? { ...p, programa: { estado: 'pendiente' } } : p,
+    ),
+    posturas: estado === 'pendiente' ? datasetTemas.posturas.filter((p) => p.partido !== 'dos') : datasetTemas.posturas,
+  });
+
+  it('announces parties that published their programme since last visit and the done topics with a new proposal', () => {
+    let p = crearPartida(conDos('pendiente'), null, 's').marcarConocidos();
+    p = p.elegir('vivienda', 'A').elegir('empleo', NINGUNA);
+    expect(p.novedades()).toEqual({ partidos: [], temas: [] });
+
+    const vuelta = crearPartida(conDos('publicado'), null, 's', JSON.parse(JSON.stringify(p.estado)));
+    const n = vuelta.novedades();
+    expect(n.partidos.map((x) => x.id)).toEqual(['dos']);
+    expect(n.temas.map((t) => [t.tema.id, t.nuevas])).toEqual([['vivienda', 1], ['empleo', 1]]);
+    expect(vuelta.lista().sugeridos[0]!.nuevas).toBe(1);
+    expect(vuelta.lista().sugeridos[2]!.nuevas).toBe(0);
+    expect(vuelta.resultado().temasConNovedades).toBe(2);
+  });
+
+  it('news are announced once; topic news last until reviewed or kept', () => {
+    let p = crearPartida(conDos('pendiente'), null, 's').marcarConocidos().elegir('vivienda', 'A').elegir('empleo', 'A');
+    p = crearPartida(conDos('publicado'), null, 's', p.estado);
+    const vista = p.marcarConocidos();
+    expect(vista.novedades().partidos).toEqual([]);
+    expect(vista.novedades().temas).toHaveLength(2);
+    // reviewing one topic (choose again) clears its news, keeping the old choice until then
+    expect(vista.revelar('vivienda')).not.toBeNull();
+    const repasada = elegirPartido(vista.volverAElegir('vivienda'), 'vivienda', 'dos');
+    expect(repasada.novedades().temas.map((t) => t.tema.id)).toEqual(['empleo']);
+    expect(vista.mantenerElecciones().novedades().temas).toEqual([]);
+    expect(vista.mantenerElecciones().revelar('empleo')!.eleccion).not.toBe(NINGUNA);
+  });
+
+  it('a state without known parties (first visit) has no news', () => {
+    expect(crearPartida(datasetTemas, null, 's').novedades()).toEqual({ partidos: [], temas: [] });
+  });
+});
+
+describe('pending parties in the reveal', () => {
+  it('lists the pending parties of the zone, by name', () => {
+    const r = crearPartida(datasetEjemplo, '35', 's').elegir('vivienda', NINGUNA).revelar('vivienda')!;
+    expect(r.pendientes.map((p) => [p.id, p.regional])).toEqual([['pend', false], ['penreg', true]]);
+  });
+});
+
+describe('privacy', () => {
+  it('the engine and the client app make no network calls', async () => {
+    const { readFileSync, readdirSync } = await import('node:fs');
+    const dirs = ['src/juego', 'src/web'];
+    for (const d of dirs)
+      for (const f of readdirSync(d)) {
+        const codigo = readFileSync(`${d}/${f}`, 'utf8');
+        expect(codigo, `${d}/${f}`).not.toMatch(/\bfetch\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource/);
+      }
+  });
+});

@@ -1,0 +1,68 @@
+---
+// Verification report of one programme (story 45): every barrier the programme and its posturas went through.
+import PaginaInfo from '../../components/PaginaInfo.astro';
+import { dataset, fechaDia } from '../../transparencia/datos';
+import { resumenInforme, enlaceRepo } from '../../transparencia';
+import { BARRERAS } from '../../registro/barreras';
+
+export function getStaticPaths() {
+  return dataset.informes.map((informe) => ({ params: { partido: informe.partido }, props: { informe } }));
+}
+const r = resumenInforme(Astro.props.informe, dataset.temas, dataset.preguntas);
+const i = r.informe;
+const partido = dataset.partidos.find((p) => p.id === i.partido);
+const programa = partido?.programa.estado === 'publicado' ? partido.programa : null;
+const nombre = partido?.nombre ?? i.partido;
+const ESTADO = { propone: 'Publicada', no_propone: 'No propone nada', sin_verificar: 'Descartada: no pudimos verificarla' } as const;
+const RESULTADO: Record<string, string> = { pasa: 'pasa', corregir: 'corregido', reescribir: 'reescribir', descartar: 'descartada', bloquear: 'bloqueado', extraer: 'encontrada', aviso: 'aviso' };
+---
+<PaginaInfo titulo={`Informe de verificación: ${nombre}`} descripcion={`Qué comprobaciones pasó el programa de ${nombre} y qué se descartó.`} volver={{ href: '/partidos/', texto: '← Partidos y programas' }}>
+  <h1>Informe de verificación: {nombre}</h1>
+  <p>
+    Todo lo que hizo el proceso automático con este programa: qué propuestas se publicaron, cuáles se
+    reescribieron y qué se descartó y por qué. <a href="/metodologia/#barreras">Qué es cada comprobación</a>.
+  </p>
+  <ul>
+    {programa && <li>Documento: <a href={programa.url} target="_blank" rel="noopener">{programa.titulo} (PDF ↗)</a></li>}
+    {i.url && <li>Descargado de: <code>{i.url}</code>{i.fecha && ` el ${fechaDia(i.fecha)}`}</li>}
+    <li>Huella del PDF (SHA-256): <code class="huella">{i.hashPdf}</code></li>
+    <li>Versión de las instrucciones: <code>{i.versionPrompt}</code> (<a href={enlaceRepo('src/pipeline/prompts.ts')}>ver</a>)</li>
+    <li>Propuestas extraídas: {i.extraidas} · publicadas: {r.publicadas} · descartadas: {i.descartadas}</li>
+    <li>Resultado: {i.publicable ? 'publicable' : `no publicable${i.motivo ? ` (${i.motivo})` : ''}`}</li>
+  </ul>
+
+  {r.programa.length > 0 && (
+    <>
+      <h2>Programa completo</h2>
+      <ul class="entradas">
+        {r.programa.map((e) => <li><strong>{e.barrera} · {e.nombre}</strong>: {RESULTADO[e.resultado]}. <span class="gris">{e.detalle}</span></li>)}
+      </ul>
+    </>
+  )}
+
+  <h2>Por tema</h2>
+  {r.temas.map((t) => (
+    <details class="informe-tema">
+      <summary>{t.tema.titulo} · {ESTADO[t.estado]}{t.reescrituras > 0 && ` · ${t.reescrituras} ${t.reescrituras === 1 ? 'reescritura' : 'reescrituras'}`}</summary>
+      {t.motivo && <p><strong>Motivo:</strong> {t.motivo}</p>}
+      <ul class="entradas">
+        {t.entradas.map((e) => <li title={BARRERAS[e.barrera].descripcion}><strong>{e.barrera} · {e.nombre}</strong>: {RESULTADO[e.resultado]}. <span class="gris">{e.detalle}</span></li>)}
+      </ul>
+    </details>
+  ))}
+  {r.preguntas.length > 0 && (
+    <>
+      <h2>Respuestas a las preguntas sugeridas</h2>
+      <p>Lo que se comprobó en cada respuesta de la pestaña Preguntar. Estas respuestas no cuentan para publicar o bloquear el programa.</p>
+      {r.preguntas.map((p) => (
+        <details class="informe-tema">
+          <summary>{p.pregunta.texto}</summary>
+          <ul class="entradas">
+            {p.entradas.map((e) => <li title={BARRERAS[e.barrera].descripcion}><strong>{e.barrera} · {e.nombre}</strong>: {RESULTADO[e.resultado]}. <span class="gris">{e.detalle}</span></li>)}
+          </ul>
+        </details>
+      ))}
+    </>
+  )}
+  <p class="gris">El informe completo en JSON está en el <a href={enlaceRepo('data/dataset.json')}>dataset publicado</a>.</p>
+</PaginaInfo>

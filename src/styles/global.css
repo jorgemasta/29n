@@ -156,3 +156,59 @@ pre.prompt { white-space: pre-wrap; background: var(--piedra-2); padding: 0.75re
 .pregunta-libre { margin: 1.5rem 0 1rem; display: grid; gap: 0.5rem; }
 .pregunta-libre textarea:disabled, .pregunta-libre button:disabled { opacity: 0.6; cursor: not-allowed; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* Game flow (#8): confirm + bet, result, returning visit, your data. */
+.hoja { max-height: 60vh; overflow-y: auto; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip {
+  min-height: 3rem; font: inherit; font-weight: 600; text-align: left; color: var(--tinta); background: var(--piedra-2);
+  border: 2px solid var(--borde); border-radius: 0.75rem; padding: 0.5rem 0.9rem; cursor: pointer;
+}
+.chip[aria-pressed='true'] { border-color: var(--acento); background: var(--acento-claro); }
+.fila-botones { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.fila-botones > .secundario { flex: 1; }
+.peligro { color: #a3261c; border-color: currentColor; }
+.recorrido { margin: 0 0 1rem; color: var(--tinta-suave); }
+.acciones { display: grid; gap: 0.75rem; margin: 1.5rem 0; }
+.boton-enlace { display: grid; place-items: center; text-decoration: none; text-align: center; }
+.desactivado { display: grid; place-items: center; opacity: 0.6; border-style: dashed; }
+.grande { font-size: 1.3rem; font-weight: 600; }
+.bloque-resultado { min-height: 80vh; scroll-snap-align: start; padding: 1rem 0 2rem; }
+.bloque-resultado h2 { font-size: 1.5rem; }
+.siguiente-bloque { display: inline-block; padding: 0.75rem 0; min-height: 3rem; }
+.ranking { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.75rem; }
+.fila-ranking p { margin: 0 0 0.25rem; }
+.puesto { color: var(--tinta-suave); }
+.etiqueta-empate { margin-left: 0.5rem; font-size: 0.8rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; }
+.barra { height: 0.75rem; background: var(--piedra-2); border-radius: 0.375rem; overflow: hidden; }
+.barra span { display: block; height: 100%; background: var(--acento); }
+.prioridades { margin: 1.5rem 0; }
+.prioridades h3 { font-size: 1rem; }
+.novedades { background: var(--acento-claro); border-left: 4px solid var(--acento); border-radius: 0.5rem; padding: 0.5rem 0.75rem; margin: 1rem 0; }
+.novedades p { margin: 0.25rem 0; }
+.fila-interruptor { display: flex; align-items: center; gap: 0.5rem; min-height: 3rem; }
+.interruptor { width: 1.5rem; height: 1.5rem; }
+main:has(.hoja) { padding-bottom: 62vh; }
+
+/* Information pages (methodology, parties, reports) */
+.info table { width: 100%; }
+.tabla-ancha { overflow-x: auto; margin: 0.5rem 0 1rem; }
+.tabla-ancha:focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+.tabla-reparto { border-collapse: collapse; font-size: 0.85rem; }
+.tabla-reparto th, .tabla-reparto td { border-bottom: 1px solid var(--borde); padding: 0.4rem; text-align: left; vertical-align: top; }
+.tabla-reparto td { text-align: center; }
+.filas-partido { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.fila-partido { background: var(--piedra-2); border-radius: 0.75rem; padding: 0.75rem 1rem; }
+.fila-partido p { margin: 0.2rem 0; }
+.fila-partido .nombre { font-weight: 600; }
+.boton-enlace { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.huella { word-break: break-all; font-size: 0.8rem; }
+.entradas { padding-left: 1.2rem; font-size: 0.9rem; }
+.informe-tema { margin: 0 0 0.5rem; }
+.informe-tema summary { min-height: 3rem; padding: 0.75rem 0; cursor: pointer; font-weight: 600; }
+.enlaces-pie { margin-bottom: 0.5rem; }
+.enlaces-pie a { display: inline-block; padding: 0.5rem 0; }
+.reportar { margin-top: 1rem; border-top: 1px solid var(--borde); }
+.reportar summary { min-height: 3rem; padding: 0.75rem 0; cursor: pointer; font-weight: 600; }
+.reportar fieldset { border: none; padding: 0; margin: 0 0 0.75rem; }
+.reportar label { display: flex; gap: 0.5rem; align-items: center; min-height: 3rem; }
+.reportar textarea { width: 100%; font: inherit; padding: 0.5rem; border: 2px solid var(--borde); border-radius: 0.5rem; background: var(--piedra); color: inherit; }

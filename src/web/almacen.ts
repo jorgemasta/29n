@@ -23,3 +23,15 @@ export function borrar(clave: string): void {
     /* nada */
   }
 }
+
+/** False in private modes or with blocked site data: the game then runs in memory only. */
+export function almacenamientoDisponible(): boolean {
+  try {
+    const prueba = '29n:prueba';
+    localStorage.setItem(prueba, '1');
+    localStorage.removeItem(prueba);
+    return true;
+  } catch {
+    return false;
+  }
+}

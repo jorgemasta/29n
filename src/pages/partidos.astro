@@ -1,0 +1,88 @@
+---
+// Screen 13 "Partidos y programas": who is in, under which criterion, and each programme's state.
+import PaginaInfo from '../components/PaginaInfo.astro';
+import { dataset, fechaCorta, fechaDia } from '../transparencia/datos';
+import { programas, urlFaltaPartido } from '../transparencia';
+import { ETIQUETA_FUENTE } from '../web/app';
+import { REGISTRO } from '../registro/partidos';
+import { provinciasIncluidas } from '../registro/inclusion';
+import { provinciaPorCodigo } from '../registro/territorio';
+
+const { conPrograma, pendientes } = programas(dataset);
+const provisionales = REGISTRO.some((r) => r.inclusion.candidaturas.estado === 'provisional');
+---
+<PaginaInfo titulo="Partidos y programas" descripcion="Qué partidos aparecen en 29N, con qué criterio y el estado de su programa.">
+  <h1>Partidos y programas</h1>
+  <p>
+    Cada partido aparece solo en las provincias donde se presenta. Elige tu provincia en el juego para ver
+    los tuyos: <a href="/#provincia">Cambiar provincia</a>.
+  </p>
+
+  <h2>Con programa ({conPrograma.length})</h2>
+  <ul class="filas-partido" role="list">
+    {conPrograma.map((p) => (
+      <li class="fila-partido">
+        <p class="nombre">{p.nombre} {p.prueba && <span class="etiqueta">PRUEBA</span>}</p>
+        <p class="gris">{p.ambito}{p.fecha && ` · publicado el ${fechaDia(p.fecha)}`}{p.fuente && p.fuente !== 'programa-29n' && ` · ${ETIQUETA_FUENTE[p.fuente]}`}</p>
+        <p>
+          <a href={p.url!} target="_blank" rel="noopener">{p.titulo ?? 'Programa'} (PDF ↗)</a>
+          {p.informe && <> · <a href={`/informes/${p.id}/`}>Informe de verificación</a></>}
+        </p>
+      </li>
+    ))}
+  </ul>
+
+  <h2>⏳ Pendientes ({pendientes.length})</h2>
+  {pendientes.length === 0 ? <p class="gris">Ninguno.</p> : (
+    <>
+      <ul class="filas-partido" role="list">
+        {pendientes.map((p) => (
+          <li class="fila-partido">
+            <p class="nombre">{p.nombre} {p.prueba && <span class="etiqueta">PRUEBA</span>}</p>
+            <p class="gris">{p.ambito}</p>
+            <p>Aún no ha publicado su programa. Se añadirá solo en cuanto lo haga.</p>
+          </li>
+        ))}
+      </ul>
+      <p class="gris">Mientras falte, no aparece en los temas ni en tu resultado.</p>
+    </>
+  )}
+
+  <p class="gris">Última comprobación: {fechaCorta(dataset.generado)}</p>
+
+  <h2 id="criterio">Criterio de inclusión</h2>
+  <p>
+    Un partido aparece en tu provincia si <strong>su candidatura está proclamada en esa provincia</strong> y
+    <strong>tiene representación actual en el Congreso o en el parlamento autonómico</strong> de tu comunidad.
+    Es un criterio objetivo, que se puede comprobar en el BOE.
+  </p>
+  {provisionales && (
+    <p class="aviso-zona">
+      Las candidaturas aún no están proclamadas. Mientras tanto, usamos una estimación provisional (dónde se
+      presentó en 2023 o su comunidad), que se sustituirá por las listas publicadas en el BOE.
+    </p>
+  )}
+  <details>
+    <summary>Datos de cada partido registrado ({REGISTRO.length})</summary>
+    <table class="tabla-rubrica">
+      <thead><tr><th scope="col">Partido</th><th scope="col">Representación</th><th scope="col">Dónde cuenta</th></tr></thead>
+      <tbody>
+        {REGISTRO.map((r) => {
+          const provs = provinciasIncluidas(r.inclusion);
+          return (
+            <tr>
+              <th scope="row">{r.nombre}</th>
+              <td>{r.inclusion.representacion.congreso ? 'Congreso' : 'Parlamento autonómico'}<br /><span class="gris">{r.representacionFuente}</span></td>
+              <td>{provs.length === 52 ? 'Toda España' : provs.map((c) => provinciaPorCodigo(c)?.nombre ?? c).join(', ')}<br /><span class="gris">{r.inclusion.candidaturas.fuente}</span></td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </details>
+  <p>
+    ¿Falta un partido que cumple el criterio?
+  </p>
+  <p><a class="secundario boton-enlace" href={urlFaltaPartido()} target="_blank" rel="noopener">Falta un partido ↗</a></p>
+  <p class="gris">Se abre un aviso público en GitHub (necesitas una cuenta de GitHub).</p>
+</PaginaInfo>

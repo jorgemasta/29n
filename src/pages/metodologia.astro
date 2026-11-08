@@ -1,0 +1,175 @@
+---
+// Screen 14 "Cómo funciona" (story 41/42): data process, the 13 barriers, rubric, versioned prompts,
+// feasibility breakdown per party and topic, verification reports and who makes it.
+import PaginaInfo from '../components/PaginaInfo.astro';
+import { dataset } from '../transparencia/datos';
+import { PROMPTS, REPO, enlaceRepo, repartoViabilidad, programas } from '../transparencia';
+import { BARRERAS } from '../registro/barreras';
+import { nombreNivel } from '../registro/rubrica';
+import { MODELOS } from '../ia/claude';
+import { VERSION_PROMPT } from '../pipeline/prompts';
+import { VERSION_PROMPT_VIABILIDAD } from '../pipeline/prompts-viabilidad';
+import { VERSION_RUBRICA } from '../registro/rubrica';
+import { MAX_DESCARTE } from '../pipeline';
+import { Barrera } from '../dataset/esquema';
+
+const reparto = repartoViabilidad(dataset);
+const conInforme = programas(dataset).conPrograma.filter((p) => p.informe);
+const CORTO: Record<string, string> = {
+  viable: 'Viable', viable_con_matices: 'Con matices', dificil: 'Difícil', muy_dificil: 'Muy difícil',
+  sin_concrecion: 'Sin concreción', sin_consenso: 'Sin consenso', sin_nota: 'Sin nota', no_propone: '—', sin_verificar: 'No verificada', sin_dato: '·',
+};
+const temasConDatos = reparto.porTema.filter((t) => t.celdas.some((c) => c !== 'sin_dato'));
+---
+<PaginaInfo titulo="Cómo funciona" descripcion="Metodología de 29N: de dónde salen las propuestas, cómo se verifican y cómo se valora la viabilidad.">
+  <h1>Cómo funciona</h1>
+  <p class="aviso-zona">
+    <strong>Todo lo hace una IA, sin revisión humana.</strong> Reescribir las propuestas y valorar su viabilidad lo
+    hace Claude (de Anthropic). Puede equivocarse: por eso publicamos cada paso y puedes avisarnos de cualquier error.
+  </p>
+  <nav aria-label="Índice">
+    <ul>
+      <li><a href="#proceso">¿De dónde salen las propuestas?</a></li>
+      <li><a href="#barreras">Las 13 comprobaciones</a></li>
+      <li><a href="#viabilidad">¿Cómo se valora si se puede hacer?</a></li>
+      <li><a href="#prompts">Instrucciones exactas de la IA</a></li>
+      <li><a href="#reparto">Reparto de notas por partido</a></li>
+      <li><a href="#informes">Informes de verificación</a></li>
+      <li><a href="#limites">Límites</a></li>
+      <li><a href="#quien">Quién lo hace</a></li>
+      <li><a href="#privacidad">Privacidad</a></li>
+    </ul>
+  </nav>
+
+  <h2 id="proceso">¿De dónde salen las propuestas?</h2>
+  <ol>
+    <li>Cada 2 horas, un programa automático busca programas nuevos en las webs oficiales de los partidos. Solo vale un PDF descargado de un dominio oficial del partido.</li>
+    <li>Una IA lee el PDF y saca, para cada tema, lo que propone el partido, con <strong>citas literales</strong> y su página.</li>
+    <li>Un script (no una IA) comprueba que cada cita está en el PDF. Si no está, la propuesta se descarta.</li>
+    <li>Otra pasada de IA la <strong>reescribe en un estilo común</strong> («qué / cómo / cifra»), sin nombres, siglas ni lemas, para que no se sepa de quién es.</li>
+    <li>La reescritura pasa las comprobaciones de abajo. Si falla, se reescribe hasta 2 veces; si sigue fallando, se descarta.</li>
+    <li>Se valora su viabilidad a ciegas, dos veces.</li>
+    <li>Si se descarta más del {Math.round(MAX_DESCARTE * 100)} % de las propuestas, el programa no se publica y se avisa al responsable.</li>
+  </ol>
+  <p>
+    Qué partidos entran y con qué criterio: <a href="/partidos/#criterio">Partidos y programas</a>. Lo que eliges
+    nunca sale de tu móvil.
+  </p>
+
+  <h2 id="barreras">Las 13 comprobaciones</h2>
+  <p>Cada programa tiene un <a href="#informes">informe público</a> con el resultado de cada una.</p>
+  <table class="tabla-rubrica">
+    <thead><tr><th scope="col">Comprobación</th><th scope="col">Qué mira</th></tr></thead>
+    <tbody>
+      {Barrera.options.map((b) => (
+        <tr>
+          <th scope="row">{b} · {BARRERAS[b].nombre}<br /><span class="gris">{BARRERAS[b].tipo === 'ia' ? 'IA' : 'Script, sin IA'}</span></th>
+          <td>{BARRERAS[b].descripcion}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 id="viabilidad">¿Cómo se valora si se puede hacer?</h2>
+  <p>
+    La viabilidad dice qué haría falta para aplicar una propuesta, no si es buena idea. Dos evaluaciones de IA
+    independientes la valoran con una rúbrica pública de cinco criterios, sin saber de qué partido es.
+    Si no coinciden, se publica «sin consenso» con los dos argumentos.
+  </p>
+  <p><a href="/rubrica/">Rúbrica completa, niveles, fuentes permitidas e instrucciones →</a></p>
+
+  <h2 id="prompts">Instrucciones exactas de la IA</h2>
+  <p>
+    Las instrucciones están versionadas en el <a href={REPO}>repositorio público</a>. Cada propuesta guarda la
+    versión con la que se generó. Versiones actuales: propuestas <code>{VERSION_PROMPT}</code>, viabilidad
+    <code>{VERSION_PROMPT_VIABILIDAD}</code>, rúbrica <code>{VERSION_RUBRICA}</code>.
+  </p>
+  <table class="tabla-rubrica">
+    <thead><tr><th scope="col">Tarea</th><th scope="col">Modelo</th></tr></thead>
+    <tbody>
+      {PROMPTS.map((p) => (
+        <tr>
+          <th scope="row"><a href={enlaceRepo(p.archivo)}>{p.que}</a></th>
+          <td><code>{MODELOS[p.tarea]}</code></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 id="reparto">Reparto de notas de viabilidad por partido</h2>
+  <p>
+    Publicamos cuántas propuestas de cada partido recibieron cada nota, para que puedas buscar sesgos.
+    Léelo con cuidado: <strong>una nota más baja no significa una propuesta peor</strong>. «Difícil» suele querer
+    decir que hace falta cambiar una ley o tener mayorías amplias, algo habitual en propuestas ambiciosas.
+    Los partidos que dan menos cifras, plazos o instrumentos reciben más «sin concreción». La IA nunca sabe de
+    qué partido es lo que evalúa.
+  </p>
+  <div class="tabla-ancha" tabindex="0" role="region" aria-label="Reparto por partido">
+    <table class="tabla-reparto">
+      <thead>
+        <tr>
+          <th scope="col">Partido</th>
+          {reparto.categorias.map((c) => <th scope="col">{nombreNivel(c)}</th>)}
+          {reparto.porPartido.some((f) => f.sinNota > 0) && <th scope="col">Sin nota</th>}
+          <th scope="col">Propuestas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {reparto.porPartido.map((f) => (
+          <tr>
+            <th scope="row">{f.partido.nombre}</th>
+            {reparto.categorias.map((c) => <td>{f.conteos[c]}</td>)}
+            {reparto.porPartido.some((g) => g.sinNota > 0) && <td>{f.sinNota}</td>}
+            <td>{f.total}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <details>
+    <summary>Por partido y por tema</summary>
+    <p class="gris">«—»: no propone nada sobre el tema. «No verificada»: su propuesta no pasó las comprobaciones.</p>
+    <div class="tabla-ancha" tabindex="0" role="region" aria-label="Reparto por partido y tema">
+      <table class="tabla-reparto">
+        <thead>
+          <tr><th scope="col">Tema</th>{reparto.porPartido.map((f) => <th scope="col">{f.partido.siglas}</th>)}</tr>
+        </thead>
+        <tbody>
+          {temasConDatos.map((t) => (
+            <tr><th scope="row">{t.tema.titulo}</th>{t.celdas.map((c) => <td>{CORTO[c]}</td>)}</tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <h2 id="informes">Informes de verificación</h2>
+  <p>Qué se comprobó en cada programa, qué se reescribió y qué se descartó y por qué.</p>
+  {conInforme.length === 0 ? <p class="gris">Aún no hay programas procesados.</p> : (
+    <ul>{conInforme.map((p) => <li><a href={`/informes/${p.id}/`}>{p.nombre}</a></li>)}</ul>
+  )}
+  <p>
+    Todo está en el <a href={enlaceRepo('data/dataset.json')}>dataset publicado</a> (CC BY 4.0), con su
+    <a href={enlaceRepo('data/dataset.schema.json')}>esquema</a>. Avisos y correcciones:
+    <a href={`${REPO}/issues`}>incidencias abiertas</a> y <a href={`${REPO}/commits/main/data/dataset.json`}>historial de cambios</a>.
+  </p>
+
+  <h2 id="limites">Límites</h2>
+  <ul>
+    <li>En algunos temas la propuesta delata al partido. Una IA intenta adivinarlo (V11) y, si acierta con facilidad, se reescribe, pero no siempre se puede evitar.</li>
+    <li>La IA puede equivocarse al reescribir o al valorar. Por eso cada tarjeta enseña la cita literal y tiene el botón «¿Algo no cuadra?».</li>
+    <li>Solo se usan los programas oficiales: si un partido no ha publicado el suyo, aparece como pendiente.</li>
+  </ul>
+
+  <h2 id="quien">Quién lo hace</h2>
+  <p>
+    29N es un proyecto personal de <strong>Jorge Masta</strong>. No tengo afiliación a ningún partido, no recibo
+    dinero de ninguno y no te digo a quién votar. El código es abierto (MIT) y los datos también (CC BY 4.0).
+  </p>
+
+  <h2 id="privacidad">Privacidad</h2>
+  <p>
+    No hay cuentas ni registro. Lo que eliges se guarda solo en tu móvil y nunca se envía. Si avisas de un error,
+    solo se envía el tema, la tarjeta y lo que escribas.
+  </p>
+</PaginaInfo>
