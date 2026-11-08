@@ -15,7 +15,7 @@ const partido = (id: string, ambito: Partido['ambito'] = { tipo: 'estatal' }, pr
 });
 
 /** Neutral labels so card texts never contain party ids. */
-const NEUTRO: Record<string, string> = { aaa: 'uno', bbb: 'dos', ccc: 'tres', isla: 'cuatro' };
+const NEUTRO: Record<string, string> = { aaa: 'uno', bbb: 'dos', ccc: 'tres', isla: 'cuatro', bcn: 'cinco' };
 
 const cita = (p: string) => ({ texto: `Cita literal del programa de ${p} sobre vivienda, con más de cuarenta caracteres.`, pagina: 7 });
 const propone = (p: string, tema = 'vivienda'): Postura => ({
@@ -27,7 +27,10 @@ const propone = (p: string, tema = 'vivienda'): Postura => ({
   versiones: { prompt: 'v1' },
 });
 
-/** 4 national parties (one proposes nothing, one pending), 1 regional party in province 35 (Las Palmas). */
+/**
+ * 4 national parties (one proposes nothing, one pending), 1 regional party in the Canary provinces
+ * (35 Las Palmas, 38 Santa Cruz de Tenerife), 1 regional pending party in 35, 1 regional party in 08 (Barcelona).
+ */
 export const datasetEjemplo: Dataset = {
   version: 1,
   generado: '2026-11-08T00:00:00.000Z',
@@ -39,6 +42,8 @@ export const datasetEjemplo: Dataset = {
     partido('nada'),
     partido('pend', { tipo: 'estatal' }, { estado: 'pendiente' }),
     partido('isla', { tipo: 'provincias', provincias: ['35', '38'] }),
+    partido('penreg', { tipo: 'provincias', provincias: ['35'] }, { estado: 'pendiente' }),
+    partido('bcn', { tipo: 'provincias', provincias: ['08'] }),
   ],
   temas: [
     { id: 'vivienda', titulo: 'Vivienda y alquiler', pregunta: '¿Qué harían con la vivienda?', ambito: 'nacional', orden: 1 },
@@ -55,6 +60,8 @@ export const datasetEjemplo: Dataset = {
     propone('ccc', 'ref'),
     { partido: 'nada', tema: 'ref', estado: 'no_propone', versiones: { prompt: 'v1' } },
     propone('isla', 'ref'),
+    propone('bcn'),
+    { partido: 'bcn', tema: 'ref', estado: 'no_propone', versiones: { prompt: 'v1' } },
   ],
   informes: [],
 };

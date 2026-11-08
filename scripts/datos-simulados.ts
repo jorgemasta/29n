@@ -2,7 +2,7 @@
 // to, a real party: the four "Partido de prueba" exist only to make every topic playable while no
 // real programme can be processed. Each entry is [literal text in the fictional PDF, neutral
 // rewrite: que, como, cifra]. A missing topic means "proposes nothing".
-import type { TipoFuente } from '../src/dataset/esquema';
+import type { Ambito, TipoFuente } from '../src/dataset/esquema';
 
 export type Propuesta = [cita: string, que: string, como: string, cifra: string | null];
 
@@ -11,6 +11,8 @@ export interface Ficticio {
   letra: string;
   fuente: TipoFuente;
   titulo: string;
+  /** Defaults to national. */
+  ambito?: Ambito;
   propuestas: Record<string, Propuesta>;
 }
 
@@ -390,4 +392,85 @@ export const FICTICIOS: Ficticio[] = [
       ],
     },
   },
+];
+
+// Canary-only topics (#7). C proposes nothing on migración atlántica; D (2023 source) on neither.
+const CANARIAS: Record<string, Record<string, Propuesta>> = {
+  'prueba-a': {
+    'ref-canarias': [
+      'Defenderemos ante la Unión Europea la prórroga de la Zona Especial Canaria hasta 2035 y destinaremos 200 millones de euros al año a compensar el sobrecoste del transporte de mercancías entre islas.',
+      'Pedir a la Unión Europea que mantenga la zona de impuestos bajos para empresas en Canarias.',
+      'La prórroga llegaría hasta 2035. Además, el Estado pagaría parte de lo que cuesta de más mover mercancías entre islas.',
+      '200 millones de euros al año',
+    ],
+    'migracion-atlantica': [
+      'Crearemos un sistema estatal de acogida que reparta de forma obligatoria entre todas las comunidades a los menores migrantes que lleguen a Canarias y reforzaremos Salvamento Marítimo con 4 nuevos buques.',
+      'Repartir de forma obligatoria entre todas las comunidades a los menores migrantes que llegan a Canarias.',
+      'Lo organizaría un sistema estatal de acogida. Además, reforzar el servicio público de rescate en el mar con más barcos.',
+      '4 buques nuevos',
+    ],
+  },
+  'prueba-b': {
+    'ref-canarias': [
+      'Rebajaremos el IGIC general del 7 % al 5 % y ampliaremos las deducciones del Régimen Económico y Fiscal para las empresas que inviertan en las islas.',
+      'Bajar el impuesto canario que se paga al comprar, el equivalente al IVA.',
+      'Además, las empresas que inviertan en las islas podrían descontarse más en sus impuestos gracias a las reglas fiscales especiales de Canarias.',
+      'Del 7 % al 5 %',
+    ],
+    'migracion-atlantica': [
+      'Pediremos a la Unión Europea que despliegue Frontex de forma permanente en aguas canarias y firmaremos acuerdos con los países de origen y tránsito para frenar las salidas.',
+      'Pedir a la Unión Europea que vigile de forma permanente las aguas de Canarias.',
+      'Además, firmar acuerdos con los países de donde salen y por donde pasan las embarcaciones para que haya menos salidas hacia las islas.',
+      null,
+    ],
+  },
+  'prueba-c': {
+    'ref-canarias': [
+      'Blindaremos en una ley orgánica el Régimen Económico y Fiscal de Canarias para que ninguna reforma fiscal estatal pueda reducir sus ventajas sin el acuerdo del Parlamento canario.',
+      'Proteger las reglas fiscales especiales de Canarias con una ley más difícil de cambiar.',
+      'Sería una ley orgánica. Ninguna reforma de impuestos del Estado podría quitar esas ventajas sin el acuerdo del Parlamento canario.',
+      null,
+    ],
+  },
+};
+for (const f of FICTICIOS) Object.assign(f.propuestas, CANARIAS[f.id] ?? {});
+
+// A fictional REGIONAL party (Canary provinces only), to exercise the province filter.
+FICTICIOS.push({
+  id: 'prueba-e',
+  letra: 'E',
+  fuente: 'programa-29n',
+  titulo: 'Programa de prueba E (regional)',
+  ambito: { tipo: 'provincias', provincias: ['35', '38'] },
+  propuestas: {
+    vivienda: [
+      'Limitaremos las nuevas licencias de vivienda vacacional en las islas y destinaremos el 20 % del suelo de cada nuevo desarrollo a vivienda protegida para residentes.',
+      'Limitar las nuevas licencias de pisos turísticos en las islas.',
+      'Además, reservar una parte del suelo de cada nueva urbanización para viviendas protegidas destinadas a personas que vivan de forma habitual en las islas.',
+      '20 % del suelo de cada nuevo desarrollo',
+    ],
+    transporte: [
+      'Exigiremos que el descuento de residente del 75 % en vuelos y barcos entre islas y con la península quede fijado por ley y no dependa de cada presupuesto.',
+      'Fijar por ley el descuento para residentes en vuelos y barcos.',
+      'Se aplicaría a los viajes entre islas y con la península, y dejaría de depender de que se apruebe en cada presupuesto del Estado.',
+      'Descuento del 75 %',
+    ],
+    'ref-canarias': [
+      'Exigiremos que el Estado cumpla las inversiones que fija el Régimen Económico y Fiscal y que el AIEM proteja durante 10 años más a la industria local de las islas.',
+      'Exigir al Estado que invierta en Canarias lo que marcan sus reglas fiscales especiales.',
+      'Además, mantener el impuesto canario a algunos productos de fuera, para proteger a la industria de las islas frente a la competencia.',
+      '10 años más',
+    ],
+    'migracion-atlantica': [
+      'Pediremos que el Estado asuma el 100 % del coste de atender a los menores migrantes que llegan solos a Canarias mientras sigan en las islas.',
+      'Que el Estado pague todo lo que cuesta atender a los menores migrantes que llegan solos.',
+      'Se aplicaría mientras esos menores sigan viviendo en Canarias, de modo que las islas no tengan que pagar su atención con su propio presupuesto.',
+      '100 % del coste',
+    ],
+  },
+});
+
+/** Fictional parties registered but without a programme yet ("⏳ programa pendiente"). */
+export const PENDIENTES_FICTICIOS = [
+  { id: 'prueba-f', letra: 'F', ambito: { tipo: 'provincias', provincias: ['35', '38'] } as Ambito },
 ];

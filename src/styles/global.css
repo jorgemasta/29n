@@ -106,3 +106,24 @@ blockquote footer { font-size: 0.85rem; color: var(--tinta-suave); }
 a { color: var(--acento); }
 .pie { max-width: 36rem; margin: 0 auto; padding: 1rem; font-size: 0.8rem; color: var(--tinta-suave); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Province (#7) */
+.cabecera, .cabecera-fila { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.cabecera > p, .cabecera > .progreso { flex-basis: 100%; }
+.chip-provincia {
+  display: inline-flex; align-items: center; min-height: 3rem; padding: 0.5rem 0.9rem; border: 2px solid var(--borde);
+  border-radius: 999px; font-weight: 600; text-decoration: none; color: var(--tinta);
+}
+.etiqueta-buscador { display: block; font-weight: 600; margin: 1rem 0 0.5rem; }
+.buscador {
+  width: 100%; min-height: 3.5rem; font: inherit; font-size: 1.1rem; padding: 0.75rem 1rem; color: var(--tinta);
+  background: var(--piedra); border: 2px solid var(--tinta-suave); border-radius: 0.75rem;
+}
+.buscador:focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+.resultados { margin: 0.5rem 0 1rem; }
+.fila-provincia { width: 100%; font: inherit; text-align: left; border: 2px solid transparent; cursor: pointer; }
+.aviso-zona { background: var(--acento-claro); border-left: 4px solid var(--acento); border-radius: 0.5rem; padding: 0.5rem 0.75rem; margin: 0 0 1rem; }
+.aviso-zona p { margin: 0.25rem 0; }
+.etiqueta-canarias { display: inline-block; margin-left: 0.5rem; font-size: 0.75rem; font-weight: 600; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; }
+.bloque-partidos { margin: 2rem 0 1rem; }
+.pendientes { padding-left: 1.2rem; }

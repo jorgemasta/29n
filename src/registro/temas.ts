@@ -7,7 +7,7 @@ import type { Tema } from '../dataset/esquema';
 // Neutrality rules for `pregunta`: an open "¿Qué harían…?" question, no figures or context data
 // (choosing the data already frames the question), no word that belongs to one side's vocabulary.
 // `explicacion` only for topics with jargon or acronyms, in plain words.
-// Canary-only topics (REF/ZEC/AIEM, migración atlántica) arrive with the province selector (#7).
+// Canary-only topics (ambito 'canarias') come last and are only shown in provinces 35 and 38.
 export const TEMAS: Tema[] = [
   {
     id: 'vivienda',
@@ -139,5 +139,21 @@ export const TEMAS: Tema[] = [
     pregunta: '¿Qué papel querrían para España en la Unión Europea y en el mundo?',
     ambito: 'nacional',
     orden: 18,
+  },
+  {
+    id: 'ref-canarias',
+    titulo: 'Régimen fiscal canario (REF, ZEC y AIEM)',
+    pregunta: '¿Qué harían con las reglas fiscales y económicas especiales de Canarias?',
+    explicacion:
+      'REF, ZEC y AIEM: las reglas fiscales especiales de Canarias. REF: el régimen económico y fiscal propio de las islas. ZEC: una zona con menos impuestos para empresas que se instalan allí. AIEM: un impuesto canario a algunos productos que llegan de fuera.',
+    ambito: 'canarias',
+    orden: 19,
+  },
+  {
+    id: 'migracion-atlantica',
+    titulo: 'Migración atlántica',
+    pregunta: '¿Qué harían con la llegada de personas migrantes por mar a Canarias?',
+    ambito: 'canarias',
+    orden: 20,
   },
 ];

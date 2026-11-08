@@ -61,12 +61,18 @@ if (!resultado.publicable) {
 }
 
 const conHash: Partido = { ...partido, programa: { ...partido.programa, hashPdf: resultado.informe.hashPdf, fecha: values.fecha } } as Partido;
+// Every party that meets the inclusion criterion is listed; without a processed programme it is
+// "⏳ programa pendiente". Scope always comes from the registry (criterion data may have changed).
+const procesados = [...previos.partidos.filter((p) => p.id !== partido.id), conHash].filter((p) => PARTIDOS[p.id]);
+const partidos: Partido[] = Object.values(PARTIDOS).map(
+  (base) => ({ ...base, programa: procesados.find((p) => p.id === base.id)?.programa ?? { estado: 'pendiente' } }) as Partido,
+);
 const dataset = construirDataset({
-  partidos: [...previos.partidos.filter((p) => p.id !== partido.id), conHash],
+  partidos,
   temas: TEMAS,
   resultados: [
     ...previos.informes
-      .filter((i) => i.partido !== partido.id)
+      .filter((i) => i.partido !== partido.id && PARTIDOS[i.partido])
       .map((informe) => ({ informe, posturas: previos.posturas.filter((p) => p.partido === informe.partido) })),
     resultado,
   ],

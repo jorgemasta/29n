@@ -1,7 +1,8 @@
 // Builds data/dataset.json from FICTIONAL test programmes, through the real pipeline with the
 // fake AI adapter. Used while no real programme can be processed (no credentials / PDF on this
 // machine). The dataset is marked origen: "simulado" and every party prueba: true. Content lives in
-// scripts/datos-simulados.ts; party D is a provisional source (private prototype only).
+// scripts/datos-simulados.ts; party D is a provisional source (private prototype only), E is a
+// regional (Canary) party and F a regional party with its programme pending.
 //   npx tsx scripts/generar-simulado.ts
 import { mkdir, writeFile } from 'node:fs/promises';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
@@ -10,7 +11,7 @@ import { crearIAFalsa } from '../src/ia/falsa';
 import { procesarPrograma } from '../src/pipeline';
 import { TEMAS } from '../src/registro/temas';
 import { contarPalabras } from '../src/pipeline/texto';
-import { FICTICIOS } from './datos-simulados';
+import { FICTICIOS, PENDIENTES_FICTICIOS } from './datos-simulados';
 
 /** Wraps a paragraph into lines that fit an A4 page in 10pt Helvetica. */
 function lineas(texto: string, max = 95): string[] {
@@ -60,7 +61,7 @@ for (const f of FICTICIOS) {
     id: f.id,
     nombre: `Partido de prueba ${f.letra}`,
     siglas: `PR${f.letra}`,
-    ambito: { tipo: 'estatal' },
+    ambito: f.ambito ?? { tipo: 'estatal' },
     programa: { estado: 'publicado', fuente: f.fuente, url: `https://29n.jorgemasta.com/programas/${f.id}.pdf`, titulo: f.titulo },
     prueba: true,
   };
@@ -86,13 +87,16 @@ for (const f of FICTICIOS) {
   resultados.push(r);
 }
 
+for (const f of PENDIENTES_FICTICIOS)
+  partidos.push({ id: f.id, nombre: `Partido de prueba ${f.letra}`, siglas: `PR${f.letra}`, ambito: f.ambito, programa: { estado: 'pendiente' }, prueba: true });
+
 const dataset = construirDataset({
   partidos,
   temas: TEMAS,
   resultados,
   generado: new Date().toISOString(),
   origen: 'simulado',
-  nota: 'Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado).',
+  nota: 'Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.',
 });
 const v = validarDataset(dataset);
 if (!v.valido) throw new Error(`V9: ${v.errores.join('\n')}`);

@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "schema": "tsx scripts/generar-esquema.ts",
     "procesar": "tsx scripts/procesar.ts",
+    "municipios": "tsx scripts/generar-municipios.ts",
     "deploy": "npm run build && wrangler deploy",
     "deploy:privado": "npm run build:privado && wrangler deploy"
   },
