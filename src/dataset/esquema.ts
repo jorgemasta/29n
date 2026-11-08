@@ -58,16 +58,52 @@ export const TextoNeutral = z.object({
 
 export const Versiones = z.object({ prompt: z.string() });
 
+// Feasibility note (V13): two blind evaluations with the public rubric (src/registro/rubrica.ts).
+export const NivelViabilidad = z.enum(['viable', 'viable_con_matices', 'dificil', 'muy_dificil']);
+/** What one evaluation can say: a level, or that the proposal is too vague to assess. */
+export const NivelEvaluacion = z.enum([...NivelViabilidad.options, 'sin_concrecion']);
+/** What is published: agreed level, both "sin concreción", or disagreement. */
+export const ResultadoViabilidad = z.enum([...NivelEvaluacion.options, 'sin_consenso']);
+
+/** Institutional source (V8: allowed domain, answered HTTP 200). */
+export const Fuente = z.object({ titulo: z.string().min(1), url: z.url() });
+
+/** One reason per rubric criterion. */
+export const RazonesRubrica = z.object({
+  competencia: z.string().min(1),
+  coste: z.string().min(1),
+  legal: z.string().min(1),
+  precedentes: z.string().min(1),
+  mayoria: z.string().min(1),
+});
+
+export const Evaluacion = z.object({
+  nivel: NivelEvaluacion,
+  razones: RazonesRubrica,
+  /** The "por qué": 2–3 sentences. */
+  porque: z.string().min(1),
+  fuentes: z.array(Fuente),
+});
+
+export const NotaViabilidad = z.object({
+  resultado: ResultadoViabilidad,
+  /** Published "por qué" and sources; absent when there is no consensus (both arguments shown). */
+  porque: z.string().min(1).nullable(),
+  fuentes: z.array(Fuente),
+  evaluaciones: z.tuple([Evaluacion, Evaluacion]),
+  versiones: z.object({ prompt: z.string(), rubrica: z.string() }),
+});
+
 const basePostura = { partido: id, tema: id, versiones: Versiones };
 
 export const Postura = z.discriminatedUnion('estado', [
-  z.object({ ...basePostura, estado: z.literal('propone'), texto: TextoNeutral, citas: z.array(Cita).min(1) }),
+  z.object({ ...basePostura, estado: z.literal('propone'), texto: TextoNeutral, citas: z.array(Cita).min(1), viabilidad: NotaViabilidad.optional() }),
   z.object({ ...basePostura, estado: z.literal('no_propone') }),
   /** Extracted but discarded by a barrier: "No pudimos verificar su propuesta". */
   z.object({ ...basePostura, estado: z.literal('sin_verificar') }),
 ]);
 
-export const Barrera = z.enum(['V1', 'V2', 'V3', 'V9']);
+export const Barrera = z.enum(['V1', 'V2', 'V3', 'V8', 'V9', 'V13']);
 
 export const EntradaInforme = z.object({
   tema: id,
@@ -127,6 +163,11 @@ export type Tema = z.infer<typeof Tema>;
 export type Cita = z.infer<typeof Cita>;
 export type TextoNeutral = z.infer<typeof TextoNeutral>;
 export type Postura = z.infer<typeof Postura>;
+export type NivelEvaluacion = z.infer<typeof NivelEvaluacion>;
+export type ResultadoViabilidad = z.infer<typeof ResultadoViabilidad>;
+export type Fuente = z.infer<typeof Fuente>;
+export type Evaluacion = z.infer<typeof Evaluacion>;
+export type NotaViabilidad = z.infer<typeof NotaViabilidad>;
 export type EntradaInforme = z.infer<typeof EntradaInforme>;
 export type Informe = z.infer<typeof Informe>;
 export type Dataset = z.infer<typeof Dataset>;

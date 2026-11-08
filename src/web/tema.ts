@@ -5,6 +5,7 @@ import type { Dataset } from '../dataset/esquema';
 import { crearPartida, NINGUNA, type EstadoPartida, type Partida, type Revelacion, type TarjetaRevelada } from '../juego';
 import { nuevaSemilla } from '../juego/azar';
 import { borrar, guardar, leer } from './almacen';
+import { chipViabilidad, notaViabilidad } from './viabilidad';
 
 const dataset = datos as Dataset;
 const CLAVE_SEMILLA = '29n:semilla';
@@ -114,6 +115,9 @@ export function montarTema(raiz: HTMLElement, temaId: string): void {
       ...r.sinVerificar.map((p) => h('p', { class: 'fila-gris' }, `${p.nombre}: no pudimos verificar su propuesta.`)),
       r.pendientes.length ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${r.pendientes.map((p) => p.nombre).join(', ')}`) : null,
       h('p', { class: 'nota' }, 'Las propuestas están reescritas con IA en un estilo común. La cita es el texto literal del programa.'),
+      r.tarjetas.some((t) => t.viabilidad)
+        ? h('p', { class: 'nota' }, 'La viabilidad dice qué haría falta para aplicarla, no si es buena idea.')
+        : null,
       reiniciar,
     );
   };
@@ -141,11 +145,13 @@ function tarjetaRevelada(t: TarjetaRevelada, abierta: boolean): HTMLElement {
         ),
       ),
     ),
+    notaViabilidad(t.viabilidad),
   );
   const resumen = h('summary', {},
     h('span', { class: 'letra', 'aria-hidden': 'true' }, t.letra),
     h('span', { class: 'partido' }, t.partido.nombre),
     t.partido.prueba ? h('span', { class: 'etiqueta' }, 'PRUEBA') : null,
+    chipViabilidad(t.viabilidad),
   );
   const det = h('details', { class: 'revelada' }, resumen, cuerpo);
   if (abierta) det.setAttribute('open', '');

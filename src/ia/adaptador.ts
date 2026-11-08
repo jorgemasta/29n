@@ -3,7 +3,7 @@
 import type { z } from 'zod';
 
 /** What the model is used for; production maps each to a model (see claude.ts). */
-export type Tarea = 'extraer-postura' | 'neutralizar';
+export type Tarea = 'extraer-postura' | 'neutralizar' | 'evaluar-viabilidad';
 
 export interface PeticionIA<T> {
   tarea: Tarea;

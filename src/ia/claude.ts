@@ -6,10 +6,11 @@ import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import type { AdaptadorIA, PeticionIA, Tarea } from './adaptador';
 
-/** Model per task (spec: Sonnet to extract and neutralise; Opus for feasibility in #5). */
+/** Model per task (spec: Sonnet to extract and neutralise; Opus for feasibility (V13)). */
 export const MODELOS: Record<Tarea, string> = {
   'extraer-postura': 'claude-sonnet-5-5',
   neutralizar: 'claude-sonnet-5-5',
+  'evaluar-viabilidad': 'claude-opus-5-5',
 };
 
 export function crearIAClaude(opciones: { apiKey?: string; baseURL?: string } = {}): AdaptadorIA {

@@ -263,6 +263,246 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "viabilidad": {
+                "type": "object",
+                "properties": {
+                  "resultado": {
+                    "type": "string",
+                    "enum": [
+                      "viable",
+                      "viable_con_matices",
+                      "dificil",
+                      "muy_dificil",
+                      "sin_concrecion",
+                      "sin_consenso"
+                    ]
+                  },
+                  "porque": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "fuentes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "titulo": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        }
+                      },
+                      "required": [
+                        "titulo",
+                        "url"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "evaluaciones": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "nivel": {
+                            "type": "string",
+                            "enum": [
+                              "viable",
+                              "viable_con_matices",
+                              "dificil",
+                              "muy_dificil",
+                              "sin_concrecion"
+                            ]
+                          },
+                          "razones": {
+                            "type": "object",
+                            "properties": {
+                              "competencia": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "coste": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "legal": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "precedentes": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "mayoria": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "competencia",
+                              "coste",
+                              "legal",
+                              "precedentes",
+                              "mayoria"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "porque": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "fuentes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "titulo": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "format": "uri"
+                                }
+                              },
+                              "required": [
+                                "titulo",
+                                "url"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "nivel",
+                          "razones",
+                          "porque",
+                          "fuentes"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "nivel": {
+                            "type": "string",
+                            "enum": [
+                              "viable",
+                              "viable_con_matices",
+                              "dificil",
+                              "muy_dificil",
+                              "sin_concrecion"
+                            ]
+                          },
+                          "razones": {
+                            "type": "object",
+                            "properties": {
+                              "competencia": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "coste": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "legal": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "precedentes": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "mayoria": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "competencia",
+                              "coste",
+                              "legal",
+                              "precedentes",
+                              "mayoria"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "porque": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "fuentes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "titulo": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "format": "uri"
+                                }
+                              },
+                              "required": [
+                                "titulo",
+                                "url"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "nivel",
+                          "razones",
+                          "porque",
+                          "fuentes"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "versiones": {
+                    "type": "object",
+                    "properties": {
+                      "prompt": {
+                        "type": "string"
+                      },
+                      "rubrica": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "prompt",
+                      "rubrica"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "resultado",
+                  "porque",
+                  "fuentes",
+                  "evaluaciones",
+                  "versiones"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -397,7 +637,9 @@
                     "V1",
                     "V2",
                     "V3",
-                    "V9"
+                    "V8",
+                    "V9",
+                    "V13"
                   ]
                 },
                 "resultado": {

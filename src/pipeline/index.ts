@@ -16,12 +16,15 @@ import {
   RespuestaNeutralizar,
   VERSION_PROMPT,
 } from './prompts';
+import { comprobarUrlHttp, evaluarViabilidad, type ComprobarUrl } from './viabilidad';
 
 export interface OpcionesProceso {
   temas?: Tema[];
   terminos?: TerminosIdentificativos;
   cache?: AlmacenCache;
   versionPrompt?: string;
+  /** V8 HTTP 200 check for feasibility sources (default: real fetch). */
+  comprobarUrl?: ComprobarUrl;
 }
 
 export interface ResultadoProceso {
@@ -117,7 +120,12 @@ export async function procesarPrograma(
     if (!texto) continue;
     anotar('V3', 'pasa', 'sin marcas identificativas');
 
-    posturas.push({ ...base, estado: 'propone', texto, citas });
+    // V13 + V8: double-blind feasibility note on the final neutral text.
+    const viabilidad = await evaluarViabilidad({
+      ia, tema: temaIA, texto, citas, terminos, comprobarUrl: opciones.comprobarUrl ?? comprobarUrlHttp, anotar,
+    });
+
+    posturas.push({ ...base, estado: 'propone', texto, citas, viabilidad });
   }
 
   // V9: every postura validates against the schema.

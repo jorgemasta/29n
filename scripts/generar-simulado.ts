@@ -15,7 +15,26 @@ interface Ficticio {
   paginas: string[][];
   cita: { texto: string; pagina: number };
   neutro: { que: string; como: string; cifra: string | null };
+  /** Fake feasibility answers of evaluations 1 and 2 (fictional, for the prototype). */
+  viabilidad: [Simulada, Simulada];
 }
+
+interface Simulada {
+  nivel: 'viable' | 'viable_con_matices' | 'dificil' | 'muy_dificil' | 'sin_concrecion';
+  porque: string;
+}
+
+const FUENTES = [
+  { titulo: 'INE: estadísticas de vivienda (portada)', url: 'https://www.ine.es/' },
+  { titulo: 'BOE: legislación consolidada (portada)', url: 'https://www.boe.es/' },
+];
+const RAZONES = {
+  competencia: '[Simulado] La vivienda es competencia autonómica; el Estado puede fijar bases y financiar.',
+  coste: '[Simulado] El coste depende del alcance; la propuesta no detalla toda la financiación.',
+  legal: '[Simulado] Encaja en el marco legal actual con cambios de ley ordinaria.',
+  precedentes: '[Simulado] Hay medidas parecidas en otros países europeos.',
+  mayoria: '[Simulado] Basta una ley ordinaria en el Congreso.',
+};
 
 const FICTICIOS: Ficticio[] = [
   {
@@ -38,6 +57,10 @@ const FICTICIOS: Ficticio[] = [
       como: 'Los alquileres de esas viviendas no superarían el 30 % de los ingresos del hogar.',
       cifra: '50.000 viviendas al año',
     },
+    viabilidad: [
+      { nivel: 'viable_con_matices', porque: '[Simulado] Se puede aplicar, pero exige acuerdos con las comunidades autónomas y una financiación plurianual que la propuesta no detalla.' },
+      { nivel: 'viable_con_matices', porque: '[Simulado] Es aplicable con condiciones: depende de suelo autonómico y municipal.' },
+    ],
   },
   {
     id: 'prueba-b',
@@ -60,6 +83,10 @@ const FICTICIOS: Ficticio[] = [
       como: 'Además, liberar suelo público para que se construyan más viviendas.',
       cifra: null,
     },
+    viabilidad: [
+      { nivel: 'viable', porque: '[Simulado] El impuesto está cedido a las comunidades, pero el Estado puede reformar su regulación básica.' },
+      { nivel: 'dificil', porque: '[Simulado] El impuesto lo gestionan las comunidades autónomas y quitarlo exige compensar su recaudación.' },
+    ],
   },
   {
     id: 'prueba-c',
@@ -81,11 +108,18 @@ const FICTICIOS: Ficticio[] = [
       como: 'Y subir el IBI, el impuesto municipal sobre la casa, a viviendas vacías más de dos años.',
       cifra: null,
     },
+    viabilidad: [
+      { nivel: 'viable', porque: '[Simulado] La ley estatal de vivienda ya permite declarar zonas tensionadas y el recargo del IBI a viviendas vacías.' },
+      { nivel: 'viable', porque: '[Simulado] Existe marco legal estatal para ambas medidas; su aplicación depende de comunidades y ayuntamientos.' },
+    ],
   },
 ];
 
 async function pdfFicticio(paginas: string[][]): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
+  // Fixed dates: same bytes (and hash) on every run.
+  doc.setCreationDate(new Date('2026-11-01T00:00:00Z'));
+  doc.setModificationDate(new Date('2026-11-01T00:00:00Z'));
   const fuente = await doc.embedFont(StandardFonts.Helvetica);
   for (const lineas of paginas) {
     const pagina = doc.addPage();
@@ -111,8 +145,10 @@ for (const f of FICTICIOS) {
   const ia = crearIAFalsa({
     'extraer-postura': () => ({ propone: true, citas: [f.cita] }),
     neutralizar: () => f.neutro,
+    'evaluar-viabilidad': (e) => ({ ...f.viabilidad[e.evaluacion === 1 ? 0 : 1], razones: RAZONES, fuentes: FUENTES }),
   });
-  const r = await procesarPrograma(pdf, partido, ia, { temas: TEMAS });
+  // Simulated: the sources are institutional home pages; skip the network check.
+  const r = await procesarPrograma(pdf, partido, ia, { temas: TEMAS, comprobarUrl: async () => true });
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);
   partidos.push({ ...partido, programa: { ...partido.programa, hashPdf: r.informe.hashPdf } } as Partido);
   resultados.push(r);
