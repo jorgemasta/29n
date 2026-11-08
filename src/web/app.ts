@@ -20,6 +20,7 @@ import { almacenamientoDisponible, borrar, guardar, leer } from './almacen';
 import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
 import { boton, empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
+import { botonReportar } from './reportar';
 
 const CLAVE_SEMILLA = '29n:semilla';
 const CLAVE_ESTADO = '29n:estado';
@@ -323,14 +324,14 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
             h('p', {}, nuevas === 1 ? 'Hay una propuesta nueva. ¿Sigues prefiriendo la misma?' : `Hay ${nuevas} propuestas nuevas. ¿Sigues prefiriendo la misma?`),
             boton('Volver a elegir', 'secundario', volverAElegir))
         : null,
-      mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), tarjetaRevelada(mia, true)) : null,
+      mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), tarjetaRevelada(mia, true, r.tema)) : null,
       otras.length ? h('h2', {}, mia ? 'Las demás' : 'Todas las propuestas') : null,
-      ...otras.map((t) => tarjetaRevelada(t, false)),
+      ...otras.map((t) => tarjetaRevelada(t, false, r.tema)),
       ...r.sinPropuesta.map((p) => tarjetaSinPropuesta(p, 'Este partido no propone nada sobre esto')),
       ...r.sinVerificar.map((p) => tarjetaSinPropuesta(p, 'No pudimos verificar su propuesta')),
       r.pendientes.length
         ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${unir(r.pendientes.map((p) => p.nombre))}. `,
-            'Mientras falte, no aparece en los temas ni en tu resultado. ', h('a', { href: '#temas' }, 'Partidos y programas'))
+            'Mientras falte, no aparece en los temas ni en tu resultado. ', h('a', { href: '/partidos/' }, 'Partidos y programas'))
         : null,
       h('p', { class: 'nota' }, 'Las propuestas están reescritas con IA en un estilo común. La cita es el texto literal del documento.'),
       r.tarjetas.some((t) => t.viabilidad)
@@ -381,7 +382,7 @@ function tarjetaSinPropuesta(p: PartidoRevelado, mensaje: string): HTMLElement {
   );
 }
 
-function tarjetaRevelada(t: TarjetaRevelada, abierta: boolean): HTMLElement {
+function tarjetaRevelada(t: TarjetaRevelada, abierta: boolean, tema: { id: string; titulo: string }): HTMLElement {
   const fuente = `${ETIQUETA_FUENTE[t.fuente.tipo]}${t.fuente.soloPrivado ? ' · solo privado' : ''}`;
   const cuerpo = h('div', { class: 'cuerpo' },
     h('p', { class: 'titular' }, h('strong', {}, t.titular)),
@@ -397,6 +398,7 @@ function tarjetaRevelada(t: TarjetaRevelada, abierta: boolean): HTMLElement {
     ),
     h('p', { class: `fuente${t.fuente.soloPrivado ? ' provisional' : ''}` }, `Fuente: ${fuente}`),
     notaViabilidad(t.viabilidad),
+    botonReportar({ tema, partido: t.partido, letra: t.letra, paginas: t.citas.map((c) => c.pagina) }),
   );
   const resumen = h('summary', {},
     h('span', { class: 'letra', 'aria-hidden': 'true' }, t.letra),
