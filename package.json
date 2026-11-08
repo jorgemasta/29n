@@ -1,0 +1,30 @@
+{
+  "name": "29n",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "schema": "tsx scripts/generar-esquema.ts",
+    "procesar": "tsx scripts/procesar.ts",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
+    "astro": "7.4.1",
+    "unpdf": "^2.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "pdf-lib": "^1.17.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0",
+    "wrangler": "^4.158.0"
+  }
+}

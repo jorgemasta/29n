@@ -1,0 +1,11 @@
+// Cloudflare Workers (static assets only for now). Deploy: see docs/deploy.md.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "29n",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [{ "pattern": "29n.jorgemasta.com", "custom_domain": true }]
+}

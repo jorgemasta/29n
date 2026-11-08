@@ -1,0 +1,3 @@
+# Private prototype: not linked from anywhere, not indexed.
+User-agent: *
+Disallow: /

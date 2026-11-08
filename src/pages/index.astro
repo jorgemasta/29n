@@ -1,0 +1,38 @@
+---
+import '../styles/global.css';
+import dataset from '../../data/dataset.json';
+
+const tema = dataset.temas[0]!;
+const esPrueba = dataset.origen !== 'real';
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>29N · Elige a ciegas</title>
+    <meta name="description" content="Lee lo que proponen los partidos sin saber de quién es." />
+  </head>
+  <body>
+    <main id="app" data-tema={tema.id}>
+      {esPrueba && (
+        <p class="aviso-prueba" role="note">
+          <strong>Prototipo con datos de prueba.</strong> {dataset.nota}
+        </p>
+      )}
+      <div id="tema">
+        <p class="gris">Cargando el tema {tema.titulo}…</p>
+        <noscript><p>Esta página necesita JavaScript para barajar las propuestas en tu móvil.</p></noscript>
+      </div>
+    </main>
+    <footer class="pie">
+      Proyecto personal de Jorge Masta, sin afiliación a ningún partido. Nada de lo que eliges sale de tu móvil.
+    </footer>
+    <script>
+      import { montarTema } from '../web/tema';
+      const app = document.getElementById('app')!;
+      montarTema(document.getElementById('tema')!, app.dataset.tema!);
+    </script>
+  </body>
+</html>

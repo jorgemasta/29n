@@ -1,0 +1,82 @@
+/* Neutral palette: stone grey, ink and one petrol-blue accent that matches no party. */
+:root {
+  --piedra: #f3f1ed;
+  --piedra-2: #e4e0d8;
+  --tinta: #1f2328;
+  --tinta-suave: #4a4f57;
+  --acento: #0f5c66;
+  --acento-claro: #e1eef0;
+  --borde: #8a8f96;
+  font-size: 112.5%; /* 18px base, in rem so it respects system text size */
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --piedra: #1b1d20;
+    --piedra-2: #2a2d31;
+    --tinta: #eceae6;
+    --tinta-suave: #b9bcc1;
+    --acento: #6fc2cc;
+    --acento-claro: #16363a;
+    --borde: #80858c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--piedra);
+  color: var(--tinta);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+}
+main { max-width: 36rem; margin: 0 auto; padding: 1rem 1rem 9rem; }
+h1 { font-size: 1.4rem; line-height: 1.3; margin: 0.5rem 0 1rem; }
+h1:focus { outline: none; }
+h2 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
+.gris, .fila-gris, .ayuda, .nota { color: var(--tinta-suave); font-size: 0.9rem; }
+.aviso-prueba { background: #fff4d6; color: #3d2f00; border: 2px solid #b08a00; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.9rem; }
+.cabecera p { margin: 0; font-weight: 600; font-size: 0.9rem; }
+.progreso { display: flex; gap: 0.4rem; list-style: none; padding: 0; margin: 0.4rem 0 0; }
+.progreso li { width: 0.6rem; height: 0.6rem; border-radius: 50%; border: 2px solid var(--borde); }
+.progreso li.actual { background: var(--acento); border-color: var(--acento); }
+
+.tarjetas { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.tarjeta {
+  width: 100%; min-height: 5.5rem; display: flex; gap: 0.75rem; align-items: flex-start; text-align: left;
+  font: inherit; color: inherit; background: var(--piedra-2); border: 2px solid transparent;
+  border-radius: 0.75rem; padding: 1rem; cursor: pointer;
+}
+.tarjeta.ninguna { background: transparent; border: 2px dashed var(--borde); align-items: center; }
+.tarjeta[aria-pressed='true'] { border: 3px solid var(--acento); background: var(--acento-claro); }
+.tarjetas:has([aria-pressed='true']) .tarjeta:not([aria-pressed='true']) { opacity: 0.6; }
+.tarjeta:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+.letra {
+  flex: none; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center;
+  border: 2px solid var(--tinta-suave); font-weight: 700;
+}
+.texto { display: grid; gap: 0.25rem; }
+.detalle { font-size: 0.95rem; color: var(--tinta-suave); }
+
+.barra-confirmar {
+  position: fixed; left: 0; right: 0; bottom: 0; background: var(--piedra); border-top: 2px solid var(--borde);
+  padding: 1rem max(1rem, calc((100% - 34rem) / 2)); display: grid; gap: 0.5rem;
+}
+.barra-confirmar p { margin: 0; font-weight: 600; }
+.principal {
+  min-height: 3.5rem; width: 100%; font: inherit; font-weight: 700; color: #fff; background: var(--acento);
+  border: none; border-radius: 0.75rem; cursor: pointer;
+}
+@media (prefers-color-scheme: dark) { .principal { color: #0b1f22; } }
+.enlace { font: inherit; background: none; border: none; color: var(--acento); text-decoration: underline; padding: 0.75rem 0; min-height: 3rem; cursor: pointer; }
+
+.antetitulo { margin: 1rem 0 0; color: var(--tinta-suave); }
+.revelada { background: var(--piedra-2); border-radius: 0.75rem; margin: 0 0 0.75rem; }
+.mia .revelada { border: 3px solid var(--acento); }
+.revelada summary { display: flex; gap: 0.75rem; align-items: center; padding: 0.9rem 1rem; min-height: 3rem; cursor: pointer; font-weight: 600; }
+.revelada .cuerpo { padding: 0 1rem 1rem; }
+.etiqueta { font-size: 0.7rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; color: #8a6d00; }
+blockquote { margin: 0.75rem 0 0; padding: 0.5rem 0.75rem; border-left: 4px solid var(--acento); background: var(--piedra); }
+blockquote p { margin: 0 0 0.25rem; }
+blockquote footer { font-size: 0.85rem; color: var(--tinta-suave); }
+a { color: var(--acento); }
+.pie { max-width: 36rem; margin: 0 auto; padding: 1rem; font-size: 0.8rem; color: var(--tinta-suave); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

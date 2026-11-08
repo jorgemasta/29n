@@ -1,0 +1,449 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "generado": {
+      "type": "string"
+    },
+    "origen": {
+      "type": "string",
+      "enum": [
+        "real",
+        "simulado",
+        "prueba"
+      ]
+    },
+    "nota": {
+      "type": "string"
+    },
+    "partidos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "nombre": {
+            "type": "string",
+            "minLength": 1
+          },
+          "siglas": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ambito": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "tipo": {
+                    "type": "string",
+                    "const": "estatal"
+                  }
+                },
+                "required": [
+                  "tipo"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tipo": {
+                    "type": "string",
+                    "const": "provincias"
+                  },
+                  "provincias": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "tipo",
+                  "provincias"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "programa": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "estado": {
+                    "type": "string",
+                    "const": "publicado"
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "titulo": {
+                    "type": "string"
+                  },
+                  "hashPdf": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "fecha": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "estado",
+                  "url",
+                  "titulo"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "estado": {
+                    "type": "string",
+                    "const": "pendiente"
+                  }
+                },
+                "required": [
+                  "estado"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "prueba": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "nombre",
+          "siglas",
+          "ambito",
+          "programa"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "temas": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "titulo": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pregunta": {
+            "type": "string",
+            "minLength": 1
+          },
+          "explicacion": {
+            "type": "string"
+          },
+          "ambito": {
+            "type": "string",
+            "enum": [
+              "nacional",
+              "canarias"
+            ]
+          },
+          "orden": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "titulo",
+          "pregunta",
+          "ambito",
+          "orden"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "posturas": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "partido": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "tema": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versiones": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "estado": {
+                "type": "string",
+                "const": "propone"
+              },
+              "texto": {
+                "type": "object",
+                "properties": {
+                  "que": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "como": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "cifra": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "que",
+                  "como",
+                  "cifra"
+                ],
+                "additionalProperties": false
+              },
+              "citas": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "texto": {
+                      "type": "string",
+                      "minLength": 40,
+                      "maxLength": 600
+                    },
+                    "pagina": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "texto",
+                    "pagina"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "partido",
+              "tema",
+              "versiones",
+              "estado",
+              "texto",
+              "citas"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "partido": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "tema": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versiones": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "estado": {
+                "type": "string",
+                "const": "no_propone"
+              }
+            },
+            "required": [
+              "partido",
+              "tema",
+              "versiones",
+              "estado"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "partido": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "tema": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versiones": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "estado": {
+                "type": "string",
+                "const": "sin_verificar"
+              }
+            },
+            "required": [
+              "partido",
+              "tema",
+              "versiones",
+              "estado"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "informes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "partido": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "hashPdf": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "versionPrompt": {
+            "type": "string"
+          },
+          "extraidas": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "descartadas": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "publicable": {
+            "type": "boolean"
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "entradas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tema": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "barrera": {
+                  "type": "string",
+                  "enum": [
+                    "V1",
+                    "V2",
+                    "V3",
+                    "V9"
+                  ]
+                },
+                "resultado": {
+                  "type": "string",
+                  "enum": [
+                    "pasa",
+                    "corregir",
+                    "reescribir",
+                    "descartar"
+                  ]
+                },
+                "detalle": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "tema",
+                "barrera",
+                "resultado",
+                "detalle"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "partido",
+          "hashPdf",
+          "versionPrompt",
+          "extraidas",
+          "descartadas",
+          "publicable",
+          "entradas"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "version",
+    "generado",
+    "origen",
+    "partidos",
+    "temas",
+    "posturas",
+    "informes"
+  ],
+  "additionalProperties": false
+}

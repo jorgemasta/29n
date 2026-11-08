@@ -15,3 +15,11 @@ Default labels: needs-triage, needs-info, ready-for-agent, ready-for-human, wont
 ### Domain docs
 
 Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+## Commands
+
+- `npm test`: Vitest. Test point A `tests/pipeline.test.ts`, test point B `tests/juego.test.ts`.
+- `npm run build`: static Astro build into `dist/`. `npx tsc --noEmit -p .` typechecks.
+- `npm run schema`: regenerates `data/dataset.schema.json` from `src/dataset/esquema.ts`.
+- `npx tsx scripts/generar-simulado.ts`: rebuilds the simulated (fictional) `data/dataset.json`.
+- `npm run procesar`: processes a real programme with Claude. Deploy: `docs/deploy.md`.
