@@ -127,3 +127,25 @@ a { color: var(--acento); }
 .etiqueta-canarias { display: inline-block; margin-left: 0.5rem; font-size: 0.75rem; font-weight: 600; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; }
 .bloque-partidos { margin: 2rem 0 1rem; }
 .pendientes { padding-left: 1.2rem; }
+
+/* Feasibility note (V13): a single tone, never a traffic light. */
+.chip-viabilidad { margin-left: auto; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--borde); border-radius: 1rem; padding: 0.1rem 0.6rem; white-space: nowrap; }
+.viabilidad { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--borde); }
+.viabilidad h3 { font-size: 1rem; margin: 0 0 0.5rem; }
+.etiqueta-ia { font-size: 0.7rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; vertical-align: middle; }
+.escala { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; list-style: none; padding: 0; margin: 0 0 0.5rem; font-size: 0.7rem; }
+.escala li { border: 2px solid var(--acento); border-radius: 0.25rem; padding: 0.2rem; text-align: center; color: var(--tinta-suave); }
+.escala li.actual { background: var(--acento); color: var(--piedra); font-weight: 700; }
+.fuera-escala { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border: 2px dashed var(--borde); border-radius: 50%; margin: 0 0 0.5rem; font-weight: 700; }
+.viabilidad .nivel, .porque p { margin: 0.25rem 0; }
+.fuentes { margin: 0.25rem 0; padding-left: 1.2rem; font-size: 0.9rem; }
+.fuentes li { padding: 0.35rem 0; }
+.argumento { border-left: 3px solid var(--borde); padding-left: 0.75rem; margin: 0.75rem 0; }
+.rubrica summary { cursor: pointer; padding: 0.6rem 0; min-height: 3rem; color: var(--acento); }
+.rubrica dt { font-weight: 600; font-size: 0.9rem; }
+.rubrica dd { margin: 0 0 0.5rem; font-size: 0.9rem; }
+.metodo { font-size: 0.85rem; color: var(--tinta-suave); }
+.metodo a { display: inline-block; padding: 0.5rem 0; }
+.tabla-rubrica { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.tabla-rubrica th, .tabla-rubrica td { text-align: left; vertical-align: top; padding: 0.5rem; border-bottom: 1px solid var(--borde); }
+pre.prompt { white-space: pre-wrap; background: var(--piedra-2); padding: 0.75rem; border-radius: 0.5rem; font-size: 0.8rem; }

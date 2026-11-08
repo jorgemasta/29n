@@ -1,7 +1,7 @@
 // Game engine (test point B). Pure functions over the dataset, no I/O: runs in the browser.
 //   crearPartida(dataset, provincia, semilla, estado?, opciones?) → Partida (immutable; actions return a new one)
 import { aplicarModo, esSoloPrivado, fuenteDe } from '../dataset';
-import type { Dataset, Modo, Partido, Postura, Tema, TipoFuente } from '../dataset/esquema';
+import type { Dataset, Modo, NotaViabilidad, Partido, Postura, Tema, TipoFuente } from '../dataset/esquema';
 import { barajar } from './azar';
 
 export const NINGUNA = 'ninguna' as const;
@@ -64,6 +64,8 @@ export interface TarjetaRevelada extends Tarjeta {
   elegida: boolean;
   citas: { texto: string; pagina: number; enlace: string }[];
   tituloPrograma: string;
+  /** Blind feasibility note (V13); null if the postura has none. Only shown after choosing. */
+  viabilidad: NotaViabilidad | null;
   /** Source type; provisional sources are marked "solo privado". */
   fuente: { tipo: TipoFuente; soloPrivado: boolean };
 }
@@ -199,6 +201,7 @@ export function crearPartida(
             elegida: postura.partido === eleccion,
             tituloPrograma: partido.programa.estado === 'publicado' ? partido.programa.titulo : '',
             citas: postura.citas.map((c) => ({ ...c, enlace: `${url}#page=${c.pagina}` })),
+            viabilidad: postura.viabilidad ?? null,
             fuente: { tipo: fuenteDe(partido)!, soloPrivado: esSoloPrivado(fuenteDe(partido)!) },
           };
         }),

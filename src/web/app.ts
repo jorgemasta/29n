@@ -15,6 +15,7 @@ import {
 import { nuevaSemilla } from '../juego/azar';
 import { borrar, guardar, leer } from './almacen';
 import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
+import { chipViabilidad, notaViabilidad } from './viabilidad';
 
 const CLAVE_SEMILLA = '29n:semilla';
 const CLAVE_ESTADO = '29n:estado';
@@ -200,6 +201,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       ...r.sinVerificar.map((p) => tarjetaSinPropuesta(p, 'No pudimos verificar su propuesta')),
       r.pendientes.length ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${r.pendientes.map((p) => p.nombre).join(', ')}`) : null,
       h('p', { class: 'nota' }, 'Las propuestas están reescritas con IA en un estilo común. La cita es el texto literal del documento.'),
+      r.tarjetas.some((t) => t.viabilidad)
+        ? h('p', { class: 'nota' }, 'La viabilidad dice qué haría falta para aplicarla, no si es buena idea.')
+        : null,
       h('div', { class: 'barra-fija' },
         siguiente
           ? boton(`Siguiente: ${siguiente.titulo}`, 'principal', () => irA(`tema/${siguiente.id}`))
@@ -255,12 +259,14 @@ function tarjetaRevelada(t: TarjetaRevelada, abierta: boolean): HTMLElement {
       ),
     ),
     h('p', { class: `fuente${t.fuente.soloPrivado ? ' provisional' : ''}` }, `Fuente: ${fuente}`),
+    notaViabilidad(t.viabilidad),
   );
   const resumen = h('summary', {},
     h('span', { class: 'letra', 'aria-hidden': 'true' }, t.letra),
     h('span', { class: 'partido' }, t.partido.nombre),
     t.partido.prueba ? h('span', { class: 'etiqueta' }, 'PRUEBA') : null,
     t.fuente.soloPrivado ? h('span', { class: 'etiqueta' }, 'SOLO PRIVADO') : null,
+    chipViabilidad(t.viabilidad),
   );
   const det = h('details', { class: 'revelada' }, resumen, cuerpo);
   if (abierta) det.setAttribute('open', '');

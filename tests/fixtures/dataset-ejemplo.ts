@@ -1,4 +1,4 @@
-import type { Dataset, Partido, Postura } from '../../src/dataset/esquema';
+import type { Dataset, NotaViabilidad, Partido, Postura } from '../../src/dataset/esquema';
 
 const publicado = (n: string) => ({
   estado: 'publicado' as const,
@@ -27,6 +27,17 @@ const propone = (p: string, tema = 'vivienda'): Postura => ({
   versiones: { prompt: 'v1' },
 });
 
+export const notaEjemplo: NotaViabilidad = {
+  resultado: 'sin_consenso',
+  porque: null,
+  fuentes: [],
+  evaluaciones: [
+    { nivel: 'viable', razones: { competencia: 'a', coste: 'b', legal: 'c', precedentes: 'd', mayoria: 'e' }, porque: 'Una.', fuentes: [{ titulo: 'INE', url: 'https://www.ine.es/x' }] },
+    { nivel: 'dificil', razones: { competencia: 'a', coste: 'b', legal: 'c', precedentes: 'd', mayoria: 'e' }, porque: 'Otra.', fuentes: [] },
+  ],
+  versiones: { prompt: 'viabilidad-v1', rubrica: 'r1' },
+};
+
 /**
  * 4 national parties (one proposes nothing, one pending), 1 regional party in the Canary provinces
  * (35 Las Palmas, 38 Santa Cruz de Tenerife), 1 regional pending party in 35, 1 regional party in 08 (Barcelona).
@@ -50,7 +61,7 @@ export const datasetEjemplo: Dataset = {
     { id: 'ref', titulo: 'Régimen fiscal canario', pregunta: '¿Qué harían con el REF?', ambito: 'canarias', orden: 2 },
   ],
   posturas: [
-    propone('aaa'),
+    { ...propone('aaa'), viabilidad: notaEjemplo } as Postura,
     propone('bbb'),
     propone('ccc'),
     { partido: 'nada', tema: 'vivienda', estado: 'no_propone', versiones: { prompt: 'v1' } },

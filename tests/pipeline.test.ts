@@ -15,6 +15,7 @@ import {
   terceroPartido,
   terminosDePrueba,
 } from './fixtures/registro';
+import { VERSION_RUBRICA } from '../src/registro/rubrica';
 import type { Tema } from '../src/dataset/esquema';
 
 const neutralizaciones = (ia: { llamadas: { tarea: string; entrada: unknown }[] }) => ia.llamadas.filter((l) => l.tarea === 'neutralizar');
@@ -39,6 +40,20 @@ const neutroBueno = {
   cifra: null,
 };
 
+const FUENTE_INE = { titulo: 'INE: Índice de precios de vivienda en alquiler', url: 'https://www.ine.es/alquiler' };
+const FUENTE_BOE = { titulo: 'BOE: Ley 12/2023 por el derecho a la vivienda', url: 'https://www.boe.es/eli/es/l/2023/05/24/12' };
+
+const razones = {
+  competencia: 'La vivienda es competencia autonómica; el Estado fija bases.',
+  coste: 'Coste bajo para el Estado; el parque público requiere inversión.',
+  legal: 'La ley estatal de vivienda ya prevé zonas tensionadas.',
+  precedentes: 'Hay precedentes en Cataluña y en otros países europeos.',
+  mayoria: 'Basta una ley ordinaria.',
+};
+
+function evaluacion(nivel: string, extra: Record<string, unknown> = {}) {
+  return { nivel, razones, porque: `Evaluada como ${nivel}. Depende de las comunidades.`, fuentes: [FUENTE_INE], ...extra };
+}
 const fiel = { anade: false, omite: false, cambiaSentido: false, explicacion: 'Fiel a la cita.' };
 
 /** V12 does not confirm the absence: the second pass finds a proposal. */
@@ -49,6 +64,7 @@ function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
   return {
     'extraer-postura': () => ({ propone: true, citas: [{ texto: CITA, pagina: 2 }] }),
     neutralizar: () => neutroBueno,
+    'evaluar-viabilidad': () => evaluacion('viable_con_matices'),
     'verificar-fidelidad': () => fiel,
     'adivinar-partido': () => ({ asignaciones: [] }),
     'confirmar-ausencia': () => ({ propone: false, citas: [] }),
@@ -59,6 +75,8 @@ function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
 const opciones = (o: Partial<OpcionesProceso> = {}): OpcionesProceso => ({
   temas: [temaVivienda],
   terminos: terminosDePrueba,
+  // V8 checks HTTP 200; tests never hit the network.
+  comprobarUrl: async () => true,
   dominios: dominiosDePrueba,
   ...o,
 });
@@ -205,6 +223,142 @@ describe('procesarPrograma', () => {
       expect(informe.entradas).toContainEqual(
         expect.objectContaining({ tema: 'vivienda', barrera: 'V3', resultado: 'descartar' }),
       );
+    });
+  });
+
+  describe('V13: double-blind feasibility', () => {
+    const viabilidad = async (r: RespuestasFalsas, o: Partial<OpcionesProceso> = {}) => {
+      const res = await procesar(r, o);
+      const p = res.posturas[0];
+      if (p?.estado !== 'propone' || !p.viabilidad) throw new Error('sin nota de viabilidad');
+      return { ...res, nota: p.viabilidad };
+    };
+
+    it('publishes the level when both evaluations agree, with reasons per criterion and versions', async () => {
+      const { nota, ia } = await viabilidad(respuestas());
+      expect(ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad')).toHaveLength(2);
+      expect(nota.resultado).toBe('viable_con_matices');
+      expect(nota.porque).toBe('Evaluada como viable_con_matices. Depende de las comunidades.');
+      expect(nota.fuentes).toEqual([FUENTE_INE]);
+      expect(nota.evaluaciones).toHaveLength(2);
+      for (const e of nota.evaluaciones) expect(Object.keys(e.razones).sort()).toEqual(['competencia', 'coste', 'legal', 'mayoria', 'precedentes']);
+      expect(nota.versiones).toEqual({ prompt: expect.any(String), rubrica: VERSION_RUBRICA });
+    });
+
+    it('never tells the evaluators which party the proposal is from', async () => {
+      const citaConMarca =
+        'Partido Ejemplo limitará el precio del alquiler en las zonas tensionadas, como ha dicho Ana Líder.';
+      const pdf = await crearPdfDePrueba([['Vivienda', citaConMarca]]);
+      const ia = crearIAFalsa(
+        respuestas({ 'extraer-postura': () => ({ propone: true, citas: [{ texto: citaConMarca, pagina: 1 }] }) }),
+      );
+      await procesarPrograma(pdf, partidoEjemplo, ia, opciones());
+      const llamadas = ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad');
+      expect(llamadas).toHaveLength(2);
+      for (const l of llamadas) {
+        const recibido = JSON.stringify(l.entrada) + l.instrucciones;
+        expect(recibido).not.toMatch(/partido ejemplo|ana l[ií]der|\bpej\b/i);
+        // It does get the neutral text and the (masked) quote.
+        expect(recibido).toContain(neutroBueno.que);
+        expect(recibido).toContain('limitará el precio del alquiler en las zonas tensionadas');
+      }
+    });
+
+    it('publishes "sin concreción" when both evaluations say so', async () => {
+      const { nota } = await viabilidad(
+        respuestas({ 'evaluar-viabilidad': () => evaluacion('sin_concrecion', { fuentes: [] }) }),
+      );
+      expect(nota.resultado).toBe('sin_concrecion');
+    });
+
+    it('publishes "sin consenso" with both arguments when the evaluations disagree', async () => {
+      const { nota, informe } = await viabilidad(
+        respuestas({ 'evaluar-viabilidad': (e) => evaluacion(e.evaluacion === 1 ? 'viable' : 'dificil') }),
+      );
+      expect(nota.resultado).toBe('sin_consenso');
+      expect(nota.porque).toBeNull();
+      expect(nota.evaluaciones.map((e) => [e.nivel, e.porque])).toEqual([
+        ['viable', 'Evaluada como viable. Depende de las comunidades.'],
+        ['dificil', 'Evaluada como dificil. Depende de las comunidades.'],
+      ]);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V13', detalle: expect.stringContaining('sin consenso') }));
+    });
+
+    it('keeps the two evaluations independent when answers come from the cache', async () => {
+      const cache = crearCacheEnMemoria();
+      const r = respuestas({ 'evaluar-viabilidad': (e) => evaluacion(e.evaluacion === 1 ? 'viable' : 'dificil') });
+      const primera = await viabilidad(r, { cache });
+      const segunda = await viabilidad(r, { cache });
+      expect(segunda.ia.llamadas).toHaveLength(0);
+      expect(segunda.nota).toEqual(primera.nota);
+      expect(segunda.nota.resultado).toBe('sin_consenso');
+    });
+  });
+
+  describe('V8: feasibility sources', () => {
+    const viabilidad = async (r: RespuestasFalsas, o: Partial<OpcionesProceso> = {}) => {
+      const res = await procesar(r, o);
+      const p = res.posturas[0];
+      if (p?.estado !== 'propone' || !p.viabilidad) throw new Error('sin nota de viabilidad');
+      return { ...res, nota: p.viabilidad };
+    };
+
+    it('removes a source outside the institutional domain list', async () => {
+      const { nota, informe } = await viabilidad(
+        respuestas({
+          'evaluar-viabilidad': () =>
+            evaluacion('viable', { fuentes: [FUENTE_INE, { titulo: 'Un blog', url: 'https://blog.ejemplo.com/alquiler' }] }),
+        }),
+      );
+      expect(nota.fuentes).toEqual([FUENTE_INE]);
+      for (const e of nota.evaluaciones) expect(e.fuentes).toEqual([FUENTE_INE]);
+      expect(informe.entradas).toContainEqual(
+        expect.objectContaining({ barrera: 'V8', detalle: expect.stringContaining('blog.ejemplo.com') }),
+      );
+    });
+
+    it('removes a source that does not answer HTTP 200 (checked through the injected function)', async () => {
+      const comprobadas: string[] = [];
+      const { nota } = await viabilidad(
+        respuestas({ 'evaluar-viabilidad': () => evaluacion('viable', { fuentes: [FUENTE_INE, FUENTE_BOE] }) }),
+        {
+          comprobarUrl: async (url) => {
+            comprobadas.push(url);
+            return url !== FUENTE_BOE.url;
+          },
+        },
+      );
+      expect(comprobadas).toContain(FUENTE_BOE.url);
+      expect(nota.fuentes).toEqual([FUENTE_INE]);
+    });
+
+    it('repeats an evaluation whose "por qué" is left without sources', async () => {
+      const { nota, ia, informe } = await viabilidad(
+        respuestas({
+          'evaluar-viabilidad': (e) =>
+            e.evaluacion === 2 && !e.repeticion
+              ? evaluacion('viable', { fuentes: [{ titulo: 'Wiki', url: 'https://es.wikipedia.org/wiki/Alquiler' }] })
+              : evaluacion('viable', { fuentes: [FUENTE_BOE] }),
+        }),
+      );
+      expect(ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad')).toHaveLength(3);
+      expect(nota.evaluaciones[1].fuentes).toEqual([FUENTE_BOE]);
+      expect(nota.resultado).toBe('viable');
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V8', resultado: 'reescribir' }));
+    });
+
+    it('gives up repeating after 2 attempts and publishes the note without sources', async () => {
+      const { nota, ia } = await viabilidad(
+        respuestas({ 'evaluar-viabilidad': () => evaluacion('dificil', { fuentes: [{ titulo: 'X', url: 'http://www.ine.es/x' }] }) }),
+      );
+      expect(ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad')).toHaveLength(6);
+      expect(nota.resultado).toBe('dificil');
+      expect(nota.fuentes).toEqual([]);
+    });
+
+    it('does not repeat a "sin concreción" evaluation that has no sources', async () => {
+      const { ia } = await viabilidad(respuestas({ 'evaluar-viabilidad': () => evaluacion('sin_concrecion', { fuentes: [] }) }));
+      expect(ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad')).toHaveLength(2);
     });
   });
 
@@ -605,7 +759,7 @@ describe('procesarPrograma', () => {
       ]);
       // Every barrier leaves a trace for a postura that passed them all.
       const barreras = informe.entradas.filter((e) => e.tema === 'vivienda').map((e) => e.barrera);
-      expect(new Set(barreras)).toEqual(new Set(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V10', 'V11']));
+      expect(new Set(barreras)).toEqual(new Set(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V8', 'V10', 'V11', 'V13']));
       expect(informe.entradas.filter((e) => e.barrera === 'V7')).toHaveLength(1);
     });
   });
@@ -617,7 +771,7 @@ describe('procesarPrograma', () => {
       const { ia: ia1, ...primera } = await procesar(r, { cache, fecha: '2026-11-08' });
       const { ia: ia2, ...segunda } = await procesar(r, { cache, fecha: '2026-11-08' });
       expect(neutralizaciones(ia1)).toHaveLength(2);
-      expect(ia2.llamadas).toHaveLength(0);
+      expect(ia2.llamadas.map((l) => l.tarea)).toEqual([]);
       expect(segunda).toEqual(primera);
     });
   });

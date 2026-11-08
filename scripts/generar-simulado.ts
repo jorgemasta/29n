@@ -13,6 +13,33 @@ import { TEMAS } from '../src/registro/temas';
 import { contarPalabras } from '../src/pipeline/texto';
 import { FICTICIOS, PENDIENTES_FICTICIOS } from './datos-simulados';
 
+// Simulated feasibility (V13): fictional, generic answers that vary by party and topic so the
+// reveal shows every kind of note (agreement, "sin concreción", "sin consenso").
+const NIVELES_SIMULADOS = ['viable', 'viable_con_matices', 'dificil', 'muy_dificil', 'sin_concrecion'] as const;
+const FUENTES_SIMULADAS = [
+  { titulo: 'INE: portada', url: 'https://www.ine.es/' },
+  { titulo: 'BOE: portada', url: 'https://www.boe.es/' },
+];
+const RAZONES_SIMULADAS = {
+  competencia: '[Simulado] Texto de ejemplo sobre quién tiene la competencia.',
+  coste: '[Simulado] Texto de ejemplo sobre el coste y cómo se paga.',
+  legal: '[Simulado] Texto de ejemplo sobre el encaje legal.',
+  precedentes: '[Simulado] Texto de ejemplo sobre precedentes.',
+  mayoria: '[Simulado] Texto de ejemplo sobre los votos necesarios.',
+};
+function viabilidadSimulada(partido: string, tema: string, evaluacion: number) {
+  const n = [...`${partido}:${tema}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  // About one pair in 7 disagrees: the second evaluation moves one level.
+  const i = (n % 7 === 0 && evaluacion === 2 ? n + 1 : n) % NIVELES_SIMULADOS.length;
+  const nivel = NIVELES_SIMULADOS[i]!;
+  return {
+    nivel,
+    razones: RAZONES_SIMULADAS,
+    porque: `[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.`,
+    fuentes: nivel === 'sin_concrecion' ? [] : FUENTES_SIMULADAS,
+  };
+}
+
 /** Wraps a paragraph into lines that fit an A4 page in 10pt Helvetica. */
 function lineas(texto: string, max = 95): string[] {
   const out: string[] = [];
@@ -72,12 +99,15 @@ for (const f of FICTICIOS) {
     'verificar-fidelidad': () => ({ anade: false, omite: false, cambiaSentido: false, explicacion: 'Fiel a la cita.' }),
     'adivinar-partido': () => ({ asignaciones: [] }),
     'confirmar-ausencia': () => ({ propone: false, citas: [] }),
+    'evaluar-viabilidad': (e) => viabilidadSimulada(f.id, e.tema.id, e.evaluacion),
   });
   const r = await procesarPrograma(pdf, partido, ia, {
     temas: TEMAS,
     dominios: { [f.id]: ['29n.jorgemasta.com'] },
     longitudesTema,
     publicado: { partidos, posturas: resultados.flatMap((x) => x.posturas) },
+    // Simulated: the feasibility sources are institutional home pages; skip the network check.
+    comprobarUrl: async () => true,
   });
   for (const p of r.posturas) if (p.estado === 'propone') (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);

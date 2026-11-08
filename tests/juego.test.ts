@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { crearPartida, NINGUNA } from '../src/juego';
 import { validarDataset } from '../src/dataset';
-import { datasetEjemplo } from './fixtures/dataset-ejemplo';
+import { datasetEjemplo, notaEjemplo } from './fixtures/dataset-ejemplo';
 import { datasetTemas } from './fixtures/dataset-temas';
 import type { Dataset } from '../src/dataset/esquema';
 import datasetPublicado from '../data/dataset.json';
@@ -94,6 +94,15 @@ describe('crearPartida', () => {
       enlace: `https://ejemplo.org/${mia.partido.id}.pdf#page=7`,
     });
     expect(r.tarjetas.map((t) => t.letra)).toEqual(['A', 'B', 'C']);
+  });
+
+  it('shows the feasibility note on every revealed card, never before choosing', () => {
+    const partida = crearPartida(datasetEjemplo, null, 's');
+    for (const t of partida.tema('vivienda').tarjetas) expect(t).not.toHaveProperty('viabilidad');
+    const r = partida.elegir('vivienda', NINGUNA).revelar('vivienda')!;
+    const porPartido = Object.fromEntries(r.tarjetas.map((t) => [t.partido.id, t.viabilidad]));
+    expect(porPartido.aaa).toEqual(notaEjemplo);
+    expect(porPartido.bbb).toBeNull();
   });
 
   it('"Ninguna me convence" marks no card as chosen', () => {

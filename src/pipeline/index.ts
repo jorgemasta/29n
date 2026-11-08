@@ -24,6 +24,7 @@ import {
   VERSION_PROMPT,
 } from './prompts';
 import { comprobarReconocibilidad } from './reconocibilidad';
+import { comprobarUrlHttp, evaluarViabilidad, type ComprobarUrl } from './viabilidad';
 
 export interface OpcionesProceso {
   temas?: Tema[];
@@ -34,6 +35,8 @@ export interface OpcionesProceso {
   palabrasClave?: PalabrasClave;
   /** V11: already-published parties and posturas (e.g. the current dataset), to mix with this one. */
   publicado?: { partidos: Partido[]; posturas: Postura[] };
+  /** V8 HTTP 200 check for feasibility sources (default: real fetch). */
+  comprobarUrl?: ComprobarUrl;
   /** Official domains per party (V7). */
   dominios?: DominiosOficiales;
   /** Word counts of the other parties' published texts, per topic (V5 median). */
@@ -270,7 +273,12 @@ export async function procesarPrograma(
       }
     }
 
-    posturas.push({ ...base, estado: 'propone', texto, citas });
+    // V13 + V8: double-blind feasibility note on the final neutral text.
+    const viabilidad = await evaluarViabilidad({
+      ia, tema: temaIA, texto, citas, terminos, comprobarUrl: opciones.comprobarUrl ?? comprobarUrlHttp, anotar,
+    });
+
+    posturas.push({ ...base, estado: 'propone', texto, citas, viabilidad });
     resumen.push({ tema: tema.id, estado: 'propone', reescrituras });
   }
 
