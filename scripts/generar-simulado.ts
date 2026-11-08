@@ -6,6 +6,7 @@
 // ends with a page of answers to the suggested questions (Preguntar), see RESPUESTAS_SIMULADAS.
 //   npx tsx scripts/generar-simulado.ts
 import { mkdir, writeFile } from 'node:fs/promises';
+import { rutaTexto } from '../src/pregunta/textos';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { construirDataset, validarDataset, type Partido } from '../src/dataset';
 import { crearIAFalsa } from '../src/ia/falsa';
@@ -74,6 +75,7 @@ const partidos: Partido[] = [];
 const longitudesTema: Record<string, number[]> = {};
 const resultados = [];
 await mkdir('public/programas', { recursive: true });
+await mkdir('public/textos', { recursive: true });
 for (const f of FICTICIOS) {
   // Cover page, then one page per topic the fictional party talks about.
   const paginas: string[][] = [[`${f.titulo.toUpperCase()} (documento ficticio para el prototipo)`]];
@@ -129,6 +131,8 @@ for (const f of FICTICIOS) {
   if (sinVerificar.length) throw new Error(`${f.id}: respuestas sin verificar ${sinVerificar.map((x) => x.pregunta).join(', ')}: ${JSON.stringify(r.informe.entradas.filter((e) => e.pregunta && e.resultado !== 'pasa'))}`);
   if (fallidas.length) throw new Error(`${f.id}: sin verificar ${fallidas.map((p) => p.tema).join(', ')}: ${JSON.stringify(r.informe.entradas.filter((e) => e.resultado === 'descartar'))}`);
   partidos.push({ ...partido, programa: { ...partido.programa, hashPdf: r.informe.hashPdf } } as Partido);
+  // Page text for the live free question (read by the Cloudflare function).
+  await writeFile(`public/${rutaTexto(f.id)}`, JSON.stringify(r.texto) + '\n');
   resultados.push(r);
 }
 

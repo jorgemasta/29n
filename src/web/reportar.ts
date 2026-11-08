@@ -1,6 +1,9 @@
 // "¿Algo no cuadra?" on each revealed card (screen 8, story 27): pick a reason, optional comment,
-// then a prefilled public GitHub issue opens in a new tab. Sends only the topic, the card and the comment.
-import { MAX_COMENTARIO, MOTIVOS_REPORTE, urlReportarError, type MotivoReporte } from '../transparencia';
+// then the Cloudflare function files a public GitHub issue (no account needed). If it is not
+// available, a link to the prefilled GitHub issue is shown instead. Sends only the topic, the card
+// and the comment.
+import { enviarAviso } from '../cliente/api';
+import { MAX_COMENTARIO, MOTIVOS_REPORTE, type MotivoReporte } from '../transparencia';
 
 type Hijo = Node | string | null | undefined | false;
 function h(tag: string, attrs: Record<string, string> = {}, ...hijos: Hijo[]): HTMLElement {
@@ -30,13 +33,29 @@ export function botonReportar(datos: {
     h('label', { for: `${grupo}-texto`, class: 'etiqueta-buscador' }, `Cuéntanos más (opcional, ${MAX_COMENTARIO} caracteres como máximo)`),
     comentario,
     h('p', { class: 'nota' }, 'Solo enviamos el tema, la tarjeta y lo que escribas. No enviamos qué elegiste ni tu provincia.'),
-    h('button', { type: 'submit', class: 'secundario' }, 'Enviar aviso ↗'),
-    h('p', { class: 'nota' }, 'Se abre un aviso público en GitHub (necesitas una cuenta de GitHub). Las correcciones quedan en el historial del repositorio.'),
+    h('button', { type: 'submit', class: 'secundario' }, 'Enviar aviso'),
+    h('p', { class: 'nota' }, 'Se publica como aviso público en GitHub, sin tu nombre y sin cuenta. Las correcciones quedan en el historial del repositorio.'),
   ) as HTMLFormElement;
-  form.addEventListener('submit', (ev) => {
+  const estado = h('div', { role: 'status', 'aria-live': 'polite' });
+  form.append(estado);
+  form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const motivo = (form.querySelector<HTMLInputElement>(`input[name="${grupo}"]:checked`)?.value ?? 'otra') as MotivoReporte;
-    window.open(urlReportarError({ ...datos, motivo, comentario: comentario.value }), '_blank', 'noopener');
+    const enviar = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    enviar.disabled = true;
+    estado.replaceChildren(h('p', { class: 'gris' }, 'Enviando…'));
+    const r = await enviarAviso({ tipo: 'reporte', ...datos, motivo, comentario: comentario.value });
+    enviar.disabled = false;
+    estado.replaceChildren(...resultadoAviso(r));
   });
   return h('details', { class: 'reportar' }, h('summary', {}, '¿Algo no cuadra? Reportar error'), form);
+}
+
+/** Outcome of a notice: the public issue, or the prefilled GitHub link as fallback. */
+export function resultadoAviso(r: Awaited<ReturnType<typeof enviarAviso>>): HTMLElement[] {
+  if (r.estado === 'creado')
+    return [h('p', { class: 'aviso-zona' }, 'Enviado, gracias. ', h('a', { href: r.url, target: '_blank', rel: 'noopener' }, 'Ver el aviso ↗'))];
+  if (r.estado === 'invalido' || r.estado === 'red') return [h('p', { class: 'aviso-zona' }, r.mensaje)];
+  const motivo = r.estado === 'no_disponible' ? 'El envío directo no está disponible ahora.' : r.mensaje;
+  return [h('p', { class: 'aviso-zona' }, `${motivo} `, h('a', { href: r.alternativa, target: '_blank', rel: 'noopener' }, 'Enviarlo en GitHub ↗'), ' (necesitas una cuenta de GitHub).')];
 }

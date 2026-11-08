@@ -18,7 +18,7 @@ Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/d
 
 ## Commands
 
-- `npm test`: Vitest. Test point A `tests/pipeline.test.ts`, test point B `tests/juego.test.ts`.
+- `npm test`: Vitest. Test point A `tests/pipeline.test.ts`, test point B `tests/juego.test.ts`, test point C `tests/pregunta-libre.test.ts`.
 - `npm run build`: static Astro build into `dist/`. `npx tsc --noEmit -p .` typechecks.
 - `npm run schema`: regenerates `data/dataset.schema.json` from `src/dataset/esquema.ts`.
 - `npx tsx scripts/generar-simulado.ts`: rebuilds the simulated (fictional) `data/dataset.json`.

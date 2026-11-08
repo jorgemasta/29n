@@ -53,7 +53,13 @@ Cerradas en la sesión de *grilling* del 8-nov-2026. El detalle de la UX está e
   - Claude (Sonnet y Opus) para preparar los datos.
   - Claude Haiku, a través de Cloudflare AI Gateway, para la pregunta libre: con caché, límite de uso y sin logs.
   - Tope de 150 €/mes. Al alcanzarlo, la pregunta libre solo muestra preguntas frecuentes ya respondidas.
-  - Pendiente: confirmar la política de retención de datos de la API de Anthropic.
+  - Retención de la API de Anthropic (comprobado el 8-nov-2026 en fuentes oficiales): borrado en 30 días por defecto
+    (hasta 2 años si se marca por la política de uso), sin entrenamiento con los datos de la API. La retención cero existe,
+    pero se pide a ventas y la aprueba Anthropic: el proyecto no la tiene. Fuentes y texto en la metodología (#privacidad).
+  - Límite por sesión: 8 preguntas respondidas por IA (las de la caché no cuentan). Sesión = id aleatorio en
+    `sessionStorage`, guardado solo como hash con caducidad de 24 h. Sin IP.
+  - El tope se aplica con un coste estimado por llamada; el tope duro es el límite de gasto del *workspace* de Anthropic.
+  - La V10 de la pregunta libre la hace Sonnet 5.5 (esfuerzo bajo): toda barrera con IA usa un modelo distinto del que genera.
 - **Privacidad**: todo se procesa en el navegador. Sin cuentas, sin guardar elecciones y sin estadísticas agregadas de afinidad. La tarjeta para compartir se genera en el cliente.
 - **Analítica**: Umami Cloud (región UE), con eventos de embudo y la tasa de acierto de la apuesta. Nunca qué partido elige cada usuario.
 

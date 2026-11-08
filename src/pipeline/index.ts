@@ -30,6 +30,7 @@ import { verificarFidelidad } from './fidelidad';
 import { verificarFuente } from './fuente';
 import { limpiarTexto, revisarTexto, type BarreraTexto, type FalloTexto } from './texto';
 import { extraerPaginas, hashPdf } from './pdf';
+import type { TextoPrograma } from '../pregunta/textos';
 import {
   INSTRUCCIONES_EXTRAER,
   INSTRUCCIONES_NEUTRALIZAR,
@@ -67,6 +68,11 @@ export interface ResultadoProceso {
   publicable: boolean;
   /** One answer per suggested question (anonymous until revealed in the Preguntar tab). */
   respuestas: RespuestaPregunta[];
+  /**
+   * Page text of the programme, published next to the site (public/textos/<partido>.json) so the
+   * live free question can answer and run V1/V2 on it. Null when blocked before reading the PDF (V7).
+   */
+  texto: TextoPrograma | null;
 }
 
 /** Max rewrites after a failed rewrite-barrier before the postura is discarded. */
@@ -116,7 +122,7 @@ export async function procesarPrograma(
   const fuente = verificarFuente(partido, opciones.dominios ?? DOMINIOS_OFICIALES);
   entradas.push({ barrera: 'V7', resultado: fuente.ok ? 'pasa' : 'bloquear', detalle: fuente.detalle });
   if (!fuente.ok)
-    return { posturas, respuestas: [], publicable: false, informe: informe(false, [`V7: ${fuente.detalle}`], fuente.url) };
+    return { posturas, respuestas: [], texto: null, publicable: false, informe: informe(false, [`V7: ${fuente.detalle}`], fuente.url) };
 
   const paginas = await extraerPaginas(pdf);
 
@@ -337,5 +343,6 @@ export async function procesarPrograma(
     motivos.push(`descartado el ${Math.round((descartadas / extraidas) * 100)} % de las posturas extraídas (máximo ${MAX_DESCARTE * 100} %)`);
   const publicable = motivos.length === 0;
 
-  return { posturas, respuestas: respuestasValidas, publicable, informe: informe(publicable, motivos, fuente.url) };
+  const texto: TextoPrograma = { partido: partido.id, hashPdf: hash, paginas };
+  return { posturas, respuestas: respuestasValidas, texto, publicable, informe: informe(publicable, motivos, fuente.url) };
 }

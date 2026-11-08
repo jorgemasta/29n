@@ -1,6 +1,8 @@
 # Despliegue (paso humano)
 
-La web es estática: Cloudflare sirve `dist/` como *static assets* de un Worker (`wrangler.jsonc`).
+La web es estática: Cloudflare sirve `dist/` como *static assets* de un Worker (`wrangler.jsonc`). El Worker
+(`src/worker/index.ts`) solo atiende `/api/preguntar` (pregunta libre), `/api/avisar` (avisos sin cuenta) y
+bloquea `/textos/*`; todo lo demás va directo a los ficheros estáticos.
 No hay credenciales de Cloudflare ni de Anthropic en el repo.
 
 1. `npx wrangler login` (o `CLOUDFLARE_API_TOKEN` con permiso de Workers y DNS de `jorgemasta.com`).
@@ -11,6 +13,46 @@ No hay credenciales de Cloudflare ni de Anthropic en el repo.
      declaraciones), marcadas «solo privado» al revelar. `npm run deploy` (modo público, por defecto) las
      excluye del todo: esos partidos salen como «⏳ programa pendiente» y sus datos no se publican.
 3. Comprobar `https://29n.jorgemasta.com/` y que `robots.txt` devuelve `Disallow: /` (prototipo privado, sin enlazar).
+
+## Pregunta libre y avisos sin cuenta (Cloudflare function)
+
+Por defecto, **la pregunta libre está cerrada** (`PREGUNTA_LIBRE = "0"` en `wrangler.jsonc`) y la caja de texto
+sale desactivada («Muy pronto»). Sin `GITHUB_TOKEN`, «Reportar error» y «Falta un partido» enlazan al aviso
+prerrellenado de GitHub (como antes). Nada de esto rompe el despliegue si falta.
+
+**Pasos humanos para abrir la pregunta libre (~18-nov):**
+
+1. **KV** (contadores por sesión, gasto del mes y caché de frecuentes):
+   `npx wrangler kv namespace create PREGUNTAS` y descomentar `kv_namespaces` en `wrangler.jsonc` con el id.
+2. **AI Gateway** (Cloudflare → AI → AI Gateway → crear un gateway): en *Settings* desactivar **Logs**
+   (además, cada petición manda `cf-aig-collect-log: false`). Si se activa *Authenticated Gateway*, guardar su token
+   como `CF_AIG_TOKEN`. La URL es `https://gateway.ai.cloudflare.com/v1/<cuenta>/<gateway>/anthropic`.
+3. **Anthropic**: crear una API key en un *workspace* propio con un **límite de gasto mensual** (≈ 150 €) en la
+   Console. Es el tope duro; el de la función (`TOPE_MENSUAL`) es una estimación por llamada (`COSTE_ESTIMADO` en
+   `src/pregunta/libre.ts`) que deja de aceptar preguntas nuevas al llegar y sigue sirviendo las frecuentes.
+4. Secretos del Worker (no van en el repo):
+   | Secreto / variable | Uso |
+   |---|---|
+   | `npx wrangler secret put ANTHROPIC_API_KEY` | Claude (Haiku 5.5 responde, Sonnet 5.5 hace la V10). |
+   | `npx wrangler secret put AI_GATEWAY_URL` (o `vars`) | URL del gateway del paso 2. Sin ella llama a la API directamente. |
+   | `npx wrangler secret put CF_AIG_TOKEN` | Opcional: gateway autenticado. |
+   | `npx wrangler secret put GITHUB_TOKEN` | Avisos sin cuenta: *fine-grained token* solo de `jorgemasta/29n` con **Issues: read and write**. Crear antes las etiquetas `reporte` y `falta-partido`. |
+   | `vars.PREGUNTA_LIBRE` | `"1"` abre la pregunta libre. |
+   | `vars.TOPE_MENSUAL` | Tope en euros (150). |
+5. Construir la web con la caja activa y desplegar: `PUBLIC_PREGUNTA_LIBRE=1 npm run deploy` (con
+   `PREGUNTA_LIBRE = "1"` en `wrangler.jsonc`). Las dos banderas deben ir juntas.
+6. **Privacidad**: Workers Logs y trazas están desactivados (`observability.enabled = false`); no activar
+   *Logpush* ni *Tail* para este Worker. La función no lee la IP ni escribe en consola.
+7. **Retención de Anthropic**: 30 días por defecto (sin retención cero). Para pedir **retención cero** hay que
+   contactar con ventas (https://claude.com/contact-sales); Anthropic decide si la concede. Si se consigue, actualizar
+   el apartado de privacidad de `src/pages/metodologia.astro`.
+
+Los textos de los programas (`public/textos/<partido>.json`) los escriben `npm run procesar`, el vigilante y
+`generar-simulado`; la función los lee por el binding `ASSETS` y comprueba que su `hashPdf` coincide con el dataset.
+Para un programa procesado antes de #15, relanzarlo (con la caché de IA, gratis) para generar su texto: sin él, ese
+partido sale como «No pudimos verificar su respuesta» en la pregunta libre.
+
+Comprobar sin desplegar: `npx wrangler deploy --dry-run` (empaqueta el Worker).
 
 ## Procesar un programa real (necesita `ANTHROPIC_API_KEY`)
 

@@ -13,6 +13,7 @@ import { verificarFuente } from '../pipeline/fuente';
 import { contextoPublicado, fusionarPrograma } from '../pipeline/publicar';
 import { DOMINIOS_OFICIALES } from '../registro/dominios';
 import { TEMAS } from '../registro/temas';
+import { rutaTexto } from '../pregunta/textos';
 
 /** A page (official site or aggregator) or a PDF URL where a party's programme may appear. */
 export interface FuenteVigilada {
@@ -194,6 +195,8 @@ export async function vigilar(
         archivos: {
           [RUTA_DATASET]: aJson(fusion.dataset),
           [rutaInforme(id)]: aJson(resultado.informe),
+          // Page text for the live free question (same PDF as the published hash).
+          ...(resultado.texto ? { [`public/${rutaTexto(id)}`]: JSON.stringify(resultado.texto) + '\n' } : {}),
           [RUTA_ESTADO]: aJson(nuevoEstado),
         },
         desplegar: true,

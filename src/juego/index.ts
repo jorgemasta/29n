@@ -302,7 +302,15 @@ export function crearPartida(
   const respuestasDe = (q: string | PreguntaVista, dadas?: RespuestaPregunta[]) => {
     const pregunta = typeof q === 'string' ? preguntas.find((p) => p.id === q) : q;
     if (!pregunta) throw new Error(`Pregunta no disponible: ${String(q)}`);
-    const todas = (dadas ?? dataset.respuestas ?? []).filter((r) => r.pregunta === pregunta.id && porId.has(r.partido));
+    const dadasEnJuego = (dadas ?? dataset.respuestas ?? []).filter((r) => r.pregunta === pregunta.id && porId.has(r.partido));
+    // A published party in play with no answer at all did not mention it: say so, never hide it.
+    const conAlguna = new Set(dadasEnJuego.map((r) => r.partido));
+    const todas: RespuestaPregunta[] = [
+      ...dadasEnJuego,
+      ...[...porId.keys()]
+        .filter((id) => !conAlguna.has(id))
+        .map((partido): RespuestaPregunta => ({ partido, pregunta: pregunta.id, estado: 'no_menciona', versiones: { prompt: '' } })),
+    ];
     const conRespuesta = todas
       .filter((r): r is Extract<RespuestaPregunta, { estado: 'responde' }> => r.estado === 'responde')
       .sort((a, b) => a.partido.localeCompare(b.partido));

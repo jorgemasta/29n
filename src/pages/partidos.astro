@@ -83,6 +83,38 @@ const provisionales = REGISTRO.some((r) => r.inclusion.candidaturas.estado === '
   <p>
     ¿Falta un partido que cumple el criterio?
   </p>
-  <p><a class="secundario boton-enlace" href={urlFaltaPartido()} target="_blank" rel="noopener">Falta un partido ↗</a></p>
-  <p class="gris">Se abre un aviso público en GitHub (necesitas una cuenta de GitHub).</p>
+  <details class="reportar" id="falta-partido">
+    <summary>Falta un partido</summary>
+    <form id="form-falta-partido">
+      <label class="etiqueta-buscador" for="fp-partido">Partido que falta</label>
+      <input id="fp-partido" name="partido" required maxlength="150" />
+      <label class="etiqueta-buscador" for="fp-provincias">Provincia(s) donde se presenta</label>
+      <input id="fp-provincias" name="provincias" maxlength="300" />
+      <label class="etiqueta-buscador" for="fp-motivo">Por qué cumple el criterio (enlace al BOE si puedes)</label>
+      <textarea id="fp-motivo" name="motivo" rows="3" maxlength="1000"></textarea>
+      <label class="etiqueta-buscador" for="fp-enlace">Enlace a su programa (opcional)</label>
+      <input id="fp-enlace" name="enlace" type="url" maxlength="300" placeholder="https://" />
+      <button type="submit" class="secundario">Enviar aviso</button>
+      <p class="nota">Se publica como aviso público en GitHub, sin tu nombre y sin cuenta.</p>
+      <div id="fp-estado" role="status" aria-live="polite"></div>
+    </form>
+    <noscript><p><a href={urlFaltaPartido()}>Abrir el aviso en GitHub ↗</a> (necesitas una cuenta de GitHub).</p></noscript>
+  </details>
+  <script>
+    import { enviarAviso } from '../cliente/api';
+    import { resultadoAviso } from '../web/reportar';
+    const form = document.getElementById('form-falta-partido') as HTMLFormElement;
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const d = new FormData(form);
+      const v = (k: string) => String(d.get(k) ?? '').trim();
+      const boton = form.querySelector('button')!;
+      boton.disabled = true;
+      const estado = document.getElementById('fp-estado')!;
+      estado.textContent = 'Enviando…';
+      const r = await enviarAviso({ tipo: 'falta-partido', partido: v('partido'), provincias: v('provincias'), motivo: v('motivo'), enlace: v('enlace') });
+      boton.disabled = false;
+      estado.replaceChildren(...resultadoAviso(r));
+    });
+  </script>
 </PaginaInfo>

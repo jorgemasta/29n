@@ -375,6 +375,17 @@ describe('Preguntar: suggested questions with precomputed answers', () => {
     expect(ids(p.revelarPregunta('mili').noMencionan)).toEqual(['aaa', 'bbb', 'ccc', 'nada']);
   });
 
+  it('a party in play with no answer at all is shown as "no lo menciona", not hidden', () => {
+    const sinAaa: Dataset = { ...datasetPreguntas, respuestas: datasetPreguntas.respuestas!.filter((r) => r.partido !== 'aaa') };
+    const p = crearPartida(sinAaa, null, 's');
+    expect(ids(p.revelarPregunta('luz').noMencionan)).toEqual(['aaa', 'bbb']);
+    expect(p.pregunta('luz').noMencionan).toBe(2);
+    // Same for live answers: a party left out of the answers did not mention it.
+    const libre = { id: 'libre', texto: '¿Bicis?' };
+    const soloCcc = datasetPreguntas.respuestas!.filter((r) => r.pregunta === 'luz' && r.partido === 'ccc').map((r) => ({ ...r, pregunta: 'libre' }));
+    expect(ids(p.revelarPregunta(libre, soloCcc).noMencionan)).toEqual(['aaa', 'bbb', 'nada']);
+  });
+
   it('respects the province: regional parties only answer where they run', () => {
     expect(reveladas(crearPartida(datasetPreguntas, null, 's'))).toEqual(['aaa', 'ccc']);
     expect(reveladas(crearPartida(datasetPreguntas, '35', 's'))).toEqual(['aaa', 'ccc', 'isla']);

@@ -12,7 +12,7 @@ import type { AdaptadorIA } from '../ia/adaptador';
 import type { TerminosIdentificativos } from '../registro/terminos';
 import { verificarCita } from '../pipeline/barreras';
 import { verificarFidelidad } from '../pipeline/fidelidad';
-import { paginasCandidatas } from '../pipeline/fragmentos';
+import { paginasCandidatas, type Fragmento } from '../pipeline/fragmentos';
 import { limpiarTexto, revisarTexto } from '../pipeline/texto';
 import { INSTRUCCIONES_RESPONDER, RespuestaResponder } from './prompts';
 
@@ -41,6 +41,21 @@ export interface OpcionesRespuesta {
   terminos: TerminosIdentificativos;
   /** Receives every barrier outcome (the pipeline writes them into the public report). */
   anotar?: Anotar;
+  /**
+   * Send the AI at most this many candidate pages: the ones matching the most search terms
+   * (ties: page order). Unset = every candidate page (precomputed answers).
+   */
+  maxPaginas?: number;
+}
+
+/** Candidate pages for a question, optionally only the `max` that match the most search terms. */
+export function paginasParaResponder(paginas: string[], palabras: string[], max?: number): Fragmento[] {
+  const candidatas = paginasCandidatas(paginas, palabras);
+  if (max === undefined || candidatas.length <= max) return candidatas;
+  const aciertos = new Map(candidatas.map((c) => [c.pagina, palabras.filter((p) => paginasCandidatas([c.texto], [p]).length).length]));
+  return [...candidatas]
+    .sort((a, b) => aciertos.get(b.pagina)! - aciertos.get(a.pagina)! || a.pagina - b.pagina)
+    .slice(0, max);
 }
 
 export async function responderPregunta(
@@ -50,7 +65,7 @@ export async function responderPregunta(
   opciones: OpcionesRespuesta,
 ): Promise<ResultadoRespuesta> {
   const anotar: Anotar = opciones.anotar ?? (() => {});
-  const candidatas = paginasCandidatas(paginas, pregunta.palabrasClave);
+  const candidatas = paginasParaResponder(paginas, pregunta.palabrasClave, opciones.maxPaginas);
   const buscadas = `términos buscados: ${pregunta.palabrasClave.join(', ')}`;
   if (candidatas.length === 0) return { estado: 'no_menciona', detalle: `${buscadas}; ninguna página los menciona` };
 

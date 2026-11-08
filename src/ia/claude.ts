@@ -18,21 +18,48 @@ export const MODELOS: Record<Tarea, string> = {
   'adivinar-partido': 'claude-opus-5-5',
   'confirmar-ausencia': 'claude-sonnet-5-5',
   'evaluar-viabilidad': 'claude-opus-5-5',
-  // Precomputed suggested questions. The live free question (#15) uses Haiku 5.5 (spec).
+  // Precomputed suggested questions. The live free question uses MODELOS_PREGUNTA_LIBRE (Haiku 5.5).
   'responder-pregunta': 'claude-sonnet-5-5',
 };
 
-export function crearIAClaude(opciones: { apiKey?: string; baseURL?: string } = {}): AdaptadorIA {
-  const baseURL = opciones.baseURL ?? process.env.AI_GATEWAY_URL;
-  const client = new Anthropic({ ...(opciones.apiKey ? { apiKey: opciones.apiKey } : {}), ...(baseURL ? { baseURL } : {}) });
+/**
+ * Live free question (#15, Cloudflare function): Haiku 5.5 answers (spec); the independent V10
+ * check runs on a different model (Sonnet 5.5, low effort), as every AI barrier must.
+ */
+export const MODELOS_PREGUNTA_LIBRE: Partial<Record<Tarea, { modelo: string; esfuerzo: Esfuerzo }>> = {
+  'responder-pregunta': { modelo: 'claude-haiku-5-5', esfuerzo: 'low' },
+  'verificar-fidelidad': { modelo: 'claude-sonnet-5-5', esfuerzo: 'low' },
+};
+
+type Esfuerzo = 'low' | 'medium' | 'high';
+
+export interface OpcionesClaude {
+  apiKey?: string;
+  /** Cloudflare AI Gateway URL (…/anthropic). Defaults to the AI_GATEWAY_URL env var (Node). */
+  baseURL?: string;
+  /** Extra headers on every request, e.g. AI Gateway's `cf-aig-collect-log: false`. */
+  cabeceras?: Record<string, string>;
+  /** Model and effort per task, overriding MODELOS / 'medium'. */
+  modelos?: Partial<Record<Tarea, { modelo: string; esfuerzo: Esfuerzo }>>;
+  maxTokens?: number;
+}
+
+export function crearIAClaude(opciones: OpcionesClaude = {}): AdaptadorIA {
+  // `process` does not exist in a Worker without nodejs_compat: the function passes everything explicitly.
+  const baseURL = opciones.baseURL ?? (typeof process !== 'undefined' ? process.env.AI_GATEWAY_URL : undefined);
+  const client = new Anthropic({
+    ...(opciones.apiKey ? { apiKey: opciones.apiKey } : {}),
+    ...(baseURL ? { baseURL } : {}),
+    ...(opciones.cabeceras ? { defaultHeaders: opciones.cabeceras } : {}),
+  });
 
   return {
     async completar<T>(p: PeticionIA<T>): Promise<T> {
       const respuesta = await client.messages.parse({
-        model: MODELOS[p.tarea],
-        max_tokens: 16000,
+        model: opciones.modelos?.[p.tarea]?.modelo ?? MODELOS[p.tarea],
+        max_tokens: opciones.maxTokens ?? 16000,
         // Deterministic-ish and cheap: these are extraction/rewrite tasks.
-        output_config: { effort: 'medium', format: zodOutputFormat(p.esquema as any) },
+        output_config: { effort: opciones.modelos?.[p.tarea]?.esfuerzo ?? 'medium', format: zodOutputFormat(p.esquema as any) },
         system: p.instrucciones,
         messages: [{ role: 'user', content: JSON.stringify(p.entrada) }],
       });

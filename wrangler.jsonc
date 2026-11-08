@@ -1,11 +1,26 @@
-// Cloudflare Workers (static assets only for now). Deploy: see docs/deploy.md.
+// Cloudflare Worker: static site (dist/) plus a small function for /api/* (src/worker).
+// Deploy, secrets and bindings: docs/deploy.md.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "29n",
+  "main": "src/worker/index.ts",
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "404-page"
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    // Only these paths run the function; everything else is served as static files.
+    "run_worker_first": ["/api/*", "/textos/*"]
   },
+  // No request or console logs (privacy policy): Workers Logs and traces stay off.
+  "observability": { "enabled": false },
+  "vars": {
+    // "1" opens the free question (spec: ~18-nov). Also build with PUBLIC_PREGUNTA_LIBRE=1.
+    "PREGUNTA_LIBRE": "0",
+    "TOPE_MENSUAL": "150"
+  },
+  // Needed for the free question and the per-session limits (docs/deploy.md). Uncomment with the
+  // id printed by `npx wrangler kv namespace create PREGUNTAS`:
+  // "kv_namespaces": [{ "binding": "PREGUNTAS", "id": "<id>" }],
   "routes": [{ "pattern": "29n.jorgemasta.com", "custom_domain": true }]
 }

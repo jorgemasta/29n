@@ -155,7 +155,13 @@ export const MOTIVOS_REPORTE = [
 export type MotivoReporte = (typeof MOTIVOS_REPORTE)[number]['id'];
 export const MAX_COMENTARIO = 300;
 
-const nuevoIssue = (titulo: string, cuerpo: string, etiqueta: string) =>
+export interface ContenidoIssue {
+  titulo: string;
+  cuerpo: string;
+  etiqueta: string;
+}
+
+const nuevoIssue = ({ titulo, cuerpo, etiqueta }: ContenidoIssue) =>
   `${REPO}/issues/new?${new URLSearchParams({ title: titulo, body: cuerpo, labels: etiqueta })}`;
 
 export interface DatosReporte {
@@ -173,6 +179,11 @@ export interface DatosReporte {
  * comment are sent; never what the voter chose or their province.
  */
 export function urlReportarError(d: DatosReporte): string {
+  return nuevoIssue(issueReportarError(d));
+}
+
+/** Title, body and label of a "Reportar error" issue (prefilled link or filed by the function). */
+export function issueReportarError(d: DatosReporte): ContenidoIssue {
   const motivo = MOTIVOS_REPORTE.find((m) => m.id === d.motivo)!.texto;
   const comentario = (d.comentario ?? '').trim().slice(0, MAX_COMENTARIO);
   const cuerpo = [
@@ -186,21 +197,34 @@ export function urlReportarError(d: DatosReporte): string {
     '**Comentario:**',
     comentario || '(sin comentario)',
   ].join('\n');
-  return nuevoIssue(`[Error] ${d.tema.titulo} · ${d.partido.nombre}: ${motivo}`, cuerpo, 'reporte');
+  return { titulo: `[Error] ${d.tema.titulo} · ${d.partido.nombre}: ${motivo}`, cuerpo, etiqueta: 'reporte' };
+}
+
+/** What the voter writes in "Falta un partido" (all optional in the prefilled link). */
+export interface DatosFaltaPartido {
+  partido?: string;
+  provincias?: string;
+  motivo?: string;
+  enlace?: string;
 }
 
 /** "Falta un partido": a new public issue asking which party and why it meets the criterion. */
-export function urlFaltaPartido(): string {
+export function urlFaltaPartido(d: DatosFaltaPartido = {}): string {
+  return nuevoIssue(issueFaltaPartido(d));
+}
+
+export function issueFaltaPartido(d: DatosFaltaPartido = {}): ContenidoIssue {
   const cuerpo = [
-    '**Partido que falta:** ',
+    `**Partido que falta:** ${d.partido ?? ''}`,
     '',
-    '**Provincia(s) donde se presenta:** ',
+    `**Provincia(s) donde se presenta:** ${d.provincias ?? ''}`,
     '',
     '**Por qué cumple el criterio de inclusión** (candidatura proclamada en esa provincia y representación actual en el Congreso o en su parlamento autonómico; enlace al BOE si puedes):',
+    d.motivo ?? '',
     '',
-    '**Enlace a su programa (si ya lo ha publicado):** ',
+    `**Enlace a su programa (si ya lo ha publicado):** ${d.enlace ?? ''}`,
   ].join('\n');
-  return nuevoIssue('[Falta un partido] ', cuerpo, 'falta-partido');
+  return { titulo: `[Falta un partido] ${d.partido ?? ''}`, cuerpo, etiqueta: 'falta-partido' };
 }
 
 // --- Versioned prompts (methodology) ------------------------------------------------------------
@@ -213,4 +237,11 @@ export const PROMPTS = [
   { tarea: 'adivinar-partido', que: 'V11: intenta adivinar de qué partido es cada texto', archivo: 'src/pipeline/reconocibilidad.ts' },
   { tarea: 'confirmar-ausencia', que: 'V12: confirma que un partido no propone nada sobre un tema', archivo: 'src/pipeline/ausencia.ts' },
   { tarea: 'evaluar-viabilidad', que: 'V13: evalúa la viabilidad a ciegas, dos veces', archivo: 'src/pipeline/prompts-viabilidad.ts' },
+  { tarea: 'responder-pregunta', que: 'Responde a las preguntas sugeridas con citas literales', archivo: 'src/pregunta/prompts.ts' },
+] as const;
+
+/** Live free question: same prompt, other models (src/ia/claude.ts MODELOS_PREGUNTA_LIBRE). */
+export const PROMPTS_PREGUNTA_LIBRE = [
+  { tarea: 'responder-pregunta', que: 'Pregunta libre: responde con citas literales', archivo: 'src/pregunta/prompts.ts' },
+  { tarea: 'verificar-fidelidad', que: 'Pregunta libre: V10, comprueba que la respuesta es fiel a las citas', archivo: 'src/pipeline/fidelidad.ts' },
 ] as const;

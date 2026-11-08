@@ -110,6 +110,13 @@ describe('procesarPrograma', () => {
     expect(informe.descartadas).toBe(0);
   });
 
+  it('publishes the page text of the programme, for the live free question (#15)', async () => {
+    const { texto, informe } = await procesar(respuestas());
+    expect(texto).toEqual({ partido: 'pej', hashPdf: informe.hashPdf, paginas: expect.any(Array) });
+    expect(texto!.paginas).toHaveLength(paginas.length);
+    expect(texto!.paginas[1]).toContain('Limitaremos el precio');
+  });
+
   it('records when a party proposes nothing on a topic', async () => {
     const { posturas, publicable } = await procesar(
       respuestas({ 'extraer-postura': () => ({ propone: false, citas: [] }) }),
@@ -722,6 +729,7 @@ describe('procesarPrograma', () => {
         expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V7', resultado: 'bloquear' }));
         expect(posturas).toEqual([]);
         expect(ia.llamadas).toHaveLength(0);
+        expect((await procesarPrograma(pdf, partido, ia, opciones())).texto).toBeNull();
       }
     });
 
