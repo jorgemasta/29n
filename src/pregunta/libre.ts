@@ -13,7 +13,7 @@ import type { Dataset, Partido, RespuestaPregunta } from '../dataset/esquema';
 import type { AdaptadorIA, Tarea } from '../ia/adaptador';
 import { normalizarTermino } from '../pipeline/normalizar';
 import type { TerminosIdentificativos } from '../registro/terminos';
-import { paginasParaResponder, responderPregunta, VERSION_PROMPT_PREGUNTA } from './index';
+import { MAX_REINTENTOS, paginasParaResponder, responderPregunta, VERSION_PROMPT_PREGUNTA } from './index';
 import { LIMITE_SESION, MAX_CARACTERES, MIN_CARACTERES } from './limites';
 import type { TextoPrograma } from './textos';
 
@@ -166,14 +166,16 @@ export function crearPreguntaLibre(puertos: PuertosPreguntaLibre, config: Config
     await almacen.put(`frecuentes:${await version}`, JSON.stringify(lista.slice(0, MAX_FRECUENTES)), { expirationTtl: TTL_CACHE });
   };
 
-  /** Every AI call is charged to this month's spending before it is made. */
-  const iaConGasto: AdaptadorIA = {
-    async completar(p) {
-      const clave = claveGasto();
-      await almacen.put(clave, String((await leerNumero(clave)) + coste(p.tarea)), { expirationTtl: 40 * 24 * 3600 });
-      return puertos.ia.completar(p);
-    },
-  };
+  /**
+   * Spending: a question first RESERVES its worst case (every party with pages answered and checked
+   * by V10 on every attempt), then settles to what its calls actually cost. KV has no atomic
+   * increment, so two questions arriving in the same few milliseconds can both read the old total;
+   * the reservation keeps that window to one read-write (not the whole AI round), and the Anthropic
+   * workspace spend limit is the hard backstop (docs/decisions.md).
+   */
+  const sumarGasto = async (clave: string, importe: number) =>
+    almacen.put(clave, String(Math.max(0, (await leerNumero(clave)) + importe)), { expirationTtl: 40 * 24 * 3600 });
+  const peorCasoPorPartido = () => (MAX_REINTENTOS + 1) * (coste('responder-pregunta') + coste('verificar-fidelidad'));
 
   return {
     async preguntar(peticion: PeticionPreguntaLibre): Promise<RespuestaPreguntaLibre> {
@@ -227,14 +229,24 @@ export function crearPreguntaLibre(puertos: PuertosPreguntaLibre, config: Config
         }),
       );
       const conCandidatas = conTexto.filter((x) => x.texto && paginasParaResponder(x.texto.paginas, palabras, 1).length > 0).length;
-      const gastado = await leerNumero(claveGasto());
-      if (gastado >= tope || gastado + conCandidatas * coste('responder-pregunta') > tope)
+      const claveMes = claveGasto();
+      const reserva = conCandidatas * peorCasoPorPartido();
+      const gastado = await leerNumero(claveMes);
+      if (gastado >= tope || gastado + reserva > tope)
         return {
           estado: 'solo_frecuentes',
           mensaje: 'Hemos llegado al gasto máximo de este mes para preguntas nuevas. Mientras tanto, solo respondemos las preguntas sugeridas y las frecuentes.',
           frecuentes: await listaFrecuentes(),
         };
 
+      await sumarGasto(claveMes, reserva);
+      let gastoReal = 0;
+      const iaConGasto: AdaptadorIA = {
+        completar(p) {
+          gastoReal += coste(p.tarea);
+          return puertos.ia.completar(p);
+        },
+      };
       let respuestas: RespuestaPregunta[];
       try {
         respuestas = await Promise.all(
@@ -251,6 +263,8 @@ export function crearPreguntaLibre(puertos: PuertosPreguntaLibre, config: Config
         );
       } catch {
         return { estado: 'error', mensaje: 'No hemos podido responder ahora. Inténtalo de nuevo en un rato.' };
+      } finally {
+        await sumarGasto(claveMes, gastoReal - reserva);
       }
 
       await almacen.put(claveSesion, String(usadas + 1), { expirationTtl: TTL_SESION });

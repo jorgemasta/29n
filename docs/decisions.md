@@ -66,7 +66,8 @@ Cerradas en la sesión de *grilling* del 8-nov-2026. El detalle de la UX está e
     pero se pide a ventas y la aprueba Anthropic: el proyecto no la tiene. Fuentes y texto en la página de privacidad (`/privacidad/#pregunta`).
   - Límite por sesión: 8 preguntas respondidas por IA (las de la caché no cuentan). Sesión = id aleatorio en
     `sessionStorage`, guardado solo como hash con caducidad de 24 h. Sin IP.
-  - El tope se aplica con un coste estimado por llamada; el tope duro es el límite de gasto del *workspace* de Anthropic.
+  - El tope se aplica con un coste estimado por llamada. Antes de responder, cada pregunta reserva su peor caso (todos los partidos con páginas candidatas, con sus 2 reescrituras y la V10 en cada intento) y al terminar se ajusta a lo gastado de verdad: así una pregunta nunca empieza si podría pasarse del tope.
+  - KV no tiene incrementos atómicos: dos preguntas que lleguen en los mismos milisegundos pueden leer el mismo total. La reserva reduce esa ventana a una lectura y una escritura (no a toda la llamada a la IA) y el tope duro es el límite de gasto del *workspace* de Anthropic. No se usa un Durable Object para esto: no compensa su complejidad para un margen de céntimos.
   - La V10 de la pregunta libre la hace Sonnet 5.5 (esfuerzo bajo): toda barrera con IA usa un modelo distinto del que genera.
 - **Privacidad**: todo se procesa en el navegador. Sin cuentas, sin guardar elecciones y sin estadísticas agregadas de afinidad. La tarjeta para compartir se genera en el cliente.
   Página propia `/privacidad/` (incluye Umami, avisos, pregunta libre y retención de Anthropic) y aviso de contenido generado por IA (`/privacidad/#ia`); cada etiqueta «IA» de la app enlaza ahí (la de viabilidad, a la metodología). Una prueba (`tests/lanzamiento.test.ts`) impide que nada fuera del cliente calcule el resultado de afinidad.

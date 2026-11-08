@@ -244,9 +244,11 @@ describe('pregunta libre: limits, cache and spending cap', () => {
   });
 
   it('when the monthly spending cap is reached, only frequent (cached) questions are served, with a notice', async () => {
-    // Each AI call is charged at its estimated cost; cap 0.02 € and 0.01 € per call.
-    const { servicio, ia, irA } = montar({ topeMensual: 0.02, costeLlamada: () => 0.01 });
-    await servicio.preguntar({ pregunta: PREGUNTA, sesion: "s1" }); // aaa: answer + V10, isla: answer = 3 calls
+    // 0.01 € per call. A question reserves its worst case first: 2 parties with pages × 3 attempts ×
+    // (answer + V10) = 0.12 €. It actually spends 3 calls (aaa: answer + V10, isla: answer) = 0.03 €.
+    const { servicio, ia, irA } = montar({ topeMensual: 0.14, costeLlamada: () => 0.01 });
+    expect(await servicio.preguntar({ pregunta: PREGUNTA, sesion: 's1' })).toMatchObject({ estado: 'ok' });
+    // 0.03 spent + 0.12 reserved > 0.14.
     const llamadas = ia.llamadas.length;
     const r = await servicio.preguntar({ pregunta: '¿Y con la vivienda?', sesion: 's1' });
     expect(r).toMatchObject({ estado: 'solo_frecuentes', mensaje: expect.stringMatching(/frecuentes/), frecuentes: expect.any(Array) });
@@ -254,6 +256,20 @@ describe('pregunta libre: limits, cache and spending cap', () => {
     expect(await servicio.preguntar({ pregunta: PREGUNTA, sesion: 's3' })).toMatchObject({ estado: 'ok', deCache: true });
     // A new month starts from zero.
     irA('2026-12-01T00:00:01Z');
+    expect(await servicio.preguntar({ pregunta: '¿Y con la vivienda?', sesion: 's1' })).toMatchObject({ estado: 'ok' });
+  });
+
+  it('reserves the worst case (every rewrite and its V10 check) before starting a question', async () => {
+    // Would really cost 0.03 €, but in the worst case 0.12 €: not started with 0.10 € left.
+    const { servicio, ia } = montar({ topeMensual: 0.1, costeLlamada: () => 0.01 });
+    expect(await servicio.preguntar({ pregunta: PREGUNTA, sesion: 's1' })).toMatchObject({ estado: 'solo_frecuentes' });
+    expect(ia.llamadas).toHaveLength(0);
+  });
+
+  it('only what was actually spent stays charged once the question is answered', async () => {
+    // 0.03 € spent of a 0.12 € reservation: a second question (0.03 + 0.12 ≤ 0.2) still fits.
+    const { servicio } = montar({ topeMensual: 0.2, costeLlamada: () => 0.01 });
+    expect(await servicio.preguntar({ pregunta: PREGUNTA, sesion: 's1' })).toMatchObject({ estado: 'ok' });
     expect(await servicio.preguntar({ pregunta: '¿Y con la vivienda?', sesion: 's1' })).toMatchObject({ estado: 'ok' });
   });
 
