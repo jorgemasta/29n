@@ -163,6 +163,8 @@ const temasConDatos = reparto.porTema.filter((t) => t.celdas.some((c) => c !== '
   <h2 id="limites">Límites</h2>
   <ul>
     <li>En algunos temas la propuesta delata al partido. Una IA intenta adivinarlo (V11) y, si acierta con facilidad, se reescribe, pero no siempre se puede evitar.</li>
+    <li>Cada programa nuevo se compara con los ya publicados (V5, V11). Si con él un texto ya publicado se vuelve reconocible o queda fuera de la longitud media, no lo cambiamos en silencio: se anota en el informe de ese partido y se corrige cuando se vuelve a procesar su programa.</li>
+    <li>Relanzar el proceso sobre el mismo PDF da el mismo resultado. La nota de viabilidad depende solo del texto neutral y las citas: si un PDF nuevo deja el texto igual, la nota no cambia.</li>
     <li>La IA puede equivocarse al reescribir o al valorar. Por eso cada tarjeta enseña la cita literal y tiene el botón «¿Algo no cuadra?».</li>
     <li>Solo se usan los programas oficiales: si un partido no ha publicado el suyo, aparece como pendiente.</li>
   </ul>

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generado": "2026-11-08T22:19:50.011Z",
+  "generado": "2026-11-08T23:18:54.591Z",
   "origen": "simulado",
   "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso, también las respuestas de Preguntar. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.",
   "partidos": [
@@ -5370,7 +5370,7 @@
           "tema": "vivienda",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "vivienda",
@@ -5436,7 +5436,7 @@
           "tema": "empleo",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "empleo",
@@ -5502,7 +5502,7 @@
           "tema": "sanidad",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "sanidad",
@@ -5568,7 +5568,7 @@
           "tema": "inmigracion",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "inmigracion",
@@ -5634,7 +5634,7 @@
           "tema": "pensiones",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "pensiones",
@@ -5700,7 +5700,7 @@
           "tema": "coste-vida",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "coste-vida",
@@ -5766,7 +5766,7 @@
           "tema": "impuestos",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "impuestos",
@@ -5832,7 +5832,7 @@
           "tema": "educacion",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "educacion",
@@ -5898,7 +5898,7 @@
           "tema": "instituciones",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "instituciones",
@@ -5964,7 +5964,7 @@
           "tema": "energia-clima",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "energia-clima",
@@ -6030,7 +6030,7 @@
           "tema": "cuidados",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "cuidados",
@@ -6108,7 +6108,7 @@
           "tema": "igualdad",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "igualdad",
@@ -6180,7 +6180,7 @@
           "tema": "transporte",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "transporte",
@@ -6252,7 +6252,7 @@
           "tema": "europa-exterior",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "europa-exterior",
@@ -6318,7 +6318,7 @@
           "tema": "ref-canarias",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "ref-canarias",
@@ -6384,7 +6384,7 @@
           "tema": "migracion-atlantica",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "migracion-atlantica",
@@ -7486,7 +7486,7 @@
           "tema": "seguridad-justicia",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "seguridad-justicia",
@@ -7552,7 +7552,7 @@
           "tema": "territorial",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "territorial",
@@ -7624,7 +7624,7 @@
           "tema": "campo-agua",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "campo-agua",
@@ -7696,7 +7696,7 @@
           "tema": "defensa",
           "barrera": "V11",
           "resultado": "pasa",
-          "detalle": "no aplica: es la única propuesta publicada del tema"
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "defensa",

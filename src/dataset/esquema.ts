@@ -149,6 +149,11 @@ export const EntradaInforme = z.object({
   /** `extraer`: V12 found a proposal the first pass missed. `aviso`: V11 internal warning, published anyway. */
   resultado: z.enum(['pasa', 'corregir', 'reescribir', 'descartar', 'bloquear', 'extraer', 'aviso']),
   detalle: z.string(),
+  /**
+   * Party whose publication triggered this entry: a re-check (V5, V11) of this party's published
+   * postura against the topic with the new one in it. Replaced each time that party is published.
+   */
+  origen: id.optional(),
 });
 
 /** Outcome of one postura in the report: final state, rewrites asked for, why it was discarded. */

@@ -41,7 +41,12 @@ export const posturaOtro: Postura = {
   tema: 'vivienda',
   estado: 'propone',
   versiones: { prompt: 'v1' },
-  texto: { que: 'Bajar el IVA de la vivienda nueva.', como: 'Con una rebaja fiscal temporal para compradores.', cifra: null },
+  // 28 words: inside V5's range around the other test texts.
+  texto: {
+    que: 'Bajar el IVA de la vivienda nueva para quienes compran su primera casa en cualquier parte del país.',
+    como: 'Con una rebaja fiscal temporal para los compradores, revisada cada año según la evolución de los precios.',
+    cifra: null,
+  },
   citas: [{ texto: 'Rebajaremos el IVA de la vivienda nueva para los compradores de primera vivienda.', pagina: 4 }],
 };
 
@@ -49,7 +54,11 @@ export const terceroPartido: Partido = { ...partidoOtro, id: 'ter', nombre: 'Ter
 export const posturaTercero: Postura = {
   ...posturaOtro,
   partido: 'ter',
-  texto: { que: 'Crear un seguro público de impago.', como: 'Avalando a los propietarios que alquilen a jóvenes.', cifra: null },
+  texto: {
+    que: 'Crear un seguro público que cubra el impago del alquiler a los propietarios que alquilen a jóvenes.',
+    como: 'El Estado avalaría esos contratos durante los primeros años, para que alquilar a jóvenes sea más seguro.',
+    cifra: null,
+  },
 };
 
 /** Official domains of the fictional parties (V7). */

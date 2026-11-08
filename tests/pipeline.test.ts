@@ -1,6 +1,7 @@
 // Test point A: the data pipeline, exercised only through procesarPrograma.
 import { describe, expect, it } from 'vitest';
 import { procesarPrograma, type OpcionesProceso } from '../src/pipeline';
+import { fusionarPrograma } from '../src/pipeline/publicar';
 import { crearIAFalsa, type RespuestasFalsas } from '../src/ia/falsa';
 import { crearCacheEnMemoria } from '../src/ia/cache';
 import { construirDataset, validarDataset } from '../src/dataset';
@@ -16,7 +17,7 @@ import {
   terminosDePrueba,
 } from './fixtures/registro';
 import { VERSION_RUBRICA } from '../src/registro/rubrica';
-import type { Tema } from '../src/dataset/esquema';
+import type { Informe, Postura, Tema } from '../src/dataset/esquema';
 
 /** Rewrites recorded in the verification report for a topic (default: the only one). */
 const reescrituras = (informe: { posturas: { tema: string; reescrituras: number }[] }, tema = 'vivienda') =>
@@ -67,6 +68,21 @@ const fiel = { anade: false, omite: false, cambiaSentido: false, explicacion: 'F
 
 /** V12 does not confirm the absence: the second pass finds a proposal. */
 const segundaPasadaEncuentra = { 'confirmar-ausencia': () => ({ propone: true, citas: [{ texto: CITA, pagina: 2 }] }) };
+/** A neutral text of exactly `n` words (V5). */
+const textoDe = (n: number) => ({ que: palabras(n - 1), como: 'fin.', cifra: null });
+/** A published postura of another party on the topic, `n` words long. */
+const publicadaDe = (partido: string, n: number): Postura => ({ ...(posturaOtro as Extract<Postura, { estado: 'propone' }>), partido, texto: textoDe(n) });
+/** Minimal report of a party already in the published dataset. */
+const informeDe = (partido: string): Informe => ({
+  partido,
+  hashPdf: 'a'.repeat(64),
+  versionPrompt: 'v1',
+  extraidas: 1,
+  descartadas: 0,
+  publicable: true,
+  posturas: [{ tema: 'vivienda', estado: 'propone', reescrituras: 0 }],
+  entradas: [],
+});
 const palabras = (n: number) => Array.from({ length: n }, (_, i) => `palabra${String.fromCharCode(97 + (i % 26))}`).join(' ');
 
 function respuestas(extra: Partial<RespuestasFalsas> = {}): RespuestasFalsas {
@@ -462,7 +478,11 @@ describe('procesarPrograma', () => {
         asignaciones: entrada.posturas.map((p: { letra: string; texto: string }) => ({
           letra: p.letra,
           partido:
-            entrada.posturas.length === 3 && entrada.partidos.length === 3 && p.texto.includes('zonas tensionadas') ? 'pej' : 'otp',
+            entrada.posturas.length === 3 &&
+            ['otp', 'pej', 'ter'].every((id) => entrada.partidos.some((x: { id: string }) => x.id === id)) &&
+            p.texto.includes('zonas tensionadas')
+              ? 'pej'
+              : 'otp',
           confianza: 0.9,
           pista: 'Es la única que habla de zonas tensionadas.',
         })),
@@ -534,9 +554,56 @@ describe('procesarPrograma', () => {
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'pasa' }));
     });
 
-    it('skips the guesser when the party is the only one with a proposal on the topic', async () => {
-      const { ia } = await procesar(respuestas());
+    it('checks the first party to publish too, against the list of registered parties', async () => {
+      const { informe } = await procesar(respuestas({ 'adivinar-partido': adivina('alquiler', 0.9) }), {
+        partidos: [partidoOtro, terceroPartido],
+      });
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'aviso' }));
+    });
+
+    it('skips the guesser when there is no other party to choose from', async () => {
+      const { ia, informe } = await procesar(respuestas(), { partidos: [] });
       expect(ia.llamadas.filter((l) => l.tarea === 'adivinar-partido')).toHaveLength(0);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'pasa' }));
+    });
+
+    it('re-checks the parties already published: a recognisable one gets a warning in its own report, its text untouched', async () => {
+      const delataIVA = (entrada: any) => ({
+        asignaciones: entrada.posturas.map((p: { letra: string; texto: string }) => ({
+          letra: p.letra,
+          partido: p.texto.includes('IVA') ? 'otp' : 'nadie',
+          confianza: 0.9,
+          pista: 'Habla del IVA.',
+        })),
+      });
+      const anterior = construirDataset({
+        partidos: [partidoOtro, terceroPartido],
+        temas: [temaVivienda],
+        resultados: [
+          { informe: informeDe('otp'), posturas: [posturaOtro] },
+          { informe: informeDe('ter'), posturas: [posturaTercero] },
+        ],
+        generado: '2026-11-08T00:00:00.000Z',
+        origen: 'real',
+      });
+      const resultado = await procesar(respuestas({ 'adivinar-partido': delataIVA }), { publicado: anterior });
+      // Our own postura is not recognised.
+      expect(resultado.informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'pasa' }));
+      const publicar = (ds: typeof anterior) =>
+        fusionarPrograma(ds, partidoEjemplo, resultado, { temas: [temaVivienda], preguntas: [], generado: '2026-11-08T00:00:00.000Z' });
+      const fusion = publicar(anterior);
+      if (!fusion.ok) throw new Error(fusion.motivo);
+      const avisosOtp = fusion.dataset.informes.find((i) => i.partido === 'otp')!.entradas;
+      expect(avisosOtp).toEqual([
+        expect.objectContaining({ tema: 'vivienda', barrera: 'V11', resultado: 'aviso', detalle: expect.stringContaining('Partido Ejemplo') }),
+      ]);
+      expect(fusion.dataset.informes.find((i) => i.partido === 'ter')!.entradas).toEqual([]);
+      // Never silently rewritten: the published text and note stay as they were.
+      expect(fusion.dataset.posturas.find((p) => p.partido === 'otp')).toEqual(posturaOtro);
+      // Publishing the same programme again replaces the warning instead of piling it up.
+      const otraVez = publicar(fusion.dataset);
+      if (!otraVez.ok) throw new Error(otraVez.motivo);
+      expect(otraVez.dataset.informes.find((i) => i.partido === 'otp')!.entradas).toHaveLength(1);
     });
   });
 
@@ -688,17 +755,45 @@ describe('procesarPrograma', () => {
     });
 
     it('rewrites a text outside ±25 % of the topic median, giving the AI the target range', async () => {
-      // Other parties' texts on this topic have 40 words → the text must have 30–50.
+      // Topic: 38, 40 and 42 words published + this 29-word text → median 39: out. Target: 30–50 (±25 % of 40).
       const largo = { ...neutroBueno, como: `${neutroBueno.como} ${palabras(15)}` }; // 44 words
+      const publicado = { partidos: [], posturas: [publicadaDe('otp', 40), publicadaDe('ter', 38), publicadaDe('cua', 42)] };
       const { posturas, informe } = await procesar(
         respuestas({ neutralizar: corrigeCon(/entre 30 y 50 palabras/, neutroBueno, largo) }),
-        { longitudesTema: { vivienda: [40, 38, 42] } },
+        { publicado },
       );
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: largo }));
       expect(reescrituras(informe)).toBe(1);
       expect(informe.entradas).toContainEqual(
         expect.objectContaining({ barrera: 'V5', resultado: 'reescribir', detalle: expect.stringContaining('mediana') }),
       );
+    });
+
+    it('the first party on a topic is only held to the 25–70 range (the median is its own length)', async () => {
+      const largo = textoDe(65);
+      const { posturas } = await procesar(respuestas({ neutralizar: () => largo, 'extraer-postura': () => ({ propone: true, citas: [{ texto: CITA, pagina: 2 }] }) }));
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: largo }));
+    });
+
+    it('the median counts the new text: published parties now outside ±25 % get a warning in their report', async () => {
+      // 29 (this one), 30 and 60 words → median 30: this text passes, the 60-word one is flagged.
+      const publicado = { partidos: [partidoOtro, terceroPartido], posturas: [publicadaDe('otp', 30), publicadaDe('ter', 60)] };
+      const resultado = await procesar(respuestas(), { publicado });
+      expect(resultado.posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: neutroBueno }));
+      expect(reescrituras(resultado.informe)).toBe(0);
+      const anterior = construirDataset({
+        partidos: [partidoOtro, terceroPartido],
+        temas: [temaVivienda],
+        resultados: publicado.posturas.map((p) => ({ informe: informeDe(p.partido), posturas: [p] })),
+        generado: '2026-11-08T00:00:00.000Z',
+        origen: 'real',
+      });
+      const fusion = fusionarPrograma(anterior, partidoEjemplo, resultado, { temas: [temaVivienda], preguntas: [], generado: '2026-11-08T00:00:00.000Z' });
+      if (!fusion.ok) throw new Error(fusion.motivo);
+      expect(fusion.dataset.informes.find((i) => i.partido === 'ter')!.entradas).toEqual([
+        expect.objectContaining({ tema: 'vivienda', barrera: 'V5', resultado: 'aviso', detalle: expect.stringContaining('60 palabras') }),
+      ]);
+      expect(fusion.dataset.informes.find((i) => i.partido === 'otp')!.entradas).toEqual([]);
     });
 
     it('discards after 2 failed rewrites', async () => {
@@ -826,8 +921,9 @@ describe('procesarPrograma', () => {
     it('two runs over the same PDF with the cache give an identical result, rewrites included', async () => {
       const cache = crearCacheEnMemoria();
       const r = respuestas({ neutralizar: (_e, intento) => (intento === 0 ? { ...neutroBueno, cifra: '12 %' } : neutroBueno) });
-      const { ia: _ia1, ...primera } = await procesar(r, { cache, fecha: '2026-11-08' });
-      const { ia: ia2, ...segunda } = await procesar(r, { cache, fecha: '2026-11-08' });
+      const publicado = { partidos: [partidoOtro, terceroPartido], posturas: [posturaOtro, posturaTercero] };
+      const { ia: _ia1, ...primera } = await procesar(r, { cache, fecha: '2026-11-08', publicado });
+      const { ia: ia2, ...segunda } = await procesar(r, { cache, fecha: '2026-11-08', publicado });
       expect(reescrituras(primera.informe)).toBe(1);
       expect(ia2.llamadas.map((l) => l.tarea)).toEqual([]);
       expect(segunda).toEqual(primera);
@@ -881,6 +977,16 @@ describe('procesarPrograma', () => {
       await procesar(respuestas(), { cache });
       const otra = await procesar(respuestas(), { cache, versionPrompt: 'otra' });
       expect(otra.ia.llamadas.length).toBeGreaterThan(0);
+    });
+
+    it('keeps the feasibility note of an unchanged neutral text when the PDF changes (V13 is keyed by text and quotes)', async () => {
+      const cache = crearCacheEnMemoria();
+      const primera = await procesar(respuestas(), { cache });
+      const pdf = await crearPdfDePrueba([...paginas, ['Una página más']]);
+      const ia = crearIAFalsa(respuestas({ 'evaluar-viabilidad': () => evaluacion('muy_dificil') }));
+      const segunda = await procesarPrograma(pdf, partidoEjemplo, ia, opciones({ cache }));
+      expect(segunda.posturas[0]).toEqual(primera.posturas[0]);
+      expect(ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad')).toHaveLength(0);
     });
 
     it('misses the cache when the PDF changes', async () => {

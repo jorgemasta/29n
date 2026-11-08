@@ -12,7 +12,6 @@ import { construirDataset, validarDataset, type Partido } from '../src/dataset';
 import { crearIAFalsa } from '../src/ia/falsa';
 import { procesarPrograma } from '../src/pipeline';
 import { TEMAS } from '../src/registro/temas';
-import { contarPalabras } from '../src/pipeline/texto';
 import { PREGUNTAS_SUGERIDAS } from '../src/registro/preguntas';
 import { FICTICIOS, PENDIENTES_FICTICIOS, RESPUESTAS_SIMULADAS } from './datos-simulados';
 
@@ -71,8 +70,6 @@ async function pdfFicticio(paginas: string[][]): Promise<Uint8Array> {
 }
 
 const partidos: Partido[] = [];
-// V5: each text is compared with the median length of the ones already processed for that topic.
-const longitudesTema: Record<string, number[]> = {};
 const resultados = [];
 await mkdir('public/programas', { recursive: true });
 await mkdir('public/textos', { recursive: true });
@@ -119,12 +116,12 @@ for (const f of FICTICIOS) {
   const r = await procesarPrograma(pdf, partido, ia, {
     temas: TEMAS,
     dominios: { [f.id]: ['29n.jorgemasta.com'] },
-    longitudesTema,
+    // V5 and V11 compare each programme with the ones already processed.
     publicado: { partidos, posturas: resultados.flatMap((x) => x.posturas) },
     // Simulated: the feasibility sources are institutional home pages; skip the network check.
     comprobarUrl: async () => true,
   });
-  for (const p of r.posturas) if (p.estado === 'propone') (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
+  if (r.revisiones.length) throw new Error(`${f.id}: deja fuera de rango a otros partidos: ${JSON.stringify(r.revisiones)}`);
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);
   const fallidas = r.posturas.filter((p) => p.estado === 'sin_verificar');
   const sinVerificar = r.respuestas.filter((x) => x.estado === 'sin_verificar');

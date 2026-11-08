@@ -44,7 +44,7 @@ const resultado = await procesarPrograma(pdf, partido, crearIAClaude(), {
   cache: crearCacheEnDisco('data/cache/ia'),
   fecha: values.fecha,
   // V5 lengths and V11's mix come from the parties already published.
-  ...contextoPublicado(anterior, partido.id),
+  ...contextoPublicado(anterior),
 });
 
 if (!resultado.publicable) {

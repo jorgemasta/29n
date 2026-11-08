@@ -1,7 +1,9 @@
 // AI response cache: keyed by PDF hash + prompt version + task + input, so re-running
 // the pipeline on the same PDF gives the same result (and costs nothing).
+// The feasibility note (V13) and its source checks (V8) are keyed WITHOUT the PDF hash: they only
+// see the neutral text and the quotes, so an unchanged text keeps its note even in a new PDF.
 import { createHash } from 'node:crypto';
-import type { AdaptadorIA, PeticionIA } from './adaptador';
+import type { AdaptadorIA, PeticionIA, Tarea } from './adaptador';
 
 export interface AlmacenCache {
   leer(clave: string): Promise<unknown | undefined>;
@@ -25,11 +27,15 @@ export function claveCache(partes: { hashPdf: string; versionPrompt: string; tar
   return createHash('sha256').update(JSON.stringify(partes)).digest('hex');
 }
 
+/** Tasks whose answer depends only on their input, never on which PDF it came from. */
+const INDEPENDIENTES_DEL_PDF: ReadonlySet<Tarea> = new Set(['evaluar-viabilidad']);
+
 /** Wraps an adapter so answers are read from / written to the cache. */
 export function conCache(ia: AdaptadorIA, almacen: AlmacenCache, contexto: { hashPdf: string; versionPrompt: string }): AdaptadorIA {
   return {
     async completar<T>(p: PeticionIA<T>): Promise<T> {
-      const clave = claveCache({ ...contexto, tarea: p.tarea, instrucciones: p.instrucciones, entrada: p.entrada });
+      const hashPdf = INDEPENDIENTES_DEL_PDF.has(p.tarea) ? '' : contexto.hashPdf;
+      const clave = claveCache({ ...contexto, hashPdf, tarea: p.tarea, instrucciones: p.instrucciones, entrada: p.entrada });
       const guardado = await almacen.leer(clave);
       if (guardado !== undefined) {
         const r = p.esquema.safeParse(guardado);
@@ -52,7 +58,7 @@ export function comprobacionConCache(
   contexto: { hashPdf: string; versionPrompt: string },
 ): (url: string) => Promise<boolean> {
   return async (url) => {
-    const clave = claveCache({ ...contexto, tarea: 'comprobar-url', instrucciones: '', entrada: url });
+    const clave = claveCache({ ...contexto, hashPdf: '', tarea: 'comprobar-url', instrucciones: '', entrada: url });
     const guardado = await almacen.leer(clave);
     if (typeof guardado === 'boolean') return guardado;
     const respuesta = await comprobar(url);

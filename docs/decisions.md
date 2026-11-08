@@ -46,6 +46,11 @@ Cerradas en la sesión de *grilling* del 8-nov-2026. El detalle de la UX está e
 - Proceso completo: extraer, neutralizar, verificar, evaluar la viabilidad y publicar automáticamente si todas las comprobaciones pasan.
 - Aviso al móvil en cada publicación y en cada fallo.
 - El dataset es JSON versionado en el repo.
+- **Comparación entre partidos (V5 y V11)**: cada programa se compara con todas las posturas ya publicadas del tema.
+  - V11: el adivinador recibe la postura nueva junto con todas las publicadas del tema y la lista de partidos registrados (también si es el primero en publicar). Se ejecuta 3 veces con órdenes distintos (barajados independientes, distintos entre sí mientras haya permutaciones suficientes).
+  - V5: la mediana del tema incluye el texto nuevo. Al primer partido solo se le aplica el rango de 25–70 palabras.
+  - Solo se reescribe la postura del partido que se está procesando. Si en la misma pasada otra postura ya publicada resulta reconocible (V11) o queda fuera de la nueva mediana (V5), su texto y su nota no cambian: se anota un **aviso en el informe de ese partido** (con el partido que lo provocó, y se sustituye cada vez que ese partido vuelve a publicar). Se corrige cuando se vuelve a procesar su programa (`vigilar --forzar`).
+- **Reproducibilidad**: relanzar un PDF sin cambios contra el mismo dataset da un resultado idéntico (caché de IA por PDF, versión del prompt y entrada). La publicación de otro partido nunca cambia el texto ni la nota de uno ya publicado. La nota de viabilidad (V13) y la comprobación de sus fuentes (V8) se guardan en caché por texto neutral y citas, no por PDF: si un PDF nuevo deja el texto igual, la nota no cambia. Reprocesar un programa contra un dataset distinto sí puede reescribir su texto por V5 o V11, y queda en su informe.
 
 ## Técnica
 - **Web**: Astro en Cloudflare, en 29n.jorgemasta.com (provisional). Mobile-first y solo en castellano.

@@ -2,18 +2,30 @@
 // the watcher). Real data replaces simulated data entirely; the party's previous posturas and
 // report are replaced by the new ones, the other parties are kept as they were.
 import { construirDataset, validarDataset } from '../dataset';
-import type { Dataset, Partido, Pregunta, Tema } from '../dataset/esquema';
+import type { Dataset, Informe, Partido, Pregunta, Tema } from '../dataset/esquema';
 import { PREGUNTAS_SUGERIDAS } from '../registro/preguntas';
-import type { OpcionesProceso, ResultadoProceso } from './index';
-import { contarPalabras } from './texto';
+import type { OpcionesProceso, ResultadoProceso, Revision } from './index';
 
-/** What procesarPrograma needs from the current dataset: V5 lengths and V11's published posturas. */
-export function contextoPublicado(anterior: Dataset, partido: string): Pick<OpcionesProceso, 'longitudesTema' | 'publicado'> {
+/** What procesarPrograma needs from the current dataset: the published parties and posturas (V5, V11). */
+export function contextoPublicado(anterior: Dataset): Pick<OpcionesProceso, 'publicado'> {
   const previos = anterior.origen === 'real' ? anterior : { partidos: [], posturas: [] };
-  const longitudesTema: Record<string, number[]> = {};
-  for (const p of previos.posturas)
-    if (p.estado === 'propone' && p.partido !== partido) (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
-  return { longitudesTema, publicado: { partidos: previos.partidos, posturas: previos.posturas } };
+  return { publicado: { partidos: previos.partidos, posturas: previos.posturas } };
+}
+
+/**
+ * Other parties' reports with this publication's re-checks (V5, V11) as warnings: the previous
+ * warnings from the same party are replaced; their posturas are never touched.
+ */
+function conRevisiones(informe: Informe, publicado: string, revisiones: Revision[]): Informe {
+  return {
+    ...informe,
+    entradas: [
+      ...informe.entradas.filter((e) => e.origen !== publicado),
+      ...revisiones
+        .filter((r) => r.partido === informe.partido)
+        .map((r) => ({ tema: r.tema, barrera: r.barrera, resultado: 'aviso' as const, detalle: r.detalle, origen: publicado })),
+    ],
+  };
 }
 
 export type Fusion = { ok: true; dataset: Dataset } | { ok: false; motivo: string };
@@ -57,7 +69,7 @@ export function fusionarPrograma(
       ...previos.informes
         .filter((i) => i.partido !== partido.id && (!registro || registro[i.partido]))
         .map((informe) => ({
-          informe,
+          informe: conRevisiones(informe, partido.id, resultado.revisiones),
           posturas: previos.posturas.filter((p) => p.partido === informe.partido),
           // Answers to questions no longer suggested are dropped (V9 rejects unknown questions).
           respuestas: (previos.respuestas ?? []).filter(

@@ -160,7 +160,7 @@ export async function vigilar(
     try {
       const resultado = await procesarPrograma(bytes, partido, puertos.ia, {
         ...opciones.proceso,
-        ...contextoPublicado(dataset, id),
+        ...contextoPublicado(dataset),
         cache: puertos.cache ?? opciones.proceso?.cache,
         fecha,
       });

@@ -23,7 +23,7 @@ export interface FalloTexto {
 export interface ContextoTexto {
   citas: Cita[];
   terminos: TerminosIdentificativos;
-  /** Word counts of the other parties' texts on this topic (V5 median). */
+  /** Word counts of the other parties' published texts on this topic (V5 median, with this text in it). */
   longitudesTema?: number[];
 }
 
@@ -80,20 +80,19 @@ export function revisarTexto(t: TextoNeutral, ctx: ContextoTexto): FalloTexto[] 
       corregir: `Estas cifras no aparecen en las citas; quítalas o usa las de las citas: ${ajenas.join(', ')}.`,
     });
 
-  // V5: 25–70 words and within ±25 % of the topic median.
+  // V5: 25–70 words and within ±25 % of the topic median (the other published texts plus this one).
+  // The rewrite is asked for the range around the other texts' median, where it should land.
   const n = contarPalabras(t);
-  const m = mediana(ctx.longitudesTema ?? []);
-  let min = LONGITUD_TEXTO.min;
-  let max = LONGITUD_TEXTO.max;
-  let motivo = `tiene ${n} palabras (debe tener entre ${min} y ${max})`;
-  let fuera = n < min || n > max;
-  if (m !== null) {
-    min = Math.max(min, Math.ceil(m * (1 - TOLERANCIA_MEDIANA)));
-    max = Math.min(max, Math.floor(m * (1 + TOLERANCIA_MEDIANA)));
-    if (!fuera && (n < m * (1 - TOLERANCIA_MEDIANA) || n > m * (1 + TOLERANCIA_MEDIANA))) {
-      fuera = true;
-      motivo = `tiene ${n} palabras, fuera del ±${TOLERANCIA_MEDIANA * 100} % de la mediana del tema (${m})`;
-    }
+  const otras = ctx.longitudesTema ?? [];
+  const m = otras.length ? mediana([...otras, n])! : null;
+  const objetivo = mediana(otras);
+  const min = objetivo === null ? LONGITUD_TEXTO.min : Math.max(LONGITUD_TEXTO.min, Math.ceil(objetivo * (1 - TOLERANCIA_MEDIANA)));
+  const max = objetivo === null ? LONGITUD_TEXTO.max : Math.min(LONGITUD_TEXTO.max, Math.floor(objetivo * (1 + TOLERANCIA_MEDIANA)));
+  let motivo = `tiene ${n} palabras (debe tener entre ${LONGITUD_TEXTO.min} y ${LONGITUD_TEXTO.max})`;
+  let fuera = n < LONGITUD_TEXTO.min || n > LONGITUD_TEXTO.max;
+  if (!fuera && m !== null && Math.abs(n - m) > m * TOLERANCIA_MEDIANA) {
+    fuera = true;
+    motivo = `tiene ${n} palabras, fuera del ±${TOLERANCIA_MEDIANA * 100} % de la mediana del tema (${m})`;
   }
   if (fuera)
     fallos.push({
