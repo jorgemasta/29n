@@ -18,7 +18,16 @@ import {
 import { VERSION_RUBRICA } from '../src/registro/rubrica';
 import type { Tema } from '../src/dataset/esquema';
 
-const neutralizaciones = (ia: { llamadas: { tarea: string; entrada: unknown }[] }) => ia.llamadas.filter((l) => l.tarea === 'neutralizar');
+/** Rewrites recorded in the verification report for a topic (default: the only one). */
+const reescrituras = (informe: { posturas: { tema: string; reescrituras: number }[] }, tema = 'vivienda') =>
+  informe.posturas.find((p) => p.tema === tema)?.reescrituras;
+/** Fake AI behaviour: answers `bien` only once the request mentions `pista` (the feedback reached it), else `mal`. */
+const corrigeCon =
+  <T,>(pista: string | RegExp, mal: T, bien: T) =>
+  (entrada: unknown) => {
+    const recibido = JSON.stringify(entrada);
+    return (typeof pista === 'string' ? recibido.includes(pista) : pista.test(recibido)) ? bien : mal;
+  };
 
 const CITA =
   'Limitaremos el precio del alquiler en las zonas tensionadas y ampliaremos el parque público de vivienda.';
@@ -190,16 +199,14 @@ describe('procesarPrograma', () => {
 
   describe('V3: no identifying marks', () => {
     it('rewrites a neutral text that names any party leader, telling the AI what to avoid', async () => {
-      const { posturas, ia, informe } = await procesar(
+      // The fake AI only drops the leader's name once it is told to avoid it.
+      const { posturas, informe } = await procesar(
         respuestas({
-          neutralizar: (_entrada, intento) =>
-            intento === 0 ? { ...neutroBueno, como: 'Como propone Bruno Jefe, ampliando el parque público.' } : neutroBueno,
+          neutralizar: corrigeCon('Bruno Jefe', { ...neutroBueno, como: 'Como propone Bruno Jefe, ampliando el parque público.' }, neutroBueno),
         }),
       );
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: neutroBueno }));
-      const llamadas = ia.llamadas.filter((l) => l.tarea === 'neutralizar');
-      expect(llamadas).toHaveLength(2);
-      expect(JSON.stringify(llamadas[1]?.entrada)).toContain('Bruno Jefe');
+      expect(reescrituras(informe)).toBe(1);
       expect(informe.entradas).toContainEqual(
         expect.objectContaining({ tema: 'vivienda', barrera: 'V3', resultado: 'reescribir' }),
       );
@@ -218,17 +225,17 @@ describe('procesarPrograma', () => {
     });
 
     it('does not flag words that merely contain an acronym', async () => {
-      const { ia } = await procesar(
+      const { informe } = await procesar(
         respuestas({ neutralizar: () => ({ ...neutroBueno, como: 'Con un plan espejo del modelo vienés y sin topes.' }) }),
       );
-      expect(ia.llamadas.filter((l) => l.tarea === 'neutralizar')).toHaveLength(1);
+      expect(reescrituras(informe)).toBe(0);
     });
 
     it('discards the postura after 2 failed rewrites', async () => {
-      const { posturas, ia, informe } = await procesar(
+      const { posturas, informe } = await procesar(
         respuestas({ neutralizar: () => ({ ...neutroBueno, que: 'La propuesta de OTP sobre el alquiler.' }) }),
       );
-      expect(ia.llamadas.filter((l) => l.tarea === 'neutralizar')).toHaveLength(3);
+      expect(reescrituras(informe)).toBe(2);
       expect(posturas[0]?.estado).toBe('sin_verificar');
       expect(informe.entradas).toContainEqual(
         expect.objectContaining({ tema: 'vivienda', barrera: 'V3', resultado: 'descartar' }),
@@ -245,8 +252,7 @@ describe('procesarPrograma', () => {
     };
 
     it('publishes the level when both evaluations agree, with reasons per criterion and versions', async () => {
-      const { nota, ia } = await viabilidad(respuestas());
-      expect(ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad')).toHaveLength(2);
+      const { nota } = await viabilidad(respuestas());
       expect(nota.resultado).toBe('viable_con_matices');
       expect(nota.porque).toBe('Evaluada como viable_con_matices. Depende de las comunidades.');
       expect(nota.fuentes).toEqual([FUENTE_INE]);
@@ -360,7 +366,7 @@ describe('procesarPrograma', () => {
     });
 
     it('repeats an evaluation whose "por qué" is left without sources', async () => {
-      const { nota, ia, informe } = await viabilidad(
+      const { nota, informe } = await viabilidad(
         respuestas({
           'evaluar-viabilidad': (e) =>
             e.evaluacion === 2 && !e.repeticion
@@ -368,44 +374,43 @@ describe('procesarPrograma', () => {
               : evaluacion('viable', { fuentes: [FUENTE_BOE] }),
         }),
       );
-      expect(ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad')).toHaveLength(3);
+      expect(informe.entradas.filter((e) => e.barrera === 'V8' && e.resultado === 'reescribir')).toHaveLength(1);
       expect(nota.evaluaciones[1].fuentes).toEqual([FUENTE_BOE]);
       expect(nota.resultado).toBe('viable');
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V8', resultado: 'reescribir' }));
     });
 
     it('gives up repeating after 2 attempts and publishes the note without sources', async () => {
-      const { nota, ia } = await viabilidad(
+      const { nota, informe } = await viabilidad(
         respuestas({ 'evaluar-viabilidad': () => evaluacion('dificil', { fuentes: [{ titulo: 'X', url: 'http://www.ine.es/x' }] }) }),
       );
-      expect(ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad')).toHaveLength(6);
+      // 2 repetitions per evaluation, then published without sources (and the report says so).
+      expect(informe.entradas.filter((e) => e.barrera === 'V8' && e.resultado === 'reescribir')).toHaveLength(4);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V8', detalle: expect.stringContaining('se publica sin fuentes') }));
       expect(nota.resultado).toBe('dificil');
       expect(nota.fuentes).toEqual([]);
     });
 
     it('does not repeat a "sin concreción" evaluation that has no sources', async () => {
-      const { ia } = await viabilidad(respuestas({ 'evaluar-viabilidad': () => evaluacion('sin_concrecion', { fuentes: [] }) }));
-      expect(ia.llamadas.filter((l) => l.tarea === 'evaluar-viabilidad')).toHaveLength(2);
+      const { informe } = await viabilidad(respuestas({ 'evaluar-viabilidad': () => evaluacion('sin_concrecion', { fuentes: [] }) }));
+      expect(informe.entradas.filter((e) => e.barrera === 'V8' && e.resultado !== 'pasa')).toEqual([]);
     });
   });
 
   describe('V10: fidelity to the quote', () => {
     it('an independent verifier gets the quotes and the neutral text, and an addition forces a rewrite', async () => {
       const anadido = { ...neutroBueno, como: `${neutroBueno.como.slice(0, -1)} y con ayudas.` };
-      const { posturas, ia, informe } = await procesar(
+      // The verifier compares the text with the quotes; the writer fixes the text once told why.
+      const { posturas, informe } = await procesar(
         respuestas({
-          neutralizar: (_e, intento) => (intento === 0 ? anadido : neutroBueno),
+          neutralizar: corrigeCon('Las ayudas no están en la cita.', anadido, neutroBueno),
           'verificar-fidelidad': (entrada) =>
-            entrada.texto.como.includes('ayudas')
+            entrada.texto.como.includes('ayudas') && entrada.citas.every((c: { texto: string }) => !c.texto.includes('ayudas'))
               ? { anade: true, omite: false, cambiaSentido: false, explicacion: 'Las ayudas no están en la cita.' }
               : fiel,
         }),
       );
-      const verificaciones = ia.llamadas.filter((l) => l.tarea === 'verificar-fidelidad');
-      expect(verificaciones[0]?.entrada).toEqual(expect.objectContaining({ citas: [{ texto: CITA, pagina: 2 }], texto: anadido }));
-      const neutralizaciones = ia.llamadas.filter((l) => l.tarea === 'neutralizar');
-      expect(neutralizaciones).toHaveLength(2);
-      expect(JSON.stringify(neutralizaciones[1]?.entrada)).toContain('Las ayudas no están en la cita.');
+      expect(reescrituras(informe)).toBe(1);
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: neutroBueno }));
       expect(informe.entradas).toContainEqual(expect.objectContaining({ tema: 'vivienda', barrera: 'V10', resultado: 'reescribir' }));
       expect(informe.entradas).toContainEqual(expect.objectContaining({ tema: 'vivienda', barrera: 'V10', resultado: 'pasa' }));
@@ -415,23 +420,25 @@ describe('procesarPrograma', () => {
       ['omits an essential condition', { omite: true }],
       ['changes the meaning', { cambiaSentido: true }],
     ])('discards the postura when the text still %s after 2 rewrites', async (_caso, fallo) => {
-      const { posturas, ia, informe } = await procesar(
+      const { posturas, informe } = await procesar(
         respuestas({ 'verificar-fidelidad': () => ({ ...fiel, ...fallo, explicacion: 'No es fiel.' }) }),
       );
-      expect(ia.llamadas.filter((l) => l.tarea === 'neutralizar')).toHaveLength(3);
+      expect(reescrituras(informe)).toBe(2);
       expect(posturas[0]?.estado).toBe('sin_verificar');
       expect(informe.entradas).toContainEqual(expect.objectContaining({ tema: 'vivienda', barrera: 'V10', resultado: 'descartar' }));
     });
 
     it('never verifies a text that still has identifying marks (V3 first)', async () => {
-      const { ia } = await procesar(
+      // This verifier would reject any text with a party acronym: it must never see one.
+      const { posturas, informe } = await procesar(
         respuestas({
           neutralizar: (_e, intento) => (intento === 0 ? { ...neutroBueno, que: 'La propuesta de OTP sobre el alquiler.' } : neutroBueno),
+          'verificar-fidelidad': (e) => (JSON.stringify(e.texto).includes('OTP') ? { ...fiel, anade: true, explicacion: 'OTP' } : fiel),
         }),
       );
-      const verificados = ia.llamadas.filter((l) => l.tarea === 'verificar-fidelidad').map((l) => JSON.stringify(l.entrada));
-      expect(verificados).toHaveLength(1);
-      expect(verificados[0]).not.toContain('OTP');
+      expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: neutroBueno }));
+      expect(informe.entradas.filter((e) => e.barrera === 'V10' && e.resultado !== 'pasa')).toEqual([]);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V3', resultado: 'reescribir' }));
     });
   });
 
@@ -449,42 +456,69 @@ describe('procesarPrograma', () => {
         })),
       });
 
-    it('the guesser sees every neutral postura of the topic, anonymous and in 3 different orders', async () => {
-      const { ia } = await procesar(respuestas(), { publicado });
-      const rondas = ia.llamadas.filter((l) => l.tarea === 'adivinar-partido');
-      expect(rondas).toHaveLength(3);
-      const entrada = rondas[0]!.entrada as any;
-      expect(entrada.partidos.map((p: { id: string }) => p.id).sort()).toEqual(['otp', 'pej', 'ter']);
-      expect(entrada.posturas).toHaveLength(3);
-      for (const p of entrada.posturas) expect(Object.keys(p).sort()).toEqual(['letra', 'texto']);
-      expect(JSON.stringify(entrada.posturas)).not.toMatch(/pej|otp|ter|Partido/);
-      const ordenes = rondas.map((r) => (r.entrada as any).posturas.map((p: { texto: string }) => p.texto).join('|'));
-      expect(new Set(ordenes).size).toBe(3);
+    it('the guesser gets every neutral postura of the topic and the party list', async () => {
+      // This guesser can only spot our postura by comparing it with the other two.
+      const comparando = (entrada: any) => ({
+        asignaciones: entrada.posturas.map((p: { letra: string; texto: string }) => ({
+          letra: p.letra,
+          partido:
+            entrada.posturas.length === 3 && entrada.partidos.length === 3 && p.texto.includes('zonas tensionadas') ? 'pej' : 'otp',
+          confianza: 0.9,
+          pista: 'Es la única que habla de zonas tensionadas.',
+        })),
+      });
+      const { informe } = await procesar(respuestas({ 'adivinar-partido': comparando }), { publicado });
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'aviso' }));
+    });
+
+    it('the posturas are anonymous: a guesser looking for party names finds none', async () => {
+      const tramposo = (entrada: any) => ({
+        asignaciones: entrada.posturas.map((p: any) => ({
+          letra: p.letra,
+          partido: /pej|Partido Ejemplo/i.test(JSON.stringify(p)) ? 'pej' : 'otp',
+          confianza: 1,
+          pista: 'El nombre.',
+        })),
+      });
+      const { informe } = await procesar(respuestas({ 'adivinar-partido': tramposo }), { publicado });
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'pasa' }));
+      expect(reescrituras(informe)).toBe(0);
+    });
+
+    it('the 3 rounds use different orders: a guesser that only goes by position never flags a postura', async () => {
+      const porPosicion = (entrada: any) => ({
+        asignaciones: entrada.posturas.map((p: { letra: string }) => ({
+          letra: p.letra,
+          partido: p.letra === 'A' ? 'pej' : 'otp',
+          confianza: 1,
+          pista: 'Va primera.',
+        })),
+      });
+      const { informe } = await procesar(respuestas({ 'adivinar-partido': porPosicion }), { publicado });
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'pasa' }));
     });
 
     it('rewrites a postura guessed 3 of 3 times with mean confidence ≥ 0.7, passing the clue', async () => {
       const otraVersion = { ...neutroBueno, que: 'Poner por ley un tope al precio del alquiler de vivienda en las zonas con precios más altos.' };
-      const { posturas, ia, informe } = await procesar(
+      const { posturas, informe } = await procesar(
         respuestas({
-          neutralizar: (_e, intento) => (intento === 0 ? neutroBueno : otraVersion),
+          neutralizar: corrigeCon('Menciona las zonas tensionadas.', neutroBueno, otraVersion),
           'adivinar-partido': adivina('zonas tensionadas', 0.8),
         }),
         { publicado },
       );
-      const neutralizaciones = ia.llamadas.filter((l) => l.tarea === 'neutralizar');
-      expect(neutralizaciones).toHaveLength(2);
-      expect(JSON.stringify(neutralizaciones[1]?.entrada)).toContain('Menciona las zonas tensionadas.');
+      expect(reescrituras(informe)).toBe(1);
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: otraVersion }));
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'reescribir' }));
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'pasa' }));
     });
 
     it('publishes with an internal warning when the postura is still recognisable after the rewrites', async () => {
-      const { posturas, informe, publicable, ia } = await procesar(
+      const { posturas, informe, publicable } = await procesar(
         respuestas({ 'adivinar-partido': adivina('alquiler', 0.9) }),
         { publicado },
       );
-      expect(ia.llamadas.filter((l) => l.tarea === 'neutralizar')).toHaveLength(3);
+      expect(reescrituras(informe)).toBe(2);
       expect(posturas[0]?.estado).toBe('propone');
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'aviso' }));
       expect(informe.descartadas).toBe(0);
@@ -495,8 +529,8 @@ describe('procesarPrograma', () => {
       ['mean confidence is below 0.7', adivina('alquiler', 0.6)],
       ['it is guessed only 2 of 3 times', adivina('alquiler', 0.9, 2)],
     ])('does not flag the postura when %s', async (_caso, adivinador) => {
-      const { ia, informe } = await procesar(respuestas({ 'adivinar-partido': adivinador }), { publicado });
-      expect(ia.llamadas.filter((l) => l.tarea === 'neutralizar')).toHaveLength(1);
+      const { informe } = await procesar(respuestas({ 'adivinar-partido': adivinador }), { publicado });
+      expect(reescrituras(informe)).toBe(0);
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V11', resultado: 'pasa' }));
     });
 
@@ -510,10 +544,7 @@ describe('procesarPrograma', () => {
     const noPropone = { 'extraer-postura': () => ({ propone: false, citas: [] }) };
 
     it('extracts the postura when the second pass finds a proposal the first one missed', async () => {
-      const { posturas, ia, informe } = await procesar(respuestas({ ...noPropone, ...segundaPasadaEncuentra }));
-      const segunda = ia.llamadas.find((l) => l.tarea === 'confirmar-ausencia')!;
-      // Only the keyword-matching fragments (page 2 talks about vivienda/alquiler) go to the AI.
-      expect((segunda.entrada as any).paginas.map((p: { pagina: number }) => p.pagina)).toEqual([2]);
+      const { posturas, informe } = await procesar(respuestas({ ...noPropone, ...segundaPasadaEncuentra }));
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', citas: [{ texto: CITA, pagina: 2 }] }));
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V12', resultado: 'extraer' }));
     });
@@ -550,11 +581,11 @@ describe('procesarPrograma', () => {
     });
 
     it('a postura discarded after its quotes were verified stays "could not verify" (it does exist)', async () => {
-      const { posturas, ia } = await procesar(
+      // The default fake V12 would confirm an absence: it is not asked.
+      const { posturas } = await procesar(
         respuestas({ neutralizar: () => ({ ...neutroBueno, que: 'La propuesta de OTP sobre el alquiler.' }) }),
       );
       expect(posturas[0]?.estado).toBe('sin_verificar');
-      expect(ia.llamadas.filter((l) => l.tarea === 'confirmar-ausencia')).toHaveLength(0);
     });
   });
 
@@ -606,32 +637,31 @@ describe('procesarPrograma', () => {
     }
 
     it('accepts figures that appear in a quote, whatever their format ("50000" vs "50.000", "30%" vs "30 %")', async () => {
-      const { posturas, ia, informe } = await procesarCifras(respuestas({ 'extraer-postura': extraerCifras, neutralizar: () => conCifras }));
+      const { posturas, informe } = await procesarCifras(respuestas({ 'extraer-postura': extraerCifras, neutralizar: () => conCifras }));
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: conCifras }));
-      expect(neutralizaciones(ia)).toHaveLength(1);
+      expect(reescrituras(informe)).toBe(0);
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V4', resultado: 'pasa' }));
     });
 
     it('rewrites a text with a figure that is in none of its quotes, telling the AI which one', async () => {
-      const { posturas, ia, informe } = await procesarCifras(
+      const { posturas, informe } = await procesarCifras(
         respuestas({
           'extraer-postura': extraerCifras,
-          neutralizar: (_e, intento) => (intento === 0 ? { ...conCifras, como: conCifras.como.replace('30%', '40 %') } : conCifras),
+          neutralizar: corrigeCon(/no aparecen en las citas[^"]*40/, { ...conCifras, como: conCifras.como.replace('30%', '40 %') }, conCifras),
         }),
       );
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: conCifras }));
-      expect(neutralizaciones(ia)).toHaveLength(2);
-      expect(JSON.stringify(neutralizaciones(ia).at(-1)?.entrada)).toContain('40');
+      expect(reescrituras(informe)).toBe(1);
       expect(informe.entradas).toContainEqual(
         expect.objectContaining({ tema: 'vivienda', barrera: 'V4', resultado: 'reescribir', detalle: expect.stringContaining('40') }),
       );
     });
 
     it('checks the figure field too, and discards after 2 failed rewrites', async () => {
-      const { posturas, ia, informe } = await procesarCifras(
+      const { posturas, informe } = await procesarCifras(
         respuestas({ 'extraer-postura': extraerCifras, neutralizar: () => ({ ...conCifras, cifra: '2030' }) }),
       );
-      expect(neutralizaciones(ia)).toHaveLength(3);
+      expect(reescrituras(informe)).toBe(2);
       expect(posturas[0]?.estado).toBe('sin_verificar');
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V4', resultado: 'descartar' }));
     });
@@ -640,11 +670,11 @@ describe('procesarPrograma', () => {
   describe('V5: equal length', () => {
     it('rewrites a text shorter than 25 words', async () => {
       const corto = { que: 'Limitar el alquiler.', como: 'Con más vivienda pública.', cifra: null };
-      const { posturas, ia, informe } = await procesar(
+      const { posturas, informe } = await procesar(
         respuestas({ neutralizar: (_e, intento) => (intento === 0 ? corto : neutroBueno) }),
       );
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: neutroBueno }));
-      expect(neutralizaciones(ia)).toHaveLength(2);
+      expect(reescrituras(informe)).toBe(1);
       expect(informe.entradas).toContainEqual(
         expect.objectContaining({ barrera: 'V5', resultado: 'reescribir', detalle: expect.stringContaining('7 palabras') }),
       );
@@ -652,20 +682,20 @@ describe('procesarPrograma', () => {
 
     it('rewrites a text longer than 70 words', async () => {
       const largo = { ...neutroBueno, como: `${neutroBueno.como} ${palabras(60)}` };
-      const { ia, informe } = await procesar(respuestas({ neutralizar: (_e, intento) => (intento === 0 ? largo : neutroBueno) }));
-      expect(neutralizaciones(ia)).toHaveLength(2);
+      const { informe } = await procesar(respuestas({ neutralizar: (_e, intento) => (intento === 0 ? largo : neutroBueno) }));
+      expect(reescrituras(informe)).toBe(1);
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V5', resultado: 'reescribir' }));
     });
 
     it('rewrites a text outside ±25 % of the topic median, giving the AI the target range', async () => {
       // Other parties' texts on this topic have 40 words → the text must have 30–50.
       const largo = { ...neutroBueno, como: `${neutroBueno.como} ${palabras(15)}` }; // 44 words
-      const { posturas, ia, informe } = await procesar(
-        respuestas({ neutralizar: (_e, intento) => (intento === 0 ? neutroBueno : largo) }),
+      const { posturas, informe } = await procesar(
+        respuestas({ neutralizar: corrigeCon(/entre 30 y 50 palabras/, neutroBueno, largo) }),
         { longitudesTema: { vivienda: [40, 38, 42] } },
       );
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: largo }));
-      expect(JSON.stringify(neutralizaciones(ia).at(-1)?.entrada)).toMatch(/30.*50/);
+      expect(reescrituras(informe)).toBe(1);
       expect(informe.entradas).toContainEqual(
         expect.objectContaining({ barrera: 'V5', resultado: 'reescribir', detalle: expect.stringContaining('mediana') }),
       );
@@ -673,34 +703,34 @@ describe('procesarPrograma', () => {
 
     it('discards after 2 failed rewrites', async () => {
       const corto = { que: 'Limitar el alquiler.', como: 'Con más vivienda pública.', cifra: null };
-      const { posturas, ia } = await procesar(respuestas({ neutralizar: () => corto }));
-      expect(neutralizaciones(ia)).toHaveLength(3);
+      const { posturas, informe } = await procesar(respuestas({ neutralizar: () => corto }));
+      expect(reescrituras(informe)).toBe(2);
       expect(posturas[0]?.estado).toBe('sin_verificar');
     });
   });
 
   describe('V6: template', () => {
     it('rewrites a text whose "what" field is missing', async () => {
-      const { posturas, ia, informe } = await procesar(
+      const { posturas, informe } = await procesar(
         respuestas({ neutralizar: (_e, intento) => (intento === 0 ? { ...neutroBueno, que: '  ' } : neutroBueno) }),
       );
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: neutroBueno }));
-      expect(neutralizaciones(ia)).toHaveLength(2);
+      expect(reescrituras(informe)).toBe(1);
       expect(informe.entradas).toContainEqual(
         expect.objectContaining({ barrera: 'V6', resultado: 'reescribir', detalle: expect.stringContaining('qué') }),
       );
     });
 
     it('rewrites a text whose "how" field is missing, and discards it if it never arrives', async () => {
-      const { posturas, ia, informe } = await procesar(respuestas({ neutralizar: () => ({ ...neutroBueno, como: '' }) }));
-      expect(neutralizaciones(ia)).toHaveLength(3);
+      const { posturas, informe } = await procesar(respuestas({ neutralizar: () => ({ ...neutroBueno, como: '' }) }));
+      expect(reescrituras(informe)).toBe(2);
       expect(posturas[0]?.estado).toBe('sin_verificar');
       expect(informe.entradas).toContainEqual(expect.objectContaining({ barrera: 'V6', resultado: 'descartar', detalle: expect.stringContaining('cómo') }));
     });
 
     it('treats the figure as optional (an empty figure becomes null)', async () => {
-      const { posturas, ia } = await procesar(respuestas({ neutralizar: () => ({ ...neutroBueno, cifra: '' }) }));
-      expect(neutralizaciones(ia)).toHaveLength(1);
+      const { posturas, informe } = await procesar(respuestas({ neutralizar: () => ({ ...neutroBueno, cifra: '' }) }));
+      expect(reescrituras(informe)).toBe(0);
       expect(posturas[0]).toEqual(expect.objectContaining({ estado: 'propone', texto: { ...neutroBueno, cifra: null } }));
     });
   });
@@ -796,9 +826,9 @@ describe('procesarPrograma', () => {
     it('two runs over the same PDF with the cache give an identical result, rewrites included', async () => {
       const cache = crearCacheEnMemoria();
       const r = respuestas({ neutralizar: (_e, intento) => (intento === 0 ? { ...neutroBueno, cifra: '12 %' } : neutroBueno) });
-      const { ia: ia1, ...primera } = await procesar(r, { cache, fecha: '2026-11-08' });
+      const { ia: _ia1, ...primera } = await procesar(r, { cache, fecha: '2026-11-08' });
       const { ia: ia2, ...segunda } = await procesar(r, { cache, fecha: '2026-11-08' });
-      expect(neutralizaciones(ia1)).toHaveLength(2);
+      expect(reescrituras(primera.informe)).toBe(1);
       expect(ia2.llamadas.map((l) => l.tarea)).toEqual([]);
       expect(segunda).toEqual(primera);
     });
@@ -897,11 +927,6 @@ describe('procesarPrograma', () => {
       expect(rs.length).toBe(7);
     });
 
-    it('only sends the AI the pages that talk about the question', async () => {
-      const { ia } = await procesar(respuestas({ 'responder-pregunta': () => respuestaBuena }), { preguntas: [jubilacion] });
-      expect(llamadasPregunta(ia, 'jubilacion')[0]!.entrada.paginas.map((p: { pagina: number }) => p.pagina)).toEqual([3]);
-    });
-
     it('a programme with no page about the question "does not mention it", without asking the AI', async () => {
       const { respuestas: rs, ia } = await procesar(respuestas({ 'responder-pregunta': () => respuestaBuena }), { preguntas: [mili] });
       expect(rs).toEqual([expect.objectContaining({ pregunta: 'mili', estado: 'no_menciona' })]);
@@ -925,32 +950,33 @@ describe('procesarPrograma', () => {
 
     it('an answer whose quotes are all invented is asked again, then not published (V1)', async () => {
       const inventada = { texto: 'Bajaremos la edad de jubilación a los sesenta años para todo el mundo.', pagina: 3 };
-      const { respuestas: rs, ia, publicable } = await procesar(
+      const { respuestas: rs, informe, publicable } = await procesar(
         respuestas({ 'responder-pregunta': () => ({ ...respuestaBuena, citas: [inventada] }) }),
         { preguntas: [jubilacion] },
       );
       expect(rs).toEqual([expect.objectContaining({ pregunta: 'jubilacion', estado: 'sin_verificar' })]);
       expect(rs[0]).not.toHaveProperty('citas');
-      expect(llamadasPregunta(ia, 'jubilacion')).toHaveLength(3);
+      // Asked 3 times: the invented quote is removed each time.
+      expect(informe.entradas.filter((e) => e.pregunta === 'jubilacion' && e.detalle.startsWith('cita eliminada'))).toHaveLength(3);
       // Answers never block the programme.
       expect(publicable).toBe(true);
     });
 
     it('rewrites an answer with identifying marks and, if they persist after 2 retries, does not publish it (V3)', async () => {
-      const { respuestas: rs, ia } = await procesar(
+      const { respuestas: rs, informe } = await procesar(
         respuestas({ 'responder-pregunta': () => ({ ...respuestaBuena, que: `Como propone OTP, ${respuestaBuena.que}` }) }),
         { preguntas: [jubilacion] },
       );
-      const llamadas = llamadasPregunta(ia, 'jubilacion');
-      expect(llamadas).toHaveLength(3);
-      expect(llamadas[1]!.entrada.evitar).toContain('OTP');
+      expect(informe.entradas.filter((e) => e.pregunta === 'jubilacion' && e.barrera === 'V3' && e.resultado === 'reescribir')).toHaveLength(2);
+      expect(informe.entradas).toContainEqual(expect.objectContaining({ pregunta: 'jubilacion', barrera: 'V3', resultado: 'descartar' }));
       expect(rs).toEqual([expect.objectContaining({ estado: 'sin_verificar' })]);
     });
 
     it('a rewrite that removes the marks is published (V3)', async () => {
+      // The fake AI drops the name only once it is told to avoid it.
       const { respuestas: rs } = await procesar(
         respuestas({
-          'responder-pregunta': (_e, intento) => (intento === 0 ? { ...respuestaBuena, que: `Bruno Jefe quiere ${respuestaBuena.que}` } : respuestaBuena),
+          'responder-pregunta': corrigeCon(/"evitar":\[[^\]]*Bruno Jefe/, { ...respuestaBuena, que: `Bruno Jefe quiere ${respuestaBuena.que}` }, respuestaBuena),
         }),
         { preguntas: [jubilacion] },
       );
@@ -959,16 +985,16 @@ describe('procesarPrograma', () => {
     });
 
     it('rewrites an answer the independent verifier finds unfaithful to the quote (V10)', async () => {
-      const { respuestas: rs, ia, informe } = await procesar(
+      const sinPoderDeCompra = { ...respuestaBuena, como: 'La subida sería automática y anual, ligada a los precios, para que las personas jubiladas mantengan su pensión al día con el tiempo.' };
+      const { respuestas: rs, informe } = await procesar(
         respuestas({
-          'responder-pregunta': () => respuestaBuena,
-          'verificar-fidelidad': (_e, intento) =>
-            intento === 0 ? { ...fiel, anade: true, explicacion: 'Habla de poder de compra.' } : fiel,
+          'responder-pregunta': corrigeCon('Habla de poder de compra.', respuestaBuena, sinPoderDeCompra),
+          'verificar-fidelidad': (e) =>
+            e.texto.como.includes('poder de compra') ? { ...fiel, anade: true, explicacion: 'Habla de poder de compra.' } : fiel,
         }),
         { preguntas: [jubilacion] },
       );
-      expect(llamadasPregunta(ia, 'jubilacion')).toHaveLength(2);
-      expect(llamadasPregunta(ia, 'jubilacion')[1]!.entrada.corregir.join(' ')).toMatch(/poder de compra/);
+      expect(rs[0]).toEqual(expect.objectContaining({ estado: 'responde', texto: expect.objectContaining({ como: sinPoderDeCompra.como }) }));
       expect(informe.entradas).toContainEqual(expect.objectContaining({ pregunta: 'jubilacion', barrera: 'V10', resultado: 'reescribir' }));
       expect(rs[0]!.estado).toBe('responde');
     });

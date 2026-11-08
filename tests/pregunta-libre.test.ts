@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Dataset } from '../src/dataset/esquema';
 import { crearIAFalsa, type RespuestasFalsas } from '../src/ia/falsa';
 import { crearPartida } from '../src/juego';
-import { crearAlmacenEnMemoria, crearPreguntaLibre, palabrasDeLaPregunta, type ConfigPreguntaLibre } from '../src/pregunta/libre';
+import { crearAlmacenEnMemoria, crearPreguntaLibre, type ConfigPreguntaLibre } from '../src/pregunta/libre';
 import type { TextoPrograma } from '../src/pregunta/textos';
 import { datasetEjemplo } from './fixtures/dataset-ejemplo';
 
@@ -134,7 +134,18 @@ describe('pregunta libre: answers', () => {
     if (r.estado !== 'ok') throw new Error(r.estado);
     expect(r.respuestas.find((x) => x.partido === 'aaa')).toMatchObject({ estado: 'sin_verificar' });
     expect(r.respuestas.find((x) => x.partido === 'aaa')).not.toHaveProperty('citas');
-    expect(llamadasResponder(ia).filter((l) => (l.entrada as any).evitar?.includes('Partido AAA')).length).toBeGreaterThan(0);
+  });
+
+  it('an answer with identifying marks is shown once a rewrite drops them (V3)', async () => {
+    // The fake AI drops the name only when told to avoid it.
+    const ia = iaFalsa({
+      'responder-pregunta': (e) =>
+        e.evitar?.includes('Partido AAA') ? respuestaBuena : { ...respuestaBuena, que: `Partido AAA quiere ${respuestaBuena.que}` },
+    });
+    const { servicio } = montar({}, ia);
+    const r = await servicio.preguntar({ pregunta: PREGUNTA, sesion: 's1' });
+    if (r.estado !== 'ok') throw new Error(r.estado);
+    expect(r.respuestas.find((x) => x.partido === 'aaa')).toMatchObject({ estado: 'responde', texto: { que: respuestaBuena.que } });
   });
 
   it('only sends the AI a few pages, the ones that match the most search terms', async () => {
@@ -142,12 +153,17 @@ describe('pregunta libre: answers', () => {
     muchas[7] = `Pensiones y jubilados. ${CITA}`;
     textos.bbb = { partido: 'bbb', hashPdf: 'h-bbb', paginas: muchas };
     try {
-      const { servicio, ia } = montar({ maxPaginas: 3 });
-      await servicio.preguntar({ pregunta: '¿Qué harán con las pensiones de los jubilados?', sesion: 's1' });
-      const deBbb = llamadasResponder(ia).find((l) => (l.entrada as any).paginas.some((p: any) => p.texto.startsWith('Página')))!;
-      const enviadas = (deBbb.entrada as any).paginas as { pagina: number }[];
-      expect(enviadas).toHaveLength(3);
-      expect(enviadas[0]!.pagina).toBe(8);
+      // This AI only answers when the page with the quote arrives within a context of at most 3 pages.
+      const ia = iaFalsa({
+        'responder-pregunta': (e) =>
+          e.paginas.length <= 3 && e.paginas.some((p: { texto: string }) => p.texto.includes(CITA))
+            ? { ...respuestaBuena, citas: [{ texto: CITA, pagina: e.paginas.find((p: { texto: string }) => p.texto.includes(CITA)).pagina }] }
+            : { menciona: false, que: '', como: '', cifra: null, citas: [] },
+      });
+      const { servicio } = montar({ maxPaginas: 3 }, ia);
+      const r = await servicio.preguntar({ pregunta: '¿Qué harán con las pensiones de los jubilados?', sesion: 's1' });
+      if (r.estado !== 'ok') throw new Error(r.estado);
+      expect(r.respuestas.find((x) => x.partido === 'bbb')).toMatchObject({ estado: 'responde', citas: [{ texto: CITA, pagina: 8 }] });
     } finally {
       textos.bbb = { partido: 'bbb', hashPdf: 'h-bbb', paginas: ['Portada.', 'Vivienda y alquiler asequible para todos.'] };
     }
@@ -172,9 +188,12 @@ describe('pregunta libre: what is accepted', () => {
     expect(ia.llamadas).toHaveLength(0);
   });
 
-  it('search terms come from the content words of the question (no accents, plural-insensitive)', () => {
-    expect(palabrasDeLaPregunta('¿Qué proponen los partidos sobre las PENSIONES y la jubilación?')).toEqual(['pension', 'jubilac']);
-    expect(palabrasDeLaPregunta('¿Y el alquiler?')).toEqual(['alquile']);
+  it('finds the programme pages whatever the case, accents or number of the question words', async () => {
+    const { servicio } = montar();
+    // "PENSIÓN" (singular, capitals, accent) still reaches the page about "pensiones".
+    const r = await servicio.preguntar({ pregunta: '¿Qué proponen los partidos sobre la PENSIÓN?', sesion: 's1' });
+    if (r.estado !== 'ok') throw new Error(r.estado);
+    expect(r.respuestas.find((x) => x.partido === 'aaa')).toMatchObject({ estado: 'responde' });
   });
 });
 
