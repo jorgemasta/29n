@@ -38,6 +38,17 @@ describe('crearPartida', () => {
     expect(r.sinPropuesta.map((p) => p.id)).toEqual(['nada']);
   });
 
+  it('a party that proposes nothing cannot be chosen: it has no letter', () => {
+    const partida = crearPartida(datasetEjemplo, null, 's');
+    const letras = partida.tema('vivienda').tarjetas.map((t) => t.letra);
+    expect(letras).toEqual(['A', 'B', 'C']);
+    expect(() => partida.elegir('vivienda', 'D')).toThrow();
+    for (const letra of letras) {
+      const r = partida.elegir('vivienda', letra).revelar('vivienda')!;
+      expect(r.tarjetas.find((t) => t.elegida)?.partido.id).not.toBe('nada');
+    }
+  });
+
   it('excludes pending parties and reports them as missing', () => {
     const partida = crearPartida(datasetEjemplo, null, 's');
     const r = partida.elegir('vivienda', 'A').revelar('vivienda')!;

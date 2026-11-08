@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generado": "2026-11-08T21:37:13.679Z",
+  "generado": "2026-11-08T21:47:36.393Z",
   "origen": "simulado",
   "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real.",
   "partidos": [
@@ -15,7 +15,7 @@
         "estado": "publicado",
         "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
         "titulo": "Programa de prueba",
-        "hashPdf": "75740f35e55b46d3daebcdb39391761e418fc8758886e98ee795f6dc8b9c3887"
+        "hashPdf": "9ceb2a10624aedadb5ea23e7bcb6a80e8a1c59ba40a43d3a691bb4a4d397cd82"
       },
       "prueba": true
     },
@@ -30,7 +30,7 @@
         "estado": "publicado",
         "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
         "titulo": "Programa de prueba",
-        "hashPdf": "b2fcede1bd9afd080b50d5c8c14e2733085b3c9ca0a50e04b1e57f40dd6656be"
+        "hashPdf": "5903165a61f2b5463d2ae9cc45b17b2e2d75e02911493c77145891189bc75793"
       },
       "prueba": true
     },
@@ -45,7 +45,22 @@
         "estado": "publicado",
         "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
         "titulo": "Programa de prueba",
-        "hashPdf": "34be22be3a7ca20aa699336e049d7f66a108d3cefc21d15181f79a33e40e1206"
+        "hashPdf": "a35b6b6029a114e2dc460c86018ab6cabf6258d1c74d47391cbb41829202837b"
+      },
+      "prueba": true
+    },
+    {
+      "id": "prueba-d",
+      "nombre": "Partido de prueba D",
+      "siglas": "PRD",
+      "ambito": {
+        "tipo": "estatal"
+      },
+      "programa": {
+        "estado": "publicado",
+        "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
+        "titulo": "Programa de prueba",
+        "hashPdf": "a9d649689714e15c6d464c021e990c5d3b9bb6e1490c30728999422d0bc240d6"
       },
       "prueba": true
     }
@@ -64,7 +79,7 @@
       "partido": "prueba-a",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
@@ -83,7 +98,7 @@
       "partido": "prueba-b",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
@@ -102,7 +117,7 @@
       "partido": "prueba-c",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
@@ -116,13 +131,21 @@
           "pagina": 1
         }
       ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "vivienda",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
     }
   ],
   "informes": [
     {
       "partido": "prueba-a",
-      "hashPdf": "75740f35e55b46d3daebcdb39391761e418fc8758886e98ee795f6dc8b9c3887",
-      "versionPrompt": "v1",
+      "hashPdf": "9ceb2a10624aedadb5ea23e7bcb6a80e8a1c59ba40a43d3a691bb4a4d397cd82",
+      "versionPrompt": "v2",
       "extraidas": 1,
       "descartadas": 0,
       "publicable": true,
@@ -138,13 +161,25 @@
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
         }
       ]
     },
     {
       "partido": "prueba-b",
-      "hashPdf": "b2fcede1bd9afd080b50d5c8c14e2733085b3c9ca0a50e04b1e57f40dd6656be",
-      "versionPrompt": "v1",
+      "hashPdf": "5903165a61f2b5463d2ae9cc45b17b2e2d75e02911493c77145891189bc75793",
+      "versionPrompt": "v2",
       "extraidas": 1,
       "descartadas": 0,
       "publicable": true,
@@ -160,13 +195,25 @@
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         }
       ]
     },
     {
       "partido": "prueba-c",
-      "hashPdf": "34be22be3a7ca20aa699336e049d7f66a108d3cefc21d15181f79a33e40e1206",
-      "versionPrompt": "v1",
+      "hashPdf": "a35b6b6029a114e2dc460c86018ab6cabf6258d1c74d47391cbb41829202837b",
+      "versionPrompt": "v2",
       "extraidas": 1,
       "descartadas": 0,
       "publicable": true,
@@ -182,6 +229,34 @@
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "hashPdf": "a9d649689714e15c6d464c021e990c5d3b9bb6e1490c30728999422d0bc240d6",
+      "versionPrompt": "v2",
+      "extraidas": 0,
+      "descartadas": 0,
+      "publicable": true,
+      "entradas": [
+        {
+          "tema": "vivienda",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: vivienda, alquiler, alquilar, hipoteca, desahucio, inquilin, arrendamiento, suelo, parque público, okupa; ninguna página los menciona"
         }
       ]
     }

@@ -397,7 +397,10 @@
                     "V1",
                     "V2",
                     "V3",
-                    "V9"
+                    "V9",
+                    "V10",
+                    "V11",
+                    "V12"
                   ]
                 },
                 "resultado": {
@@ -406,7 +409,9 @@
                     "pasa",
                     "corregir",
                     "reescribir",
-                    "descartar"
+                    "descartar",
+                    "extraer",
+                    "aviso"
                   ]
                 },
                 "detalle": {

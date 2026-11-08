@@ -29,7 +29,15 @@ if (!base) throw new Error(`Partido desconocido: ${values.partido}`);
 
 const pdf = new Uint8Array(await readFile(values.pdf));
 const partido: Partido = { ...base, programa: { estado: 'publicado', url: values.url, titulo: values.titulo } };
-const resultado = await procesarPrograma(pdf, partido, crearIAClaude(), { temas: TEMAS, cache: crearCacheEnDisco('data/cache/ia') });
+const anterior = Dataset.parse(JSON.parse(await readFile(values.dataset, 'utf8')));
+// Real data replaces simulated data entirely.
+const previos = anterior.origen === 'real' ? anterior : { ...anterior, partidos: [], posturas: [], informes: [] };
+const resultado = await procesarPrograma(pdf, partido, crearIAClaude(), {
+  temas: TEMAS,
+  cache: crearCacheEnDisco('data/cache/ia'),
+  // V11 mixes this programme's posturas with the ones already published.
+  publicado: { partidos: previos.partidos, posturas: previos.posturas },
+});
 
 await mkdir('data/informes', { recursive: true });
 await writeFile(`data/informes/${partido.id}.json`, JSON.stringify(resultado.informe, null, 2) + '\n');
@@ -38,9 +46,6 @@ if (!resultado.publicable) {
   process.exit(1);
 }
 
-const anterior = Dataset.parse(JSON.parse(await readFile(values.dataset, 'utf8')));
-// Real data replaces simulated data entirely.
-const previos = anterior.origen === 'real' ? anterior : { ...anterior, partidos: [], posturas: [], informes: [] };
 const conHash: Partido = { ...partido, programa: { ...partido.programa, hashPdf: resultado.informe.hashPdf, fecha: new Date().toISOString().slice(0, 10) } } as Partido;
 const dataset = construirDataset({
   partidos: [...previos.partidos.filter((p) => p.id !== partido.id), conHash],

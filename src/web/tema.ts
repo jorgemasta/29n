@@ -2,7 +2,7 @@
 // this file only renders. Choices never leave the browser.
 import datos from '../../data/dataset.json';
 import type { Dataset } from '../dataset/esquema';
-import { crearPartida, NINGUNA, type EstadoPartida, type Partida, type Revelacion, type TarjetaRevelada } from '../juego';
+import { crearPartida, NINGUNA, type EstadoPartida, type Partida, type PartidoRevelado, type Revelacion, type TarjetaRevelada } from '../juego';
 import { nuevaSemilla } from '../juego/azar';
 import { borrar, guardar, leer } from './almacen';
 
@@ -110,8 +110,8 @@ export function montarTema(raiz: HTMLElement, temaId: string): void {
       mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), tarjetaRevelada(mia, true)) : null,
       otras.length ? h('h2', {}, mia ? 'Las demás' : 'Todas las propuestas') : null,
       ...otras.map((t) => tarjetaRevelada(t, false)),
-      ...r.sinPropuesta.map((p) => h('p', { class: 'fila-gris' }, `${p.nombre}: no propone nada sobre esto.`)),
-      ...r.sinVerificar.map((p) => h('p', { class: 'fila-gris' }, `${p.nombre}: no pudimos verificar su propuesta.`)),
+      ...r.sinPropuesta.map((p) => tarjetaSinPropuesta(p, 'Este partido no propone nada sobre esto')),
+      ...r.sinVerificar.map((p) => tarjetaSinPropuesta(p, 'No pudimos verificar su propuesta')),
       r.pendientes.length ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${r.pendientes.map((p) => p.nombre).join(', ')}`) : null,
       h('p', { class: 'nota' }, 'Las propuestas están reescritas con IA en un estilo común. La cita es el texto literal del programa.'),
       reiniciar,
@@ -125,6 +125,15 @@ function cabecera(titulo: string): HTMLElement {
   return h('header', { class: 'cabecera' },
     h('p', {}, `Tema 1 de 5 · ${titulo}`),
     h('ol', { class: 'progreso', 'aria-hidden': 'true' }, ...[0, 1, 2, 3, 4].map((i) => h('li', { class: i === 0 ? 'actual' : '' }))),
+  );
+}
+
+/** Grey, non-interactive card: these parties have no card to choose in the blind phase. */
+function tarjetaSinPropuesta(p: PartidoRevelado, mensaje: string): HTMLElement {
+  return h('div', { class: 'sin-propuesta', role: 'note' },
+    h('span', { class: 'partido' }, p.nombre),
+    p.prueba ? h('span', { class: 'etiqueta' }, 'PRUEBA') : null,
+    h('p', {}, mensaje),
   );
 }
 
