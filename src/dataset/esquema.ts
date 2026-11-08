@@ -78,13 +78,14 @@ export const Postura = z.discriminatedUnion('estado', [
   z.object({ ...basePostura, estado: z.literal('sin_verificar') }),
 ]);
 
-export const Barrera = z.enum(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V9']);
+export const Barrera = z.enum(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V9', 'V10', 'V11', 'V12']);
 
 export const EntradaInforme = z.object({
   /** Absent for programme-level barriers (V7). */
   tema: id.optional(),
   barrera: Barrera,
-  resultado: z.enum(['pasa', 'corregir', 'reescribir', 'descartar', 'bloquear']),
+  /** `extraer`: V12 found a proposal the first pass missed. `aviso`: V11 internal warning, published anyway. */
+  resultado: z.enum(['pasa', 'corregir', 'reescribir', 'descartar', 'bloquear', 'extraer', 'aviso']),
   detalle: z.string(),
 });
 

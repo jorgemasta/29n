@@ -29,6 +29,9 @@ function lineas(texto: string, max = 95): string[] {
 async function pdfFicticio(paginas: string[][]): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   const fuente = await doc.embedFont(StandardFonts.Helvetica);
+  // Fixed dates: regenerating gives byte-identical PDFs (stable hashes, no binary churn).
+  doc.setCreationDate(new Date('2026-11-01T00:00:00Z'));
+  doc.setModificationDate(new Date('2026-11-01T00:00:00Z'));
   for (const lineas of paginas) {
     const pagina = doc.addPage();
     lineas.forEach((l, i) => pagina.drawText(l, { x: 40, y: 780 - i * 14, size: 10, font: fuente }));
@@ -65,11 +68,15 @@ for (const f of FICTICIOS) {
   const ia = crearIAFalsa({
     'extraer-postura': (e) => (de(e) ? { propone: true, citas: [{ texto: de(e)![0], pagina: pagina[e.tema.id]! }] } : { propone: false, citas: [] }),
     neutralizar: (e) => ({ que: de(e)![1], como: de(e)![2], cifra: de(e)![3] }),
+    'verificar-fidelidad': () => ({ anade: false, omite: false, cambiaSentido: false, explicacion: 'Fiel a la cita.' }),
+    'adivinar-partido': () => ({ asignaciones: [] }),
+    'confirmar-ausencia': () => ({ propone: false, citas: [] }),
   });
   const r = await procesarPrograma(pdf, partido, ia, {
     temas: TEMAS,
     dominios: { [f.id]: ['29n.jorgemasta.com'] },
     longitudesTema,
+    publicado: { partidos, posturas: resultados.flatMap((x) => x.posturas) },
   });
   for (const p of r.posturas) if (p.estado === 'propone') (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);

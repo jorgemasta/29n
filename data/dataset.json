@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generado": "2026-11-08T21:51:27.230Z",
+  "generado": "2026-11-08T21:53:33.212Z",
   "origen": "simulado",
   "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado).",
   "partidos": [
@@ -16,7 +16,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
         "titulo": "Programa de prueba A",
-        "hashPdf": "cf9767674b3cef0531bb1cd70399db1348b8d1984c9f48cd5e1538116b984546"
+        "hashPdf": "f43d53e29e16b0cc3488c65a7f0dcfa7299daddf623f0bc30616648043b5f269"
       },
       "prueba": true
     },
@@ -32,7 +32,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
         "titulo": "Programa de prueba B",
-        "hashPdf": "df8e355297ce98934553a8f2165a1c9f6faf54c2c4646ba4dcd364a3f91f43f7"
+        "hashPdf": "401d1540bb3579d1546a93223ad604c1d89e2275296620c0c6c52d6b2d27798a"
       },
       "prueba": true
     },
@@ -48,7 +48,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
         "titulo": "Programa de prueba C",
-        "hashPdf": "772f4678140050eaa2aceb217923a2cc9ff117d6087417f8ab1dd89e881cb12b"
+        "hashPdf": "2c7484ba2c334d5c9ee9f30140a5c3f3c34d81b86973c5ea24ff02a8ddbddc6c"
       },
       "prueba": true
     },
@@ -64,7 +64,7 @@
         "fuente": "programa-2023",
         "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
         "titulo": "Programa de prueba D (2023)",
-        "hashPdf": "a10dcf9fa7031d0e2a9aa9acdd01c569c04fb477a603ed4e4f02aca103f70ed7"
+        "hashPdf": "3e0e5ce6a68e2a040b50fd33f38d59a86ebfc38e092bc0cb5d4c1f32ac70edda"
       },
       "prueba": true
     }
@@ -1410,7 +1410,7 @@
   "informes": [
     {
       "partido": "prueba-a",
-      "hashPdf": "cf9767674b3cef0531bb1cd70399db1348b8d1984c9f48cd5e1538116b984546",
+      "hashPdf": "f43d53e29e16b0cc3488c65a7f0dcfa7299daddf623f0bc30616648043b5f269",
       "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
       "versionPrompt": "v2",
       "extraidas": 14,
@@ -1551,6 +1551,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
           "tema": "empleo",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1585,6 +1597,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
         },
         {
           "tema": "sanidad",
@@ -1623,6 +1647,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "sanidad",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
           "tema": "inmigracion",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1657,6 +1693,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
         },
         {
           "tema": "pensiones",
@@ -1695,6 +1743,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "pensiones",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
           "tema": "coste-vida",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1729,6 +1789,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
         },
         {
           "tema": "impuestos",
@@ -1767,6 +1839,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "impuestos",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
           "tema": "educacion",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1801,6 +1885,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
         },
         {
           "tema": "instituciones",
@@ -1839,6 +1935,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "instituciones",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
           "tema": "energia-clima",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1875,6 +1983,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "energia-clima",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
           "tema": "cuidados",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1911,6 +2031,30 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "cuidados",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Seguridad y justicia; ninguna página los menciona"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Comunidades autónomas y financiación; ninguna página los menciona"
+        },
+        {
           "tema": "igualdad",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1947,6 +2091,24 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "igualdad",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Campo y agua; ninguna página los menciona"
+        },
+        {
           "tema": "transporte",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1983,6 +2145,24 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "transporte",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Defensa y OTAN; ninguna página los menciona"
+        },
+        {
           "tema": "europa-exterior",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2017,12 +2197,24 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
         }
       ]
     },
     {
       "partido": "prueba-b",
-      "hashPdf": "df8e355297ce98934553a8f2165a1c9f6faf54c2c4646ba4dcd364a3f91f43f7",
+      "hashPdf": "401d1540bb3579d1546a93223ad604c1d89e2275296620c0c6c52d6b2d27798a",
       "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
       "versionPrompt": "v2",
       "extraidas": 15,
@@ -2163,6 +2355,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "empleo",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2197,6 +2401,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "sanidad",
@@ -2235,6 +2451,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "sanidad",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "inmigracion",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2269,6 +2497,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "pensiones",
@@ -2307,6 +2547,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "pensiones",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "coste-vida",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2341,6 +2593,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "impuestos",
@@ -2379,6 +2643,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "impuestos",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "educacion",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2413,6 +2689,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "instituciones",
@@ -2451,6 +2739,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "instituciones",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "energia-clima",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2485,6 +2785,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "cuidados",
@@ -2523,6 +2835,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "cuidados",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "seguridad-justicia",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2559,6 +2883,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "seguridad-justicia",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
           "tema": "territorial",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2595,6 +2931,24 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "territorial",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Igualdad y violencia contra las mujeres; ninguna página los menciona"
+        },
+        {
           "tema": "campo-agua",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2631,6 +2985,24 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "campo-agua",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Transporte; ninguna página los menciona"
+        },
+        {
           "tema": "defensa",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2665,12 +3037,30 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Europa y política exterior; ninguna página los menciona"
         }
       ]
     },
     {
       "partido": "prueba-c",
-      "hashPdf": "772f4678140050eaa2aceb217923a2cc9ff117d6087417f8ab1dd89e881cb12b",
+      "hashPdf": "2c7484ba2c334d5c9ee9f30140a5c3f3c34d81b86973c5ea24ff02a8ddbddc6c",
       "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
       "versionPrompt": "v2",
       "extraidas": 16,
@@ -2811,6 +3201,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "empleo",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2845,6 +3247,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "sanidad",
@@ -2883,6 +3297,24 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "sanidad",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Inmigración; ninguna página los menciona"
+        },
+        {
           "tema": "pensiones",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2917,6 +3349,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "coste-vida",
@@ -2955,6 +3399,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "coste-vida",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "impuestos",
           "barrera": "V1",
           "resultado": "pasa",
@@ -2989,6 +3445,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "educacion",
@@ -3027,6 +3495,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "educacion",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "instituciones",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3061,6 +3541,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "energia-clima",
@@ -3099,6 +3591,24 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "energia-clima",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Dependencia, crianza y cuidados; ninguna página los menciona"
+        },
+        {
           "tema": "seguridad-justicia",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3133,6 +3643,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "territorial",
@@ -3171,6 +3693,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "territorial",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "igualdad",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3207,6 +3741,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "igualdad",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "campo-agua",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3243,6 +3789,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "campo-agua",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "transporte",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3279,6 +3837,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "transporte",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "defensa",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3315,6 +3885,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "defensa",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "europa-exterior",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3349,12 +3931,24 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         }
       ]
     },
     {
       "partido": "prueba-d",
-      "hashPdf": "a10dcf9fa7031d0e2a9aa9acdd01c569c04fb477a603ed4e4f02aca103f70ed7",
+      "hashPdf": "3e0e5ce6a68e2a040b50fd33f38d59a86ebfc38e092bc0cb5d4c1f32ac70edda",
       "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
       "versionPrompt": "v2",
       "extraidas": 12,
@@ -3495,6 +4089,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "empleo",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3529,6 +4135,24 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Sanidad; ninguna página los menciona"
         },
         {
           "tema": "inmigracion",
@@ -3567,6 +4191,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "inmigracion",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "pensiones",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3601,6 +4237,48 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Precios y coste de la vida; ninguna página los menciona"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Impuestos; ninguna página los menciona"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Educación; ninguna página los menciona"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Corrupción e instituciones; ninguna página los menciona"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Energía y cambio climático; ninguna página los menciona"
         },
         {
           "tema": "cuidados",
@@ -3639,6 +4317,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "cuidados",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "seguridad-justicia",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3673,6 +4363,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         },
         {
           "tema": "territorial",
@@ -3711,6 +4413,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "territorial",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "igualdad",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3747,6 +4461,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "igualdad",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "campo-agua",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3783,6 +4509,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "campo-agua",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "transporte",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3819,6 +4557,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "transporte",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "defensa",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3855,6 +4605,18 @@
           "detalle": "plantilla completa"
         },
         {
+          "tema": "defensa",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
           "tema": "europa-exterior",
           "barrera": "V1",
           "resultado": "pasa",
@@ -3889,6 +4651,18 @@
           "barrera": "V6",
           "resultado": "pasa",
           "detalle": "plantilla completa"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
         }
       ]
     }

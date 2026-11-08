@@ -49,6 +49,8 @@ const resultado = await procesarPrograma(pdf, partido, crearIAClaude(), {
   cache: crearCacheEnDisco('data/cache/ia'),
   longitudesTema,
   fecha: values.fecha,
+  // V11 mixes this programme's posturas with the ones already published.
+  publicado: { partidos: previos.partidos, posturas: previos.posturas },
 });
 
 await mkdir('data/informes', { recursive: true });

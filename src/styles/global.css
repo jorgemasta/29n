@@ -96,6 +96,9 @@ h2 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
 .mia .revelada { border: 3px solid var(--acento); }
 .revelada summary { display: flex; gap: 0.75rem; align-items: center; padding: 0.9rem 1rem; min-height: 3rem; cursor: pointer; font-weight: 600; }
 .revelada .cuerpo { padding: 0 1rem 1rem; }
+.sin-propuesta { border: 2px dashed var(--piedra-2); border-radius: 0.75rem; margin: 0 0 0.75rem; padding: 0.9rem 1rem; color: var(--tinta-suave); }
+.sin-propuesta .partido { font-weight: 600; }
+.sin-propuesta p { margin: 0.25rem 0 0; }
 .etiqueta { font-size: 0.7rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; color: #8a6d00; }
 blockquote { margin: 0.75rem 0 0; padding: 0.5rem 0.75rem; border-left: 4px solid var(--acento); background: var(--piedra); }
 blockquote p { margin: 0 0 0.25rem; }
