@@ -16,6 +16,7 @@ import { nuevaSemilla } from '../juego/azar';
 import { borrar, guardar, leer } from './almacen';
 import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
+import { botonReportar } from './reportar';
 
 const CLAVE_SEMILLA = '29n:semilla';
 const CLAVE_ESTADO = '29n:estado';
@@ -194,9 +195,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       cabecera(partida, r.tema.id),
       h('p', { class: 'antetitulo' }, '¿De quién era?'),
       h('h1', { tabindex: '-1' }, banner),
-      mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), tarjetaRevelada(mia, true)) : null,
+      mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), tarjetaRevelada(mia, true, r.tema)) : null,
       otras.length ? h('h2', {}, mia ? 'Las demás' : 'Todas las propuestas') : null,
-      ...otras.map((t) => tarjetaRevelada(t, false)),
+      ...otras.map((t) => tarjetaRevelada(t, false, r.tema)),
       ...r.sinPropuesta.map((p) => tarjetaSinPropuesta(p, 'Este partido no propone nada sobre esto')),
       ...r.sinVerificar.map((p) => tarjetaSinPropuesta(p, 'No pudimos verificar su propuesta')),
       r.pendientes.length ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${r.pendientes.map((p) => p.nombre).join(', ')}`) : null,
@@ -244,7 +245,7 @@ function tarjetaSinPropuesta(p: PartidoRevelado, mensaje: string): HTMLElement {
   );
 }
 
-function tarjetaRevelada(t: TarjetaRevelada, abierta: boolean): HTMLElement {
+function tarjetaRevelada(t: TarjetaRevelada, abierta: boolean, tema: { id: string; titulo: string }): HTMLElement {
   const fuente = `${ETIQUETA_FUENTE[t.fuente.tipo]}${t.fuente.soloPrivado ? ' · solo privado' : ''}`;
   const cuerpo = h('div', { class: 'cuerpo' },
     h('p', { class: 'titular' }, h('strong', {}, t.titular)),
@@ -260,6 +261,7 @@ function tarjetaRevelada(t: TarjetaRevelada, abierta: boolean): HTMLElement {
     ),
     h('p', { class: `fuente${t.fuente.soloPrivado ? ' provisional' : ''}` }, `Fuente: ${fuente}`),
     notaViabilidad(t.viabilidad),
+    botonReportar({ tema, partido: t.partido, letra: t.letra, paginas: t.citas.map((c) => c.pagina) }),
   );
   const resumen = h('summary', {},
     h('span', { class: 'letra', 'aria-hidden': 'true' }, t.letra),

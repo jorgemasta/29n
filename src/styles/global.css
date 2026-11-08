@@ -149,3 +149,27 @@ a { color: var(--acento); }
 .tabla-rubrica { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
 .tabla-rubrica th, .tabla-rubrica td { text-align: left; vertical-align: top; padding: 0.5rem; border-bottom: 1px solid var(--borde); }
 pre.prompt { white-space: pre-wrap; background: var(--piedra-2); padding: 0.75rem; border-radius: 0.5rem; font-size: 0.8rem; }
+
+/* Information pages (methodology, parties, reports) */
+.info table { width: 100%; }
+.tabla-ancha { overflow-x: auto; margin: 0.5rem 0 1rem; }
+.tabla-ancha:focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+.tabla-reparto { border-collapse: collapse; font-size: 0.85rem; }
+.tabla-reparto th, .tabla-reparto td { border-bottom: 1px solid var(--borde); padding: 0.4rem; text-align: left; vertical-align: top; }
+.tabla-reparto td { text-align: center; }
+.filas-partido { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.fila-partido { background: var(--piedra-2); border-radius: 0.75rem; padding: 0.75rem 1rem; }
+.fila-partido p { margin: 0.2rem 0; }
+.fila-partido .nombre { font-weight: 600; }
+.boton-enlace { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.huella { word-break: break-all; font-size: 0.8rem; }
+.entradas { padding-left: 1.2rem; font-size: 0.9rem; }
+.informe-tema { margin: 0 0 0.5rem; }
+.informe-tema summary { min-height: 3rem; padding: 0.75rem 0; cursor: pointer; font-weight: 600; }
+.enlaces-pie { margin-bottom: 0.5rem; }
+.enlaces-pie a { display: inline-block; padding: 0.5rem 0; }
+.reportar { margin-top: 1rem; border-top: 1px solid var(--borde); }
+.reportar summary { min-height: 3rem; padding: 0.75rem 0; cursor: pointer; font-weight: 600; }
+.reportar fieldset { border: none; padding: 0; margin: 0 0 0.75rem; }
+.reportar label { display: flex; gap: 0.5rem; align-items: center; min-height: 3rem; }
+.reportar textarea { width: 100%; font: inherit; padding: 0.5rem; border: 2px solid var(--borde); border-radius: 0.5rem; background: var(--piedra); color: inherit; }
