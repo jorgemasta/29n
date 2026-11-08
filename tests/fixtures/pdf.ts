@@ -7,6 +7,9 @@ import { PDFDocument, StandardFonts } from 'pdf-lib';
  */
 export async function crearPdfDePrueba(paginas: string[][]): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
+  // Fixed dates: same content → same bytes → same hash (else cache tests flake across seconds).
+  doc.setCreationDate(new Date('2026-11-01T00:00:00Z'));
+  doc.setModificationDate(new Date('2026-11-01T00:00:00Z'));
   const fuente = await doc.embedFont(StandardFonts.Helvetica);
   for (const lineas of paginas) {
     const pagina = doc.addPage();

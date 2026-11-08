@@ -8,6 +8,7 @@ import { construirDataset, validarDataset, type Partido } from '../src/dataset';
 import { crearIAFalsa } from '../src/ia/falsa';
 import { procesarPrograma } from '../src/pipeline';
 import { TEMAS } from '../src/registro/temas';
+import { contarPalabras } from '../src/pipeline/texto';
 
 interface Ficticio {
   id: string;
@@ -79,8 +80,8 @@ const FICTICIOS: Ficticio[] = [
       pagina: 3,
     },
     neutro: {
-      que: 'Quitar el impuesto que se paga al comprar la primera vivienda.',
-      como: 'Además, liberar suelo público para que se construyan más viviendas.',
+      que: 'Quitar el impuesto que se paga al comprar la primera vivienda de cada hogar.',
+      como: 'Además, liberar suelo público para que se construyan más viviendas en venta y en alquiler.',
       cifra: null,
     },
     viabilidad: [
@@ -129,6 +130,8 @@ async function pdfFicticio(paginas: string[][]): Promise<Uint8Array> {
 }
 
 const partidos: Partido[] = [];
+// V5: each text is compared with the median length of the ones already processed for that topic.
+const longitudesTema: Record<string, number[]> = {};
 const resultados = [];
 await mkdir('public/programas', { recursive: true });
 for (const f of FICTICIOS) {
@@ -147,8 +150,14 @@ for (const f of FICTICIOS) {
     neutralizar: () => f.neutro,
     'evaluar-viabilidad': (e) => ({ ...f.viabilidad[e.evaluacion === 1 ? 0 : 1], razones: RAZONES, fuentes: FUENTES }),
   });
-  // Simulated: the sources are institutional home pages; skip the network check.
-  const r = await procesarPrograma(pdf, partido, ia, { temas: TEMAS, comprobarUrl: async () => true });
+  const r = await procesarPrograma(pdf, partido, ia, {
+    temas: TEMAS,
+    dominios: { [f.id]: ['29n.jorgemasta.com'] },
+    longitudesTema,
+    // Simulated: the feasibility sources are institutional home pages; skip the network check.
+    comprobarUrl: async () => true,
+  });
+  for (const p of r.posturas) if (p.estado === 'propone') (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);
   partidos.push({ ...partido, programa: { ...partido.programa, hashPdf: r.informe.hashPdf } } as Partido);
   resultados.push(r);

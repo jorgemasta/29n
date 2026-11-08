@@ -8,6 +8,7 @@ import { construirDataset, validarDataset, Dataset, type Partido } from '../src/
 import { crearCacheEnDisco } from '../src/ia/cache-disco';
 import { crearIAClaude } from '../src/ia/claude';
 import { procesarPrograma } from '../src/pipeline';
+import { contarPalabras } from '../src/pipeline/texto';
 import { PARTIDOS } from '../src/registro/partidos';
 import { TEMAS } from '../src/registro/temas';
 
@@ -18,6 +19,8 @@ const { values } = parseArgs({
     url: { type: 'string' },
     titulo: { type: 'string', default: 'Programa electoral 2026' },
     dataset: { type: 'string', default: 'data/dataset.json' },
+    /** Capture date of the PDF (V7 records it with the hash). Defaults to today. */
+    fecha: { type: 'string', default: new Date().toISOString().slice(0, 10) },
   },
 });
 if (!values.partido || !values.pdf || !values.url) {
@@ -29,7 +32,20 @@ if (!base) throw new Error(`Partido desconocido: ${values.partido}`);
 
 const pdf = new Uint8Array(await readFile(values.pdf));
 const partido: Partido = { ...base, programa: { estado: 'publicado', url: values.url, titulo: values.titulo } };
-const resultado = await procesarPrograma(pdf, partido, crearIAClaude(), { temas: TEMAS, cache: crearCacheEnDisco('data/cache/ia') });
+const anterior = Dataset.parse(JSON.parse(await readFile(values.dataset, 'utf8')));
+// Real data replaces simulated data entirely.
+const previos = anterior.origen === 'real' ? anterior : { ...anterior, partidos: [], posturas: [], informes: [] };
+// V5: word counts of the other parties' published texts, per topic (for the topic median).
+const longitudesTema: Record<string, number[]> = {};
+for (const p of previos.posturas)
+  if (p.estado === 'propone' && p.partido !== partido.id) (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
+
+const resultado = await procesarPrograma(pdf, partido, crearIAClaude(), {
+  temas: TEMAS,
+  cache: crearCacheEnDisco('data/cache/ia'),
+  longitudesTema,
+  fecha: values.fecha,
+});
 
 await mkdir('data/informes', { recursive: true });
 await writeFile(`data/informes/${partido.id}.json`, JSON.stringify(resultado.informe, null, 2) + '\n');
@@ -38,10 +54,7 @@ if (!resultado.publicable) {
   process.exit(1);
 }
 
-const anterior = Dataset.parse(JSON.parse(await readFile(values.dataset, 'utf8')));
-// Real data replaces simulated data entirely.
-const previos = anterior.origen === 'real' ? anterior : { ...anterior, partidos: [], posturas: [], informes: [] };
-const conHash: Partido = { ...partido, programa: { ...partido.programa, hashPdf: resultado.informe.hashPdf, fecha: new Date().toISOString().slice(0, 10) } } as Partido;
+const conHash: Partido = { ...partido, programa: { ...partido.programa, hashPdf: resultado.informe.hashPdf, fecha: values.fecha } } as Partido;
 const dataset = construirDataset({
   partidos: [...previos.partidos.filter((p) => p.id !== partido.id), conHash],
   temas: TEMAS,

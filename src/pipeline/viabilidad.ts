@@ -76,7 +76,10 @@ export async function evaluarViabilidad(args: {
         } else if (!fuentes.some((x) => x.url === f.url)) fuentes.push({ titulo: f.titulo || f.url, url: f.url });
       }
       ultima = { nivel: r.nivel, razones: r.razones, porque: r.porque, fuentes };
-      if (fuentes.length > 0 || r.nivel === 'sin_concrecion') return ultima;
+      if (fuentes.length > 0 || r.nivel === 'sin_concrecion') {
+        anotar('V8', 'pasa', `evaluación ${evaluacion}: ${fuentes.length} fuente(s) institucional(es) verificada(s)`);
+        return ultima;
+      }
       if (repeticion < MAX_REPETICIONES_VIABILIDAD)
         anotar('V8', 'reescribir', `evaluación ${evaluacion}: el "por qué" se quedó sin fuentes; se repite`);
     }
