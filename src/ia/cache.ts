@@ -41,3 +41,22 @@ export function conCache(ia: AdaptadorIA, almacen: AlmacenCache, contexto: { has
     },
   };
 }
+
+/**
+ * Wraps a yes/no check (V8's HTTP 200) so its answer is cached alongside the AI answers:
+ * re-running the same PDF (even offline) keeps the same sources.
+ */
+export function comprobacionConCache(
+  comprobar: (url: string) => Promise<boolean>,
+  almacen: AlmacenCache,
+  contexto: { hashPdf: string; versionPrompt: string },
+): (url: string) => Promise<boolean> {
+  return async (url) => {
+    const clave = claveCache({ ...contexto, tarea: 'comprobar-url', instrucciones: '', entrada: url });
+    const guardado = await almacen.leer(clave);
+    if (typeof guardado === 'boolean') return guardado;
+    const respuesta = await comprobar(url);
+    await almacen.guardar(clave, respuesta);
+    return respuesta;
+  };
+}

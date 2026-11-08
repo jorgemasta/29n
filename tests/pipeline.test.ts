@@ -303,6 +303,23 @@ describe('procesarPrograma', () => {
       return { ...res, nota: p.viabilidad };
     };
 
+    it('caches the HTTP check with the AI answers: re-running the same PDF offline keeps the sources', async () => {
+      const cache = crearCacheEnMemoria();
+      const r = respuestas({ 'evaluar-viabilidad': () => evaluacion('viable', { fuentes: [FUENTE_INE, FUENTE_BOE] }) });
+      const enLinea = await viabilidad(r, { cache, comprobarUrl: async () => true });
+      const comprobadas: string[] = [];
+      const sinRed = await viabilidad(r, {
+        cache,
+        comprobarUrl: async (url) => {
+          comprobadas.push(url);
+          return false;
+        },
+      });
+      expect(comprobadas).toEqual([]);
+      expect(sinRed.nota).toEqual(enLinea.nota);
+      expect(sinRed.nota.fuentes).toEqual([FUENTE_INE, FUENTE_BOE]);
+    });
+
     it('removes a source outside the institutional domain list', async () => {
       const { nota, informe } = await viabilidad(
         respuestas({

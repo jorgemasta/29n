@@ -5,7 +5,7 @@
 import type { Cita, EntradaInforme, Informe, Partido, Postura, ResumenPostura, Tema, TextoNeutral } from '../dataset/esquema';
 import { Postura as EsquemaPostura } from '../dataset/esquema';
 import type { AdaptadorIA } from '../ia/adaptador';
-import { conCache, type AlmacenCache } from '../ia/cache';
+import { comprobacionConCache, conCache, type AlmacenCache } from '../ia/cache';
 import { TEMAS } from '../registro/temas';
 import { PALABRAS_CLAVE, type PalabrasClave } from '../registro/palabras-clave';
 import { TERMINOS, type TerminosIdentificativos } from '../registro/terminos';
@@ -68,6 +68,10 @@ export async function procesarPrograma(
   const palabrasClave = opciones.palabrasClave ?? PALABRAS_CLAVE;
   const hash = hashPdf(pdf);
   const ia = opciones.cache ? conCache(iaBase, opciones.cache, { hashPdf: hash, versionPrompt }) : iaBase;
+  const comprobarBase = opciones.comprobarUrl ?? comprobarUrlHttp;
+  const comprobarUrl = opciones.cache
+    ? comprobacionConCache(comprobarBase, opciones.cache, { hashPdf: hash, versionPrompt })
+    : comprobarBase;
   const fecha = opciones.fecha ?? (partido.programa.estado === 'publicado' ? partido.programa.fecha : undefined);
 
   const entradas: EntradaInforme[] = [];
@@ -275,7 +279,7 @@ export async function procesarPrograma(
 
     // V13 + V8: double-blind feasibility note on the final neutral text.
     const viabilidad = await evaluarViabilidad({
-      ia, tema: temaIA, texto, citas, terminos, comprobarUrl: opciones.comprobarUrl ?? comprobarUrlHttp, anotar,
+      ia, tema: temaIA, texto, citas, terminos, comprobarUrl, anotar,
     });
 
     posturas.push({ ...base, estado: 'propone', texto, citas, viabilidad });
