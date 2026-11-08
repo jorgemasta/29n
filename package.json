@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:privado": "MODO=privado astro build",
     "preview": "astro preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "schema": "tsx scripts/generar-esquema.ts",
     "procesar": "tsx scripts/procesar.ts",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "deploy:privado": "npm run build:privado && wrangler deploy"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",

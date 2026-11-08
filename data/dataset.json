@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generado": "2026-11-08T21:37:13.679Z",
+  "generado": "2026-11-08T21:47:22.599Z",
   "origen": "simulado",
-  "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real.",
+  "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado).",
   "partidos": [
     {
       "id": "prueba-a",
@@ -13,9 +13,10 @@
       },
       "programa": {
         "estado": "publicado",
+        "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
-        "titulo": "Programa de prueba",
-        "hashPdf": "75740f35e55b46d3daebcdb39391761e418fc8758886e98ee795f6dc8b9c3887"
+        "titulo": "Programa de prueba A",
+        "hashPdf": "ccb663cfd7ac7c3e3b798ad7d199a135d6f1f7ebdb4b49bc3218435bf5313541"
       },
       "prueba": true
     },
@@ -28,9 +29,10 @@
       },
       "programa": {
         "estado": "publicado",
+        "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
-        "titulo": "Programa de prueba",
-        "hashPdf": "b2fcede1bd9afd080b50d5c8c14e2733085b3c9ca0a50e04b1e57f40dd6656be"
+        "titulo": "Programa de prueba B",
+        "hashPdf": "e563e1cd483e8489993acd4271bef85722c02b1145f22fbfc29e2fa8c5b61afe"
       },
       "prueba": true
     },
@@ -43,9 +45,26 @@
       },
       "programa": {
         "estado": "publicado",
+        "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
-        "titulo": "Programa de prueba",
-        "hashPdf": "34be22be3a7ca20aa699336e049d7f66a108d3cefc21d15181f79a33e40e1206"
+        "titulo": "Programa de prueba C",
+        "hashPdf": "d09d8d1f84b1b1a5b2ba0b5ce341d1f8c67b9ac2e490a094da4c2c22a7b537a6"
+      },
+      "prueba": true
+    },
+    {
+      "id": "prueba-d",
+      "nombre": "Partido de prueba D",
+      "siglas": "PRD",
+      "ambito": {
+        "tipo": "estatal"
+      },
+      "programa": {
+        "estado": "publicado",
+        "fuente": "programa-2023",
+        "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
+        "titulo": "Programa de prueba D (2023)",
+        "hashPdf": "57672835e9edd5f206b69aecb1ed20c26b82e831dfca18a42811c9ab9f3a6764"
       },
       "prueba": true
     }
@@ -57,6 +76,130 @@
       "pregunta": "¿Qué harían con el precio de la vivienda y el alquiler?",
       "ambito": "nacional",
       "orden": 1
+    },
+    {
+      "id": "empleo",
+      "titulo": "Empleo y salarios",
+      "pregunta": "¿Qué harían con el empleo, los salarios y la jornada de trabajo?",
+      "ambito": "nacional",
+      "orden": 2
+    },
+    {
+      "id": "sanidad",
+      "titulo": "Sanidad",
+      "pregunta": "¿Qué harían con la sanidad pública y las listas de espera?",
+      "ambito": "nacional",
+      "orden": 3
+    },
+    {
+      "id": "inmigracion",
+      "titulo": "Inmigración",
+      "pregunta": "¿Qué harían con la llegada de personas inmigrantes y con su integración?",
+      "ambito": "nacional",
+      "orden": 4
+    },
+    {
+      "id": "pensiones",
+      "titulo": "Pensiones",
+      "pregunta": "¿Qué harían con las pensiones y cómo las pagarían?",
+      "ambito": "nacional",
+      "orden": 5
+    },
+    {
+      "id": "coste-vida",
+      "titulo": "Precios y coste de la vida",
+      "pregunta": "¿Qué harían con lo que cuestan la compra, la luz y el resto de gastos del día a día?",
+      "ambito": "nacional",
+      "orden": 6
+    },
+    {
+      "id": "impuestos",
+      "titulo": "Impuestos",
+      "pregunta": "¿Qué harían con los impuestos, como el IRPF o el IVA?",
+      "explicacion": "IRPF: el impuesto que se paga por lo que ganas. IVA: el que se paga al comprar.",
+      "ambito": "nacional",
+      "orden": 7
+    },
+    {
+      "id": "educacion",
+      "titulo": "Educación",
+      "pregunta": "¿Qué harían con los colegios, la FP y la universidad?",
+      "explicacion": "FP: formación profesional, los estudios para aprender un oficio.",
+      "ambito": "nacional",
+      "orden": 8
+    },
+    {
+      "id": "instituciones",
+      "titulo": "Corrupción e instituciones",
+      "pregunta": "¿Qué harían para prevenir la corrupción y mejorar el funcionamiento de las instituciones?",
+      "ambito": "nacional",
+      "orden": 9
+    },
+    {
+      "id": "energia-clima",
+      "titulo": "Energía y cambio climático",
+      "pregunta": "¿Qué harían con la energía y con el cambio climático?",
+      "ambito": "nacional",
+      "orden": 10
+    },
+    {
+      "id": "cuidados",
+      "titulo": "Dependencia, crianza y cuidados",
+      "pregunta": "¿Qué harían con la atención a la dependencia, la crianza y los cuidados?",
+      "explicacion": "Dependencia: la ayuda para las personas que necesitan a otra para su vida diaria.",
+      "ambito": "nacional",
+      "orden": 11
+    },
+    {
+      "id": "seguridad-justicia",
+      "titulo": "Seguridad y justicia",
+      "pregunta": "¿Qué harían con la seguridad ciudadana y con el funcionamiento de la justicia?",
+      "ambito": "nacional",
+      "orden": 12
+    },
+    {
+      "id": "territorial",
+      "titulo": "Comunidades autónomas y financiación",
+      "pregunta": "¿Cómo repartirían el poder y el dinero entre el Estado y las comunidades autónomas?",
+      "explicacion": "Financiación autonómica: cómo se reparte entre el Estado y las comunidades el dinero de los impuestos.",
+      "ambito": "nacional",
+      "orden": 13
+    },
+    {
+      "id": "igualdad",
+      "titulo": "Igualdad y violencia contra las mujeres",
+      "pregunta": "¿Qué harían con la igualdad entre mujeres y hombres y con la violencia contra las mujeres?",
+      "ambito": "nacional",
+      "orden": 14
+    },
+    {
+      "id": "campo-agua",
+      "titulo": "Campo y agua",
+      "pregunta": "¿Qué harían con la agricultura, la ganadería y el agua?",
+      "ambito": "nacional",
+      "orden": 15
+    },
+    {
+      "id": "transporte",
+      "titulo": "Transporte",
+      "pregunta": "¿Qué harían con el tren, las carreteras y el transporte público?",
+      "ambito": "nacional",
+      "orden": 16
+    },
+    {
+      "id": "defensa",
+      "titulo": "Defensa y OTAN",
+      "pregunta": "¿Qué harían con el gasto en defensa y con el papel de España en la OTAN?",
+      "explicacion": "OTAN: la alianza militar de Europa y Norteamérica a la que pertenece España.",
+      "ambito": "nacional",
+      "orden": 17
+    },
+    {
+      "id": "europa-exterior",
+      "titulo": "Europa y política exterior",
+      "pregunta": "¿Qué papel querrían para España en la Unión Europea y en el mundo?",
+      "ambito": "nacional",
+      "orden": 18
     }
   ],
   "posturas": [
@@ -80,6 +223,285 @@
       ]
     },
     {
+      "partido": "prueba-a",
+      "tema": "empleo",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Bajar la jornada laboral máxima sin bajar el sueldo.",
+        "como": "Además, subir el salario mínimo hasta el 60 % del salario medio.",
+        "cifra": "35 horas semanales"
+      },
+      "citas": [
+        {
+          "texto": "Reduciremos la jornada laboral máxima a 35 horas semanales sin pérdida de salario y subiremos el salario mínimo hasta el 60 % del salario medio.",
+          "pagina": 3
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "sanidad",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Fijar por ley un plazo máximo de espera para operarse.",
+        "como": "Y contratar más profesionales en los centros de salud.",
+        "cifra": "60 días de espera como máximo; 10.000 profesionales"
+      },
+      "citas": [
+        {
+          "texto": "Garantizaremos por ley un tiempo máximo de espera de 60 días para cualquier operación y contrataremos 10.000 profesionales sanitarios en atención primaria.",
+          "pagina": 4
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "inmigracion",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Abrir vías legales para venir a trabajar con una oferta de empleo.",
+        "como": "Y dar papeles a quienes ya viven y trabajan en España sin ellos.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Abriremos vías legales y seguras de entrada vinculadas a ofertas de empleo y aprobaremos una regularización de las personas que ya viven y trabajan en España.",
+          "pagina": 5
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "pensiones",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Subir todas las pensiones cada año lo mismo que los precios.",
+        "como": "Se pagaría haciendo que los sueldos más altos coticen por todo lo que ganan.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Mantendremos la revalorización de todas las pensiones con el IPC y eliminaremos el tope máximo de las cotizaciones para los salarios más altos.",
+          "pagina": 6
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "coste-vida",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Quitar el IVA a los alimentos básicos de forma permanente.",
+        "como": "Y crear una empresa pública que venda la luz a precio de coste.",
+        "cifra": "IVA del 0 % en alimentos básicos"
+      },
+      "citas": [
+        {
+          "texto": "Bajaremos el IVA de los alimentos básicos al 0 % de forma permanente y crearemos una empresa pública de energía que venda electricidad a precio de coste.",
+          "pagina": 7
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "impuestos",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Crear un impuesto permanente a los patrimonios más grandes.",
+        "como": "Y subir el impuesto que pagan las grandes empresas por sus beneficios.",
+        "cifra": "Desde 3 millones de euros; 2 puntos más"
+      },
+      "citas": [
+        {
+          "texto": "Crearemos un impuesto permanente a las grandes fortunas a partir de 3 millones de euros y subiremos dos puntos el tipo del impuesto de sociedades a las grandes empresas.",
+          "pagina": 8
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "educacion",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Hacer gratis la escuela infantil de 0 a 3 años.",
+        "como": "Y quitar las tasas de la universidad pública en la primera matrícula.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Haremos gratuita la educación de 0 a 3 años en toda España y bajaremos las tasas universitarias de grado hasta hacerlas gratuitas en la primera matrícula.",
+          "pagina": 9
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "instituciones",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Crear un organismo independiente que investigue los contratos públicos.",
+        "como": "Y prohibir que las empresas den dinero a los partidos.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Crearemos una autoridad independiente contra la corrupción con capacidad de investigar contratos públicos y prohibiremos las donaciones de empresas a partidos.",
+          "pagina": 10
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "energia-clima",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Cerrar las centrales nucleares según el calendario ya previsto.",
+        "como": "Y que toda la electricidad venga de fuentes renovables.",
+        "cifra": "100 % renovable en 2035"
+      },
+      "citas": [
+        {
+          "texto": "Cerraremos las centrales nucleares en el calendario previsto y aprobaremos un plan para que el 100 % de la electricidad sea renovable en 2035.",
+          "pagina": 11
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "cuidados",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Acabar con la lista de espera para recibir la ayuda a la dependencia.",
+        "como": "Y alargar el permiso por nacimiento de cada progenitor.",
+        "cifra": "En 2 años; 24 semanas"
+      },
+      "citas": [
+        {
+          "texto": "Eliminaremos la lista de espera de la dependencia en dos años y ampliaremos el permiso por nacimiento a 24 semanas para cada progenitor.",
+          "pagina": 12
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "seguridad-justicia",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "territorial",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "igualdad",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Obligar a las empresas a publicar lo que pagan a mujeres y a hombres.",
+        "como": "Lo harían por ley, separado por categoría profesional.",
+        "cifra": "Empresas de más de 25 personas"
+      },
+      "citas": [
+        {
+          "texto": "Aprobaremos una ley de igualdad salarial que obligue a todas las empresas de más de 25 personas a publicar sus salarios por sexo y categoría.",
+          "pagina": 13
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "campo-agua",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "transporte",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Crear un abono único para todo el transporte público estatal.",
+        "como": "Valdría para trenes de cercanías y media distancia y autobuses entre ciudades.",
+        "cifra": "30 euros al mes"
+      },
+      "citas": [
+        {
+          "texto": "Implantaremos un abono único estatal de transporte público de 30 euros al mes válido en trenes de cercanías, media distancia y autobuses interurbanos.",
+          "pagina": 14
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "defensa",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "europa-exterior",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Pedir un presupuesto común europeo más grande.",
+        "como": "Se pagaría con impuestos europeos a las grandes empresas tecnológicas.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Defenderemos que la Unión Europea apruebe un presupuesto común mayor financiado con impuestos europeos a las grandes tecnológicas.",
+          "pagina": 15
+        }
+      ]
+    },
+    {
       "partido": "prueba-b",
       "tema": "vivienda",
       "versiones": {
@@ -94,9 +516,299 @@
       "citas": [
         {
           "texto": "Eliminaremos el impuesto de transmisiones patrimoniales en la compra de la primera vivienda y liberaremos suelo público para que se construya más vivienda.",
+          "pagina": 2
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "empleo",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Bajar lo que pagan las empresas a la Seguridad Social por contratar a jóvenes.",
+        "como": "Solo con contrato indefinido y durante los tres primeros años.",
+        "cifra": "Menores de 30 años"
+      },
+      "citas": [
+        {
+          "texto": "Rebajaremos las cotizaciones sociales de las empresas que contraten a menores de 30 años durante sus tres primeros años de contrato indefinido.",
           "pagina": 3
         }
       ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "sanidad",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Reducir las listas de espera para operarse.",
+        "como": "Pagando también operaciones en clínicas privadas con dinero público.",
+        "cifra": "A la mitad"
+      },
+      "citas": [
+        {
+          "texto": "Usaremos todos los recursos sanitarios disponibles, públicos y privados, mediante conciertos para reducir las listas de espera quirúrgicas a la mitad.",
+          "pagina": 4
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "inmigracion",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Que la inmigración dependa de los empleos que haga falta cubrir.",
+        "como": "Contratando en el país de origen y reforzando el control de fronteras y las devoluciones.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Vincularemos la inmigración a las necesidades del mercado laboral con contratos en origen y reforzaremos el control de fronteras y los acuerdos de devolución.",
+          "pagina": 5
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "pensiones",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Crear un ahorro para la jubilación en las empresas, además de la pensión pública.",
+        "como": "Los trabajadores aportarían de forma automática salvo que digan que no.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Crearemos un sistema complementario de ahorro para la jubilación en las empresas, con aportaciones automáticas de los trabajadores salvo que decidan no participar.",
+          "pagina": 6
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "coste-vida",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Ajustar cada año el IRPF a la subida de los precios.",
+        "como": "Así nadie pagaría más impuestos solo porque suba la inflación.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Deflactaremos el IRPF cada año según la inflación para que nadie pague más impuestos solo porque suban los precios.",
+          "pagina": 7
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "impuestos",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Bajar el IRPF a todos.",
+        "como": "Y quitar el impuesto de patrimonio y el de herencias entre padres e hijos.",
+        "cifra": "Tipo mínimo del 15 %"
+      },
+      "citas": [
+        {
+          "texto": "Bajaremos el IRPF a todas las rentas, con un tipo mínimo del 15 %, y suprimiremos el impuesto de patrimonio y el de sucesiones entre padres e hijos.",
+          "pagina": 8
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "educacion",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Dar a las familias un cheque para elegir colegio.",
+        "como": "Y hacer a todos los alumnos un mismo examen en todo el país.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Garantizaremos la libertad de elección de centro educativo con un cheque escolar y evaluaremos a todos los alumnos con una prueba común en todo el país.",
+          "pagina": 9
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "instituciones",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Cambiar cómo se elige el órgano que gobierna a los jueces.",
+        "como": "La mayoría de sus miembros los elegirían los propios jueces.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Reformaremos la elección del órgano de gobierno de los jueces para que la mayoría de sus miembros sean elegidos por los propios jueces.",
+          "pagina": 10
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "energia-clima",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Mantener abiertas las centrales nucleares mientras sean seguras.",
+        "como": "Y bajar los impuestos a la producción de electricidad.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Alargaremos la vida útil de las centrales nucleares mientras sean seguras y bajaremos los impuestos a la generación eléctrica.",
+          "pagina": 11
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "cuidados",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Rebajar los impuestos a las familias trabajadoras con hijos pequeños.",
+        "como": "Por cada hijo menor de tres años.",
+        "cifra": "2.000 euros al año"
+      },
+      "citas": [
+        {
+          "texto": "Aprobaremos una deducción fiscal de 2.000 euros al año por cada hijo menor de tres años para las familias trabajadoras.",
+          "pagina": 12
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "seguridad-justicia",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Contratar más policías y guardias civiles.",
+        "como": "Y castigar más a quien repite delitos leves.",
+        "cifra": "8.000 agentes"
+      },
+      "citas": [
+        {
+          "texto": "Incorporaremos 8.000 nuevos agentes a las fuerzas de seguridad del Estado y endureceremos las penas por la reincidencia en delitos leves.",
+          "pagina": 13
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "territorial",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Hacer un nuevo sistema de financiación igual para todas las comunidades.",
+        "como": "Con un fondo común que asegure los mismos servicios en todas.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Aprobaremos un nuevo sistema de financiación autonómica igual para todas las comunidades, con un fondo de nivelación que garantice los servicios públicos.",
+          "pagina": 14
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "igualdad",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "campo-agua",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Hacer un plan nacional del agua que lleve agua de unas cuencas a otras.",
+        "como": "Y construir más embalses y depósitos para el regadío.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Aprobaremos un plan hidrológico nacional que conecte cuencas y construiremos nuevas infraestructuras de almacenamiento de agua para el regadío.",
+          "pagina": 15
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "transporte",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "defensa",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Llegar al gasto en defensa acordado con los aliados de la OTAN.",
+        "como": "Y renovar el material de las Fuerzas Armadas.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Alcanzaremos el objetivo de gasto en defensa acordado con los aliados de la OTAN y modernizaremos el equipamiento de las Fuerzas Armadas.",
+          "pagina": 16
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "europa-exterior",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
     },
     {
       "partido": "prueba-c",
@@ -113,7 +825,584 @@
       "citas": [
         {
           "texto": "Limitaremos el precio del alquiler en las zonas tensionadas y penalizaremos en el IBI las viviendas vacías durante más de dos años.",
-          "pagina": 1
+          "pagina": 2
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "empleo",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Pagar a los trabajadores mientras se forman para cambiar de oficio.",
+        "como": "Cobrarían una parte de su sueldo durante la formación.",
+        "cifra": "6 meses al 70 % del sueldo"
+      },
+      "citas": [
+        {
+          "texto": "Crearemos una prestación pública de formación para que cualquier trabajador pueda reciclarse durante seis meses cobrando el 70 % de su sueldo.",
+          "pagina": 3
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "sanidad",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Incluir el dentista y la salud mental en la sanidad pública.",
+        "como": "Con un psicólogo en cada centro de salud.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Incluiremos la atención dental y la salud mental en la sanidad pública, con un psicólogo en cada centro de atención primaria.",
+          "pagina": 4
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "inmigracion",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "pensiones",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Permitir cobrar la pensión entera y trabajar a la vez.",
+        "como": "Y subir las pensiones más bajas hasta el umbral de la pobreza.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Permitiremos compatibilizar al cien por cien la pensión con un trabajo y subiremos las pensiones mínimas hasta el umbral de la pobreza.",
+          "pagina": 5
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "coste-vida",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Dar una ayuda para la compra de comida a los hogares con menos ingresos.",
+        "como": "Solo para hogares que ingresen menos de 20.000 euros al año.",
+        "cifra": "200 euros"
+      },
+      "citas": [
+        {
+          "texto": "Crearemos un cheque de 200 euros para la compra de alimentos destinado a los hogares con ingresos inferiores a 20.000 euros al año.",
+          "pagina": 6
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "impuestos",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Simplificar el IRPF a pocos tramos.",
+        "como": "Quitando casi todas las deducciones sin cambiar lo que se recauda en total.",
+        "cifra": "3 tramos"
+      },
+      "citas": [
+        {
+          "texto": "Simplificaremos el IRPF a solo tres tramos y eliminaremos la mayoría de las deducciones, manteniendo la recaudación total.",
+          "pagina": 7
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "educacion",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Bajar el número de alumnos por clase.",
+        "como": "Y ofrecer más plazas de FP que combinen clase y trabajo en empresas.",
+        "cifra": "Máximo 20 por aula; el doble de plazas"
+      },
+      "citas": [
+        {
+          "texto": "Reduciremos las ratios a un máximo de 20 alumnos por aula y duplicaremos las plazas de FP dual en colaboración con las empresas.",
+          "pagina": 8
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "instituciones",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Publicar al momento las agendas de los cargos públicos.",
+        "como": "Con un registro obligatorio de sus reuniones con grupos de interés.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Publicaremos en tiempo real todas las agendas de los cargos públicos y sus reuniones con grupos de interés en un registro obligatorio.",
+          "pagina": 9
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "energia-clima",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Poner placas solares en todos los edificios públicos.",
+        "como": "Y pagar la mitad de las placas de las comunidades de vecinos.",
+        "cifra": "50 % de subvención"
+      },
+      "citas": [
+        {
+          "texto": "Instalaremos placas solares en todos los edificios públicos y subvencionaremos el 50 % del autoconsumo en comunidades de vecinos.",
+          "pagina": 10
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "cuidados",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "seguridad-justicia",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Digitalizar los juzgados y nombrar más jueces.",
+        "como": "Para que los juicios tarden la mitad.",
+        "cifra": "500 jueces más"
+      },
+      "citas": [
+        {
+          "texto": "Digitalizaremos todos los juzgados y crearemos 500 nuevas plazas de jueces para reducir a la mitad el tiempo medio de los juicios.",
+          "pagina": 11
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "territorial",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Convertir el Senado en la cámara de las comunidades autónomas.",
+        "como": "Allí se negociarían las leyes que les afectan.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Convertiremos el Senado en una cámara de representación territorial donde se negocien las leyes que afectan a las comunidades.",
+          "pagina": 12
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "igualdad",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Crear juzgados especializados en violencia contra las mujeres en cada provincia.",
+        "como": "Con atención psicológica gratis para las víctimas.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Crearemos juzgados especializados en violencia contra las mujeres en todas las provincias, con atención psicológica gratuita para las víctimas.",
+          "pagina": 13
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "campo-agua",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Prohibir que los agricultores vendan por debajo de lo que les cuesta producir.",
+        "como": "Con un observatorio público que vigile los precios.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Garantizaremos por ley que los agricultores no vendan por debajo del coste de producción y crearemos un observatorio público de precios.",
+          "pagina": 14
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "transporte",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Volver a poner trenes nocturnos y líneas regionales que se cerraron.",
+        "como": "Para conectar los pueblos y las zonas rurales.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Recuperaremos los trenes nocturnos y las líneas de tren regional cerradas en la última década para conectar la España rural.",
+          "pagina": 15
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "defensa",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Impulsar un ejército común europeo.",
+        "como": "El aumento del gasto en defensa iría a proyectos compartidos con otros países europeos.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Impulsaremos un ejército europeo común y destinaremos el aumento del gasto en defensa a proyectos compartidos con otros países de la Unión.",
+          "pagina": 16
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "europa-exterior",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Quitar la unanimidad en las decisiones europeas de política exterior.",
+        "como": "Para que la Unión Europea pueda actuar con una sola voz.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Propondremos eliminar la unanimidad en las decisiones de política exterior de la Unión Europea para que pueda actuar con una sola voz.",
+          "pagina": 17
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "vivienda",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Que el Estado avale a los jóvenes para comprar su primera vivienda.",
+        "como": "Podrían pedir una hipoteca por el precio completo de la casa.",
+        "cifra": "Menores de 35 años"
+      },
+      "citas": [
+        {
+          "texto": "Daremos avales públicos para que los jóvenes menores de 35 años puedan financiar el 100 % de la compra de su primera vivienda.",
+          "pagina": 2
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "empleo",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Hacer que los autónomos paguen su cuota según lo que ganen de verdad.",
+        "como": "Y que tengan derecho a paro si cierran su negocio.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Aprobaremos un estatuto del trabajador autónomo con cuota según ingresos reales y derecho a paro cuando cierre su negocio.",
+          "pagina": 3
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "sanidad",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "inmigracion",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Crear un sistema de puntos para decidir quién puede venir a trabajar.",
+        "como": "Se valoraría la formación, el idioma y tener una oferta de empleo.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Crearemos un sistema de puntos para la inmigración laboral que valore la formación, el idioma y la oferta de empleo de cada solicitante.",
+          "pagina": 4
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "pensiones",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Permitir retrasar la jubilación de forma voluntaria.",
+        "como": "La pensión subiría por cada año de más trabajado.",
+        "cifra": "Hasta los 72 años; 4 % por año"
+      },
+      "citas": [
+        {
+          "texto": "Permitiremos retrasar voluntariamente la jubilación hasta los 72 años con un incremento del 4 % de la pensión por cada año adicional trabajado.",
+          "pagina": 5
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "coste-vida",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "impuestos",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "educacion",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "instituciones",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "energia-clima",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "cuidados",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Crear centros de día públicos para personas mayores dependientes.",
+        "como": "En todos los municipios de más de 10.000 habitantes.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Crearemos una red pública de centros de día en todos los municipios de más de 10.000 habitantes para personas mayores dependientes.",
+          "pagina": 6
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "seguridad-justicia",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Crear una unidad contra los delitos por internet en cada provincia.",
+        "como": "Y una oficina para atender a las víctimas de estafas en internet.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Crearemos una unidad especializada contra la ciberdelincuencia en cada provincia y una oficina de atención a víctimas de estafas en internet.",
+          "pagina": 7
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "territorial",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Negociar la financiación con cada comunidad por separado.",
+        "como": "Teniendo en cuenta su población, lo dispersa que está y su envejecimiento.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Proponemos un acuerdo bilateral de financiación para cada comunidad autónoma que tenga en cuenta su población, su dispersión y su envejecimiento.",
+          "pagina": 8
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "igualdad",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Obligar a tener planes de igualdad a las administraciones.",
+        "como": "Y a las empresas que reciban dinero público.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Extenderemos los planes de igualdad obligatorios a todas las administraciones públicas y a las empresas que reciban subvenciones públicas.",
+          "pagina": 9
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "campo-agua",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Dar una ayuda a los jóvenes que empiecen como agricultores o ganaderos en pueblos pequeños.",
+        "como": "Solo en municipios de menos de 5.000 habitantes.",
+        "cifra": "50.000 euros"
+      },
+      "citas": [
+        {
+          "texto": "Aprobaremos una ayuda de incorporación de 50.000 euros para jóvenes que se instalen como agricultores o ganaderos en municipios de menos de 5.000 habitantes.",
+          "pagina": 10
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "transporte",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Terminar los grandes corredores de tren de mercancías.",
+        "como": "Darían prioridad a estos corredores frente a nuevas líneas de alta velocidad.",
+        "cifra": "Antes de 2030"
+      },
+      "citas": [
+        {
+          "texto": "Completaremos los corredores ferroviarios de mercancías Mediterráneo y Atlántico antes de 2030 con prioridad sobre nuevas líneas de alta velocidad.",
+          "pagina": 11
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "defensa",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Mantener el gasto en defensa como está.",
+        "como": "Y dar prioridad a las misiones de paz de Naciones Unidas.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Mantendremos el gasto en defensa en el nivel actual y priorizaremos la participación en misiones de paz con mandato de Naciones Unidas.",
+          "pagina": 12
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "europa-exterior",
+      "versiones": {
+        "prompt": "v1"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Reforzar las relaciones con América Latina y el Mediterráneo.",
+        "como": "Y pedir que España sea miembro permanente del G20.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Reforzaremos las relaciones con América Latina y el Mediterráneo y pediremos que España tenga un puesto permanente en el G20.",
+          "pagina": 13
         }
       ]
     }
@@ -121,9 +1410,9 @@
   "informes": [
     {
       "partido": "prueba-a",
-      "hashPdf": "75740f35e55b46d3daebcdb39391761e418fc8758886e98ee795f6dc8b9c3887",
+      "hashPdf": "ccb663cfd7ac7c3e3b798ad7d199a135d6f1f7ebdb4b49bc3218435bf5313541",
       "versionPrompt": "v1",
-      "extraidas": 1,
+      "extraidas": 14,
       "descartadas": 0,
       "publicable": true,
       "entradas": [
@@ -135,6 +1424,162 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "europa-exterior",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
@@ -143,9 +1588,9 @@
     },
     {
       "partido": "prueba-b",
-      "hashPdf": "b2fcede1bd9afd080b50d5c8c14e2733085b3c9ca0a50e04b1e57f40dd6656be",
+      "hashPdf": "e563e1cd483e8489993acd4271bef85722c02b1145f22fbfc29e2fa8c5b61afe",
       "versionPrompt": "v1",
-      "extraidas": 1,
+      "extraidas": 15,
       "descartadas": 0,
       "publicable": true,
       "entradas": [
@@ -160,14 +1605,182 @@
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
         }
       ]
     },
     {
       "partido": "prueba-c",
-      "hashPdf": "34be22be3a7ca20aa699336e049d7f66a108d3cefc21d15181f79a33e40e1206",
+      "hashPdf": "d09d8d1f84b1b1a5b2ba0b5ce341d1f8c67b9ac2e490a094da4c2c22a7b537a6",
       "versionPrompt": "v1",
-      "extraidas": 1,
+      "extraidas": 16,
       "descartadas": 0,
       "publicable": true,
       "entradas": [
@@ -179,6 +1792,340 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "hashPdf": "57672835e9edd5f206b69aecb1ed20c26b82e831dfca18a42811c9ab9f3a6764",
+      "versionPrompt": "v1",
+      "extraidas": 12,
+      "descartadas": 0,
+      "publicable": true,
+      "entradas": [
+        {
+          "tema": "vivienda",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "europa-exterior",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"

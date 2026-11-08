@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { crearPartida, NINGUNA } from '../src/juego';
 import { validarDataset } from '../src/dataset';
 import { datasetEjemplo } from './fixtures/dataset-ejemplo';
+import { datasetTemas } from './fixtures/dataset-temas';
+import type { Dataset } from '../src/dataset/esquema';
+import datasetPublicado from '../data/dataset.json';
 
 const partidosDe = (p: ReturnType<typeof crearPartida>, tema = 'vivienda') =>
   p.revelar(tema)!.tarjetas.map((t) => t.partido.id).sort();
@@ -98,5 +101,128 @@ describe('crearPartida', () => {
     expect(inicial.revelar('vivienda')).toBeNull();
     const restaurada = crearPartida(datasetEjemplo, null, 's', JSON.parse(JSON.stringify(tras.estado)));
     expect(restaurada.revelar('vivienda')).toEqual(tras.revelar('vivienda'));
+  });
+});
+
+describe('source types and the public/private mode switch', () => {
+  const ids = (p: ReturnType<typeof crearPartida>) => partidosDe(p.elegir('vivienda', 'A'));
+
+  it('the dataset with provisional sources is valid', () => {
+    expect(validarDataset(datasetTemas)).toEqual({ valido: true, errores: [] });
+  });
+
+  it('public mode (the default) excludes provisional sources and lists those parties as pending', () => {
+    const partida = crearPartida(datasetTemas, null, 's');
+    expect(partida.tema('vivienda').tarjetas).toHaveLength(2);
+    expect(ids(partida)).toEqual(['dos', 'uno']);
+    expect(partida.elegir('vivienda', 'A').revelar('vivienda')!.pendientes.map((p) => p.id).sort()).toEqual(['dichos', 'viejo']);
+    expect(ids(crearPartida(datasetTemas, null, 's', undefined, { modo: 'publico' }))).toEqual(['dos', 'uno']);
+  });
+
+  it('private mode includes provisional sources', () => {
+    const partida = crearPartida(datasetTemas, null, 's', undefined, { modo: 'privado' });
+    expect(partida.tema('vivienda').tarjetas).toHaveLength(4);
+    expect(ids(partida)).toEqual(['dichos', 'dos', 'uno', 'viejo']);
+  });
+
+  it('every revealed postura states its source type and whether it is private-only', () => {
+    const r = crearPartida(datasetTemas, null, 's', undefined, { modo: 'privado' }).elegir('vivienda', NINGUNA).revelar('vivienda')!;
+    const fuentes = Object.fromEntries(r.tarjetas.map((t) => [t.partido.id, t.fuente]));
+    expect(fuentes).toEqual({
+      uno: { tipo: 'programa-29n', soloPrivado: false },
+      dos: { tipo: 'programa-29n', soloPrivado: false },
+      viejo: { tipo: 'programa-2023', soloPrivado: true },
+      dichos: { tipo: 'declaraciones', soloPrivado: true },
+    });
+  });
+
+  it('blind cards never reveal the source type', () => {
+    const t = crearPartida(datasetTemas, null, 's', undefined, { modo: 'privado' }).tema('vivienda');
+    for (const c of t.tarjetas) expect(Object.keys(c).sort()).toEqual(['detalle', 'letra', 'titular']);
+  });
+
+  it('the mode survives actions and state round-trips', () => {
+    const p = crearPartida(datasetTemas, null, 's', undefined, { modo: 'privado' }).elegir('vivienda', 'A');
+    expect(p.tema('empleo').tarjetas).toHaveLength(4);
+  });
+});
+
+describe('navigating several topics', () => {
+  const nueva = () => crearPartida(datasetTemas, null, 's');
+  const hacer = (p: ReturnType<typeof crearPartida>, ...temas: string[]) => temas.reduce((acc, t) => acc.elegir(t, 'A'), p);
+
+  it('topics come in their fixed order, vivienda first', () => {
+    expect(nueva().temas().map((t) => t.id)).toEqual(['vivienda', 'empleo', 'sanidad', 'pensiones', 'impuestos', 'transporte', 'defensa']);
+  });
+
+  it('shows a visible goal of 5 topics, then extra topics', () => {
+    let p = nueva();
+    expect(p.posicion('vivienda')).toEqual({ tipo: 'meta', numero: 1, meta: 5 });
+    expect(p.posicion('defensa')).toEqual({ tipo: 'meta', numero: 1, meta: 5 });
+    p = hacer(p, 'vivienda');
+    expect(p.posicion('vivienda')).toEqual({ tipo: 'meta', numero: 1, meta: 5 });
+    expect(p.posicion('sanidad')).toEqual({ tipo: 'meta', numero: 2, meta: 5 });
+    p = hacer(p, 'defensa', 'empleo', 'sanidad', 'pensiones');
+    expect(p.posicion('pensiones')).toEqual({ tipo: 'meta', numero: 5, meta: 5 });
+    expect(p.posicion('defensa')).toEqual({ tipo: 'meta', numero: 2, meta: 5 });
+    expect(p.posicion('impuestos')).toEqual({ tipo: 'extra' });
+    expect(p.hechos()).toEqual(['vivienda', 'defensa', 'empleo', 'sanidad', 'pensiones']);
+  });
+
+  it('"Ninguna me convence" counts as a done topic', () => {
+    const p = nueva().elegir('vivienda', NINGUNA);
+    expect(p.hechos()).toEqual(['vivienda']);
+    expect(p.posicion('empleo')).toEqual({ tipo: 'meta', numero: 2, meta: 5 });
+  });
+
+  it('next topic follows the fixed order, skips done topics and wraps around', () => {
+    let p = nueva();
+    expect(p.siguiente('vivienda')?.id).toBe('empleo');
+    p = hacer(p, 'vivienda', 'empleo', 'sanidad');
+    expect(p.siguiente('vivienda')?.id).toBe('pensiones');
+    expect(p.siguiente('defensa')?.id).toBe('pensiones');
+    expect(p.siguiente()?.id).toBe('pensiones');
+    p = hacer(p, 'pensiones', 'impuestos', 'transporte');
+    expect(p.siguiente('transporte')?.id).toBe('defensa');
+    expect(hacer(p, 'defensa').siguiente('defensa')).toBeNull();
+  });
+
+  it('the topic list shows the 5 suggested topics first, then the extra ones alphabetically, with their state', () => {
+    const p = nueva().elegir('vivienda', 'B').elegir('defensa', NINGUNA);
+    const l = p.lista();
+    expect(l.sugeridos.map((i) => i.tema.id)).toEqual(['vivienda', 'empleo', 'sanidad', 'pensiones', 'impuestos']);
+    expect(l.extra.map((i) => i.tema.id)).toEqual(['defensa', 'transporte']);
+    expect(l.sugeridos[0]!.estado).toBe('hecho');
+    expect(l.sugeridos[1]!.estado).toBe('sin_empezar');
+    expect(l.extra[0]!.estado).toBe('ninguna');
+  });
+});
+
+describe('the published topic registry', () => {
+  const partida = crearPartida(datasetPublicado as Dataset, null, 's', undefined, { modo: 'privado' });
+
+  it('the committed dataset is valid', () => {
+    expect(validarDataset(datasetPublicado)).toEqual({ valido: true, errores: [] });
+  });
+
+  it('has ~18 national topics, vivienda first, each with a neutral question', () => {
+    const temas = partida.temas();
+    expect(temas.length).toBeGreaterThanOrEqual(17);
+    expect(temas[0]!.id).toBe('vivienda');
+    expect(new Set(temas.map((t) => t.id)).size).toBe(temas.length);
+    for (const t of temas) {
+      expect(t.ambito).toBe('nacional');
+      expect(t.pregunta).toMatch(/^¿.+\?$/);
+    }
+  });
+
+  it('explains jargon in plain words', () => {
+    const conJerga = partida.temas().filter((t) => /\b(IRPF|OTAN|FP)\b/.test(t.titulo + t.pregunta));
+    expect(conJerga.length).toBeGreaterThan(0);
+    for (const t of conJerga) expect(t.explicacion).toBeTruthy();
+  });
+
+  it('every topic is playable with at least two cards in the private prototype', () => {
+    for (const t of partida.temas()) expect(partida.tema(t.id).tarjetas.length).toBeGreaterThanOrEqual(2);
   });
 });

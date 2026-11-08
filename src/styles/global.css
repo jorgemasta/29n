@@ -37,7 +37,24 @@ h2 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
 .cabecera p { margin: 0; font-weight: 600; font-size: 0.9rem; }
 .progreso { display: flex; gap: 0.4rem; list-style: none; padding: 0; margin: 0.4rem 0 0; }
 .progreso li { width: 0.6rem; height: 0.6rem; border-radius: 50%; border: 2px solid var(--borde); }
+.progreso li.hecho { background: var(--tinta-suave); border-color: var(--tinta-suave); }
 .progreso li.actual { background: var(--acento); border-color: var(--acento); }
+.volver { display: inline-block; min-height: 3rem; padding: 0.75rem 0; font-weight: 600; }
+.explicacion { background: var(--piedra-2); border-radius: 0.5rem; padding: 0.5rem 0.75rem; }
+
+.papeleta { display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0 0 0.5rem; }
+.papeleta li {
+  width: 3rem; height: 3rem; border: 2px solid var(--tinta-suave); border-radius: 0.4rem;
+  display: grid; place-items: center; font-size: 1.5rem; font-weight: 700;
+}
+.filas { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.fila-tema {
+  min-height: 3.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+  padding: 0.5rem 1rem; border-radius: 0.75rem; background: var(--piedra-2); color: var(--tinta); text-decoration: none;
+}
+.fila-tema .nombre { font-weight: 600; }
+.fila-tema .estado { font-size: 0.85rem; color: var(--tinta-suave); text-align: right; }
+.fila-tema.hecho .estado { color: var(--acento); font-weight: 600; }
 
 .tarjetas { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
 .tarjeta {
@@ -56,16 +73,22 @@ h2 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
 .texto { display: grid; gap: 0.25rem; }
 .detalle { font-size: 0.95rem; color: var(--tinta-suave); }
 
-.barra-confirmar {
+.barra-fija {
   position: fixed; left: 0; right: 0; bottom: 0; background: var(--piedra); border-top: 2px solid var(--borde);
   padding: 1rem max(1rem, calc((100% - 34rem) / 2)); display: grid; gap: 0.5rem;
 }
-.barra-confirmar p { margin: 0; font-weight: 600; }
+.barra-fija p { margin: 0; font-weight: 600; }
 .principal {
   min-height: 3.5rem; width: 100%; font: inherit; font-weight: 700; color: #fff; background: var(--acento);
   border: none; border-radius: 0.75rem; cursor: pointer;
 }
 @media (prefers-color-scheme: dark) { .principal { color: #0b1f22; } }
+.secundario {
+  min-height: 3rem; width: 100%; font: inherit; font-weight: 600; color: var(--acento); background: transparent;
+  border: 2px solid var(--acento); border-radius: 0.75rem; cursor: pointer;
+}
+.fuente { font-size: 0.85rem; color: var(--tinta-suave); margin: 0.75rem 0 0; }
+.fuente.provisional { color: #8a6d00; font-weight: 600; }
 .enlace { font: inherit; background: none; border: none; color: var(--acento); text-decoration: underline; padding: 0.75rem 0; min-height: 3rem; cursor: pointer; }
 
 .antetitulo { margin: 1rem 0 0; color: var(--tinta-suave); }

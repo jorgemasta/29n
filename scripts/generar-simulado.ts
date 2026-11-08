@@ -1,6 +1,7 @@
 // Builds data/dataset.json from FICTIONAL test programmes, through the real pipeline with the
 // fake AI adapter. Used while no real programme can be processed (no credentials / PDF on this
-// machine). The dataset is marked origen: "simulado" and every party prueba: true.
+// machine). The dataset is marked origen: "simulado" and every party prueba: true. Content lives in
+// scripts/datos-simulados.ts; party D is a provisional source (private prototype only).
 //   npx tsx scripts/generar-simulado.ts
 import { mkdir, writeFile } from 'node:fs/promises';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
@@ -8,81 +9,21 @@ import { construirDataset, validarDataset, type Partido } from '../src/dataset';
 import { crearIAFalsa } from '../src/ia/falsa';
 import { procesarPrograma } from '../src/pipeline';
 import { TEMAS } from '../src/registro/temas';
+import { FICTICIOS } from './datos-simulados';
 
-interface Ficticio {
-  id: string;
-  nombre: string;
-  paginas: string[][];
-  cita: { texto: string; pagina: number };
-  neutro: { que: string; como: string; cifra: string | null };
+/** Wraps a paragraph into lines that fit an A4 page in 10pt Helvetica. */
+function lineas(texto: string, max = 95): string[] {
+  const out: string[] = [];
+  let linea = '';
+  for (const palabra of texto.split(' ')) {
+    if (linea && (linea + ' ' + palabra).length > max) {
+      out.push(linea);
+      linea = palabra;
+    } else linea = linea ? `${linea} ${palabra}` : palabra;
+  }
+  if (linea) out.push(linea);
+  return out;
 }
-
-const FICTICIOS: Ficticio[] = [
-  {
-    id: 'prueba-a',
-    nombre: 'Partido de prueba A',
-    paginas: [
-      ['PROGRAMA DE PRUEBA A (documento ficticio para el prototipo)'],
-      [
-        'Vivienda',
-        'Crearemos una empresa pública estatal de vivienda que construya 50.000 vivien-',
-        'das de alquiler asequible al año, con precios que no superen el 30 % de los ingresos.',
-      ],
-    ],
-    cita: {
-      texto: 'Crearemos una empresa pública estatal de vivienda que construya 50.000 viviendas de alquiler asequible al año, con precios que no superen el 30 % de los ingresos.',
-      pagina: 2,
-    },
-    neutro: {
-      que: 'Crear una empresa pública estatal que construya vivienda de alquiler asequible.',
-      como: 'Los alquileres de esas viviendas no superarían el 30 % de los ingresos del hogar.',
-      cifra: '50.000 viviendas al año',
-    },
-  },
-  {
-    id: 'prueba-b',
-    nombre: 'Partido de prueba B',
-    paginas: [
-      ['PROGRAMA DE PRUEBA B (documento ficticio para el prototipo)'],
-      ['Economía', 'Bajaremos impuestos.'],
-      [
-        'Vivienda',
-        'Eliminaremos el impuesto de transmisiones patrimoniales en la compra de la primera vivienda',
-        'y liberaremos suelo público para que se construya más vivienda.',
-      ],
-    ],
-    cita: {
-      texto: 'Eliminaremos el impuesto de transmisiones patrimoniales en la compra de la primera vivienda y liberaremos suelo público para que se construya más vivienda.',
-      pagina: 3,
-    },
-    neutro: {
-      que: 'Quitar el impuesto que se paga al comprar la primera vivienda.',
-      como: 'Además, liberar suelo público para que se construyan más viviendas.',
-      cifra: null,
-    },
-  },
-  {
-    id: 'prueba-c',
-    nombre: 'Partido de prueba C',
-    paginas: [
-      [
-        'PROGRAMA DE PRUEBA C (documento ficticio para el prototipo)',
-        'Vivienda',
-        'Limitaremos el precio del alquiler en las zonas tensionadas y penalizaremos en el IBI',
-        'las viviendas vacías durante más de dos años.',
-      ],
-    ],
-    cita: {
-      texto: 'Limitaremos el precio del alquiler en las zonas tensionadas y penalizaremos en el IBI las viviendas vacías durante más de dos años.',
-      pagina: 1,
-    },
-    neutro: {
-      que: 'Limitar el precio del alquiler en las zonas con más demanda.',
-      como: 'Y subir el IBI, el impuesto municipal sobre la casa, a viviendas vacías más de dos años.',
-      cifra: null,
-    },
-  },
-];
 
 async function pdfFicticio(paginas: string[][]): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
@@ -98,22 +39,34 @@ const partidos: Partido[] = [];
 const resultados = [];
 await mkdir('public/programas', { recursive: true });
 for (const f of FICTICIOS) {
-  const pdf = await pdfFicticio(f.paginas);
+  // Cover page, then one page per topic the fictional party talks about.
+  const paginas: string[][] = [[`${f.titulo.toUpperCase()} (documento ficticio para el prototipo)`]];
+  const pagina: Record<string, number> = {};
+  for (const tema of TEMAS) {
+    const p = f.propuestas[tema.id];
+    if (!p) continue;
+    paginas.push([tema.titulo, ...lineas(p[0])]);
+    pagina[tema.id] = paginas.length;
+  }
+  const pdf = await pdfFicticio(paginas);
   await writeFile(`public/programas/${f.id}.pdf`, pdf);
   const partido: Partido = {
     id: f.id,
-    nombre: f.nombre,
-    siglas: `PR${f.id.slice(-1).toUpperCase()}`,
+    nombre: `Partido de prueba ${f.letra}`,
+    siglas: `PR${f.letra}`,
     ambito: { tipo: 'estatal' },
-    programa: { estado: 'publicado', url: `https://29n.jorgemasta.com/programas/${f.id}.pdf`, titulo: 'Programa de prueba' },
+    programa: { estado: 'publicado', fuente: f.fuente, url: `https://29n.jorgemasta.com/programas/${f.id}.pdf`, titulo: f.titulo },
     prueba: true,
   };
+  const de = (e: { tema: { id: string } }) => f.propuestas[e.tema.id];
   const ia = crearIAFalsa({
-    'extraer-postura': () => ({ propone: true, citas: [f.cita] }),
-    neutralizar: () => f.neutro,
+    'extraer-postura': (e) => (de(e) ? { propone: true, citas: [{ texto: de(e)![0], pagina: pagina[e.tema.id]! }] } : { propone: false, citas: [] }),
+    neutralizar: (e) => ({ que: de(e)![1], como: de(e)![2], cifra: de(e)![3] }),
   });
   const r = await procesarPrograma(pdf, partido, ia, { temas: TEMAS });
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);
+  const fallidas = r.posturas.filter((p) => p.estado === 'sin_verificar');
+  if (fallidas.length) throw new Error(`${f.id}: sin verificar ${fallidas.map((p) => p.tema).join(', ')}: ${JSON.stringify(r.informe.entradas.filter((e) => e.resultado === 'descartar'))}`);
   partidos.push({ ...partido, programa: { ...partido.programa, hashPdf: r.informe.hashPdf } } as Partido);
   resultados.push(r);
 }
@@ -124,7 +77,7 @@ const dataset = construirDataset({
   resultados,
   generado: new Date().toISOString(),
   origen: 'simulado',
-  nota: 'Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real.',
+  nota: 'Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado).',
 });
 const v = validarDataset(dataset);
 if (!v.valido) throw new Error(`V9: ${v.errores.join('\n')}`);

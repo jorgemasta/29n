@@ -84,6 +84,15 @@
                     "type": "string",
                     "const": "publicado"
                   },
+                  "fuente": {
+                    "type": "string",
+                    "enum": [
+                      "programa-29n",
+                      "programa-2023",
+                      "documento-partido",
+                      "declaraciones"
+                    ]
+                  },
                   "url": {
                     "type": "string",
                     "format": "uri"
