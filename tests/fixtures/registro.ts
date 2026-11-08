@@ -51,3 +51,9 @@ export const posturaTercero: Postura = {
   partido: 'ter',
   texto: { que: 'Crear un seguro público de impago.', como: 'Avalando a los propietarios que alquilen a jóvenes.', cifra: null },
 };
+
+/** Official domains of the fictional parties (V7). */
+export const dominiosDePrueba: Record<string, string[]> = {
+  pej: ['ejemplo.org'],
+  otro: ['otro-partido.es'],
+};

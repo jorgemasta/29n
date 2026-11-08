@@ -1,7 +1,7 @@
 // Versioned prompts. Bump VERSION_PROMPT on any change: it is recorded in every postura and
 // is part of the AI cache key, so changed prompts are never answered from stale cache.
 import { z } from 'zod';
-import { Cita, TextoNeutral } from '../dataset/esquema';
+import { Cita } from '../dataset/esquema';
 
 export const VERSION_PROMPT = 'v2';
 
@@ -23,10 +23,11 @@ Recibes un tema y las citas literales de la propuesta. Devuelve:
 - cifra: la cifra, importe o plazo principal tal y como aparece en las citas, o null si no hay.
 Entre "que" y "como", de 25 a 70 palabras en total. Sin adjetivos valorativos, sin eslóganes,
 sin nombres de partidos, siglas, líderes ni palabras de marca de NINGÚN partido.
-No añadas nada que no esté en las citas. Si recibes "evitar", esos términos no pueden aparecer.
-Si recibes "corregir", es lo que un verificador encontró mal en tu versión anterior: corrígelo.
+No añadas nada que no esté en las citas, tampoco cifras: toda cifra debe aparecer en alguna cita.
+Si recibes "evitar", esos términos no pueden aparecer. Si recibes "corregir", corrige cada punto.
 Si recibes "pista", es lo que delató al partido en tu versión anterior: reescribe sin ese rasgo,
 sin perder fidelidad a las citas.`;
 
 export const EntradaNeutralizar = z.object({ citas: z.array(Cita) });
-export const RespuestaNeutralizar = TextoNeutral;
+// Loose on purpose: an empty field is caught by V6 (rewrite), not rejected as a malformed answer.
+export const RespuestaNeutralizar = z.object({ que: z.string(), como: z.string(), cifra: z.string().nullable() });
