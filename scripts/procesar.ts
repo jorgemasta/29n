@@ -58,6 +58,8 @@ const fusion = fusionarPrograma(anterior, partido, resultado, {
   temas: TEMAS,
   generado: new Date().toISOString(),
   fecha: values.fecha,
+  // Every registered party is listed; without a processed programme it is "⏳ programa pendiente".
+  registro: PARTIDOS,
 });
 if (!fusion.ok) {
   console.error(fusion.motivo);

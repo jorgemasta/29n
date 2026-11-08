@@ -163,7 +163,12 @@ export async function vigilar(
         cache: puertos.cache ?? opciones.proceso?.cache,
         fecha,
       });
-      const fusion = fusionarPrograma(dataset, partido, resultado, { temas, generado: ahora.toISOString(), fecha });
+      const fusion = fusionarPrograma(dataset, partido, resultado, {
+        temas,
+        generado: ahora.toISOString(),
+        fecha,
+        registro: entrada.partidos,
+      });
 
       if (!fusion.ok) {
         // Blocked: nothing of this party is published; remember the hash so it is not retried.

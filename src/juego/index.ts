@@ -81,8 +81,24 @@ export interface Revelacion {
   pendientes: PartidoRevelado[];
 }
 
+/** A party in play for this province; `regional` = only runs in some provinces. */
+export interface PartidoZona extends PartidoRevelado {
+  regional: boolean;
+}
+
+export interface PartidosZona {
+  /** National parties plus those running in the province, with a published programme. */
+  conPrograma: PartidoZona[];
+  /** Same scope, programme not published yet: "⏳ programa pendiente", never a card. */
+  pendientes: PartidoZona[];
+}
+
 export interface Partida {
   readonly estado: EstadoPartida;
+  /** INE province code, or null for "Prefiero no decirlo" (national parties only). */
+  readonly provincia: string | null;
+  /** Parties in play here, alphabetically by name. */
+  partidos(): PartidosZona;
   /** Topics for this province, in their fixed order. */
   temas(): Tema[];
   tema(temaId: string): VistaTema;
@@ -139,8 +155,13 @@ export function crearPartida(
     }));
   };
 
+  const zona = (p: Partido): PartidoZona => ({ ...revelarPartido(p), regional: p.ambito.tipo === 'provincias' });
+  const porNombre = (a: PartidoZona, b: PartidoZona) => a.nombre.localeCompare(b.nombre, 'es');
+
   return {
     estado,
+    provincia,
+    partidos: () => ({ conPrograma: publicados.map(zona).sort(porNombre), pendientes: pendientes.map(zona).sort(porNombre) }),
     temas: () => temas,
     tema(temaId) {
       const tema = buscarTema(temaId);

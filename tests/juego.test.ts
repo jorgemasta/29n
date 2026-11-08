@@ -246,3 +246,77 @@ describe('the published topic registry', () => {
     for (const t of partida.temas()) expect(partida.tema(t.id).tarjetas.length).toBeGreaterThanOrEqual(2);
   });
 });
+
+describe('where the voter votes', () => {
+  const ids = (l: { id: string }[]) => l.map((p) => p.id).sort();
+
+  it('remembers its province', () => {
+    expect(crearPartida(datasetEjemplo, '35', 's').provincia).toBe('35');
+    expect(crearPartida(datasetEjemplo, null, 's').provincia).toBeNull();
+    expect(crearPartida(datasetEjemplo, '35', 's').elegir('vivienda', 'A').provincia).toBe('35');
+  });
+
+  it('lists the national parties plus the ones running in the province, with the pending ones apart', () => {
+    const lasPalmas = crearPartida(datasetEjemplo, '35', 's').partidos();
+    expect(ids(lasPalmas.conPrograma)).toEqual(['aaa', 'bbb', 'ccc', 'isla', 'nada']);
+    expect(ids(lasPalmas.pendientes)).toEqual(['pend', 'penreg']);
+    expect(lasPalmas.conPrograma.filter((p) => p.regional).map((p) => p.id)).toEqual(['isla']);
+    expect(lasPalmas.pendientes.find((p) => p.id === 'penreg')?.regional).toBe(true);
+
+    const barcelona = crearPartida(datasetEjemplo, '08', 's').partidos();
+    expect(ids(barcelona.conPrograma)).toEqual(['aaa', 'bbb', 'bcn', 'ccc', 'nada']);
+    expect(ids(barcelona.pendientes)).toEqual(['pend']);
+  });
+
+  it('"Prefiero no decirlo" (no province) keeps only the national parties', () => {
+    const p = crearPartida(datasetEjemplo, null, 's');
+    expect(ids(p.partidos().conPrograma)).toEqual(['aaa', 'bbb', 'ccc', 'nada']);
+    expect(p.partidos().conPrograma.some((x) => x.regional)).toBe(false);
+    expect(partidosDe(p.elegir('vivienda', 'A'))).toEqual(['aaa', 'bbb', 'ccc']);
+  });
+
+  it('regional parties only get cards in their provinces', () => {
+    expect(partidosDe(crearPartida(datasetEjemplo, '08', 's').elegir('vivienda', 'A'))).toEqual(['aaa', 'bbb', 'bcn', 'ccc']);
+    expect(partidosDe(crearPartida(datasetEjemplo, '38', 's').elegir('vivienda', 'A'))).toEqual(['aaa', 'bbb', 'ccc', 'isla']);
+  });
+
+  it('pending parties never get a card, in any topic, and are reported as pending in the reveal', () => {
+    const p = crearPartida(datasetEjemplo, '35', 's');
+    for (const t of p.temas()) {
+      const r = p.elegir(t.id, NINGUNA).revelar(t.id)!;
+      expect(r.tarjetas.map((x) => x.partido.id)).not.toContain('penreg');
+      expect(r.tarjetas.map((x) => x.partido.id)).not.toContain('pend');
+      expect(ids(r.pendientes)).toEqual(['pend', 'penreg']);
+    }
+  });
+
+  it('Canary topics only exist in the two Canary provinces', () => {
+    expect(crearPartida(datasetEjemplo, '38', 's').temas().map((t) => t.id)).toEqual(['vivienda', 'ref']);
+    expect(crearPartida(datasetEjemplo, null, 's').temas().map((t) => t.id)).toEqual(['vivienda']);
+    expect(() => crearPartida(datasetEjemplo, '08', 's').tema('ref')).toThrow();
+    expect(() => crearPartida(datasetEjemplo, null, 's').elegir('ref', 'A')).toThrow();
+  });
+
+  it('after a province change, choices stay saved but only topics available there count', () => {
+    const enCanarias = crearPartida(datasetEjemplo, '35', 's').elegir('vivienda', 'A').elegir('ref', 'A');
+    expect(enCanarias.hechos()).toEqual(['vivienda', 'ref']);
+    const enMadrid = crearPartida(datasetEjemplo, '28', 's', enCanarias.estado);
+    expect(enMadrid.hechos()).toEqual(['vivienda']);
+    expect(crearPartida(datasetEjemplo, '38', 's', enMadrid.estado).hechos()).toEqual(['vivienda', 'ref']);
+  });
+
+  it('the published registry: both Canary topics appear only in Canary provinces, after the national ones', () => {
+    const ds = datasetPublicado as Dataset;
+    const canarios = ['ref-canarias', 'migracion-atlantica'];
+    for (const prov of ['35', '38']) {
+      const p = crearPartida(ds, prov, 's', undefined, { modo: 'privado' });
+      expect(p.temas().slice(-2).map((t) => t.id)).toEqual(canarios);
+      for (const id of canarios) expect(p.tema(id).tarjetas.length, `${prov}/${id}`).toBeGreaterThanOrEqual(2);
+      expect(p.lista().extra.map((i) => i.tema.id)).toEqual(expect.arrayContaining(canarios));
+    }
+    for (const prov of [null, '28', '08']) {
+      const ids = crearPartida(ds, prov, 's', undefined, { modo: 'privado' }).temas().map((t) => t.id);
+      for (const id of canarios) expect(ids).not.toContain(id);
+    }
+  });
+});

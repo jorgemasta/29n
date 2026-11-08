@@ -1,5 +1,5 @@
 // Client app: topic list ↔ topic (blind choice → reveal). All logic lives in the game engine;
-// this file only renders and routes (#temas, #tema/<id>). Choices never leave the browser.
+// this file only renders and routes (#provincia, #temas, #tema/<id>). Choices never leave the browser.
 import type { Dataset, Modo, TipoFuente } from '../dataset/esquema';
 import {
   crearPartida,
@@ -14,10 +14,13 @@ import {
 } from '../juego';
 import { nuevaSemilla } from '../juego/azar';
 import { borrar, guardar, leer } from './almacen';
+import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
 
 const CLAVE_SEMILLA = '29n:semilla';
 const CLAVE_ESTADO = '29n:estado';
+/** { codigo: "35" } or { codigo: null } ("Prefiero no decirlo"); absent = not asked yet. */
+const CLAVE_PROVINCIA = '29n:provincia';
 
 export const ETIQUETA_FUENTE: Record<TipoFuente, string> = {
   'programa-29n': 'Programa 29N',
@@ -45,13 +48,17 @@ const irA = (ruta: string) => {
 };
 
 export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void {
-  const provincia = new URLSearchParams(location.search).get('provincia');
+  // ?provincia=08 overrides the saved one (handy for testing and shared links).
+  const forzada = new URLSearchParams(location.search).get('provincia');
+  const guardada = leer<{ codigo: string | null }>(CLAVE_PROVINCIA);
+  let provincia: string | null | undefined = forzada ?? (guardada ? guardada.codigo : undefined);
+  let mostrarAviso = false;
   let semilla = leer<string>(CLAVE_SEMILLA);
   if (!semilla) {
     semilla = nuevaSemilla();
     guardar(CLAVE_SEMILLA, semilla);
   }
-  const nueva = (estado?: EstadoPartida) => crearPartida(dataset, provincia, semilla!, estado, { modo });
+  const nueva = (estado?: EstadoPartida) => crearPartida(dataset, provincia ?? null, semilla!, estado, { modo });
   let partida: Partida = nueva(leer<EstadoPartida>(CLAVE_ESTADO) ?? undefined);
   let seleccion: string | null = null;
 
@@ -59,14 +66,31 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     const ruta = location.hash.slice(1);
     const temaId = ruta.startsWith('tema/') ? decodeURIComponent(ruta.slice(5)) : null;
     const existe = temaId !== null && partida.temas().some((t) => t.id === temaId);
-    if (ruta === 'temas') raiz.replaceChildren(vistaLista());
+    if (ruta === 'provincia') raiz.replaceChildren(vistaProvincia(provincia, elegirProvincia));
+    else if (provincia === undefined) return irA('provincia'); // first visit: ask where they vote
+    else if (ruta === 'temas') raiz.replaceChildren(vistaLista());
     else if (existe) raiz.replaceChildren(vistaTema(temaId!));
     else {
       // Start: straight to the next pending topic (vivienda first), or the list if all are done.
       const siguiente = partida.siguiente();
       return irA(siguiente ? `tema/${siguiente.id}` : 'temas');
     }
+    if (mostrarAviso && ruta !== 'provincia') {
+      // Once, on the screen after choosing: who is in play here.
+      raiz.prepend(avisoZona(partida));
+      mostrarAviso = false;
+    }
     if (enfocar) raiz.querySelector<HTMLElement>(enfocar)?.focus();
+  };
+
+  const elegirProvincia = (codigo: string | null) => {
+    provincia = codigo;
+    guardar(CLAVE_PROVINCIA, { codigo });
+    // Choices are kept; topics not available in the new province simply stop counting.
+    partida = nueva(partida.estado);
+    mostrarAviso = true;
+    const siguiente = partida.siguiente();
+    irA(siguiente ? `tema/${siguiente.id}` : 'temas');
   };
   window.addEventListener('hashchange', () => {
     seleccion = null;
@@ -80,7 +104,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     const fila = (i: ItemTema) => {
       const estado = i.estado === 'hecho' ? '✓ Hecho' : i.estado === 'ninguna' ? '— Ninguna me convenció' : 'Sin empezar';
       const a = h('a', { href: `#tema/${i.tema.id}`, class: `fila-tema ${i.estado}` },
-        h('span', { class: 'nombre' }, i.tema.titulo),
+        h('span', { class: 'nombre' }, i.tema.titulo, i.tema.ambito === 'canarias' ? h('span', { class: 'etiqueta-canarias' }, 'Solo Canarias') : null),
         h('span', { class: 'estado' }, estado),
       );
       return h('li', {}, a);
@@ -91,6 +115,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       pintar();
     });
     return h('section', { class: 'lista' },
+      h('header', { class: 'cabecera' }, h('span', {}), chipProvincia(partida.provincia)),
       h('h1', { tabindex: '-1' }, 'Temas'),
       papeleta(hechos),
       h('p', { class: 'gris' }, hechos < META_TEMAS
@@ -99,6 +124,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       h('ol', { class: 'filas', role: 'list' }, ...lista.sugeridos.map(fila)),
       lista.extra.length ? h('h2', {}, 'Temas extra') : null,
       lista.extra.length ? h('ul', { class: 'filas', role: 'list' }, ...lista.extra.map(fila)) : null,
+      bloquePartidos(partida),
       hechos ? reiniciar : null,
     );
   };
@@ -200,7 +226,7 @@ function cabecera(partida: Partida, temaId: string): HTMLElement {
   const pos = partida.posicion(temaId);
   const hechos = partida.hechos().length;
   return h('header', { class: 'cabecera' },
-    h('a', { href: '#temas', class: 'volver' }, '← Temas'),
+    h('div', { class: 'cabecera-fila' }, h('a', { href: '#temas', class: 'volver' }, '← Temas'), chipProvincia(partida.provincia)),
     h('p', {}, pos.tipo === 'meta' ? `Tema ${pos.numero} de ${pos.meta} · ${tema.titulo}` : `Tema extra · ${tema.titulo}`),
     pos.tipo === 'meta'
       ? h('ol', { class: 'progreso', 'aria-hidden': 'true' },

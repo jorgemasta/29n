@@ -1,6 +1,6 @@
 // Identifying terms per party (name, acronym, leaders, slogans, brand words).
 // V3 checks neutral text against the terms of EVERY party, not only its author.
-// TODO(#7): complete and review this list together with the party registry.
+// One entry per registered party (src/registro/partidos.ts), plus other known parties.
 export type TerminosIdentificativos = Record<string, string[]>;
 
 export const TERMINOS: TerminosIdentificativos = {
@@ -15,4 +15,5 @@ export const TERMINOS: TerminosIdentificativos = {
   pnv: ['PNV', 'EAJ-PNV', 'Partido Nacionalista Vasco', 'Aitor Esteban'],
   bng: ['BNG', 'Bloque Nacionalista Galego', 'Ana Pontón', 'Néstor Rego'],
   cc: ['Coalición Canaria', 'CC', 'Cristina Valido', 'Fernando Clavijo'],
+  upn: ['UPN', 'Unión del Pueblo Navarro', 'Alberto Catalán', 'Cristina Ibarrola'],
 };

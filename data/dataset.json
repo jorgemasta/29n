@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generado": "2026-11-08T21:57:22.891Z",
+  "generado": "2026-11-08T22:08:33.424Z",
   "origen": "simulado",
-  "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado).",
+  "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.",
   "partidos": [
     {
       "id": "prueba-a",
@@ -16,7 +16,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
         "titulo": "Programa de prueba A",
-        "hashPdf": "f43d53e29e16b0cc3488c65a7f0dcfa7299daddf623f0bc30616648043b5f269"
+        "hashPdf": "761d446f5474bd208910ea4d5cd88480f9916c1f0c088166e24548e09888fcbd"
       },
       "prueba": true
     },
@@ -32,7 +32,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
         "titulo": "Programa de prueba B",
-        "hashPdf": "401d1540bb3579d1546a93223ad604c1d89e2275296620c0c6c52d6b2d27798a"
+        "hashPdf": "a6bfd01a14a06b59988df6241a14873e92b6c6a04dddb0f4ed2cca0363aa28f2"
       },
       "prueba": true
     },
@@ -48,7 +48,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
         "titulo": "Programa de prueba C",
-        "hashPdf": "2c7484ba2c334d5c9ee9f30140a5c3f3c34d81b86973c5ea24ff02a8ddbddc6c"
+        "hashPdf": "37417d42ba3b32206ecd7649d111e6869891f2d3b7aaf2b5208300f8f0db9c5a"
       },
       "prueba": true
     },
@@ -65,6 +65,42 @@
         "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
         "titulo": "Programa de prueba D (2023)",
         "hashPdf": "3e0e5ce6a68e2a040b50fd33f38d59a86ebfc38e092bc0cb5d4c1f32ac70edda"
+      },
+      "prueba": true
+    },
+    {
+      "id": "prueba-e",
+      "nombre": "Partido de prueba E",
+      "siglas": "PRE",
+      "ambito": {
+        "tipo": "provincias",
+        "provincias": [
+          "35",
+          "38"
+        ]
+      },
+      "programa": {
+        "estado": "publicado",
+        "fuente": "programa-29n",
+        "url": "https://29n.jorgemasta.com/programas/prueba-e.pdf",
+        "titulo": "Programa de prueba E (regional)",
+        "hashPdf": "3e4cef76e1ccdee484f8f7a3416c1841a234ac8826a0cb18c204c8542841cf27"
+      },
+      "prueba": true
+    },
+    {
+      "id": "prueba-f",
+      "nombre": "Partido de prueba F",
+      "siglas": "PRF",
+      "ambito": {
+        "tipo": "provincias",
+        "provincias": [
+          "35",
+          "38"
+        ]
+      },
+      "programa": {
+        "estado": "pendiente"
       },
       "prueba": true
     }
@@ -200,6 +236,21 @@
       "pregunta": "¿Qué papel querrían para España en la Unión Europea y en el mundo?",
       "ambito": "nacional",
       "orden": 18
+    },
+    {
+      "id": "ref-canarias",
+      "titulo": "Régimen fiscal canario (REF, ZEC y AIEM)",
+      "pregunta": "¿Qué harían con las reglas fiscales y económicas especiales de Canarias?",
+      "explicacion": "REF, ZEC y AIEM: las reglas fiscales especiales de Canarias. REF: el régimen económico y fiscal propio de las islas. ZEC: una zona con menos impuestos para empresas que se instalan allí. AIEM: un impuesto canario a algunos productos que llegan de fuera.",
+      "ambito": "canarias",
+      "orden": 19
+    },
+    {
+      "id": "migracion-atlantica",
+      "titulo": "Migración atlántica",
+      "pregunta": "¿Qué harían con la llegada de personas migrantes por mar a Canarias?",
+      "ambito": "canarias",
+      "orden": 20
     }
   ],
   "posturas": [
@@ -1280,6 +1331,168 @@
       }
     },
     {
+      "partido": "prueba-a",
+      "tema": "ref-canarias",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Pedir a la Unión Europea que mantenga la zona de impuestos bajos para empresas en Canarias.",
+        "como": "La prórroga llegaría hasta 2035. Además, el Estado pagaría parte de lo que cuesta de más mover mercancías entre islas.",
+        "cifra": "200 millones de euros al año"
+      },
+      "citas": [
+        {
+          "texto": "Defenderemos ante la Unión Europea la prórroga de la Zona Especial Canaria hasta 2035 y destinaremos 200 millones de euros al año a compensar el sobrecoste del transporte de mercancías entre islas.",
+          "pagina": 16
+        }
+      ],
+      "viabilidad": {
+        "resultado": "muy_dificil",
+        "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "fuentes": [
+          {
+            "titulo": "INE: portada",
+            "url": "https://www.ine.es/"
+          },
+          {
+            "titulo": "BOE: portada",
+            "url": "https://www.boe.es/"
+          }
+        ],
+        "evaluaciones": [
+          {
+            "nivel": "muy_dificil",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          },
+          {
+            "nivel": "muy_dificil",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          }
+        ],
+        "versiones": {
+          "prompt": "viabilidad-v1",
+          "rubrica": "r1"
+        }
+      }
+    },
+    {
+      "partido": "prueba-a",
+      "tema": "migracion-atlantica",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Repartir de forma obligatoria entre todas las comunidades a los menores migrantes que llegan a Canarias.",
+        "como": "Lo organizaría un sistema estatal de acogida. Además, reforzar el servicio público de rescate en el mar con más barcos.",
+        "cifra": "4 buques nuevos"
+      },
+      "citas": [
+        {
+          "texto": "Crearemos un sistema estatal de acogida que reparta de forma obligatoria entre todas las comunidades a los menores migrantes que lleguen a Canarias y reforzaremos Salvamento Marítimo con 4 nuevos buques.",
+          "pagina": 17
+        }
+      ],
+      "viabilidad": {
+        "resultado": "viable",
+        "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "fuentes": [
+          {
+            "titulo": "INE: portada",
+            "url": "https://www.ine.es/"
+          },
+          {
+            "titulo": "BOE: portada",
+            "url": "https://www.boe.es/"
+          }
+        ],
+        "evaluaciones": [
+          {
+            "nivel": "viable",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          },
+          {
+            "nivel": "viable",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          }
+        ],
+        "versiones": {
+          "prompt": "viabilidad-v1",
+          "rubrica": "r1"
+        }
+      }
+    },
+    {
       "partido": "prueba-b",
       "tema": "vivienda",
       "versiones": {
@@ -2328,6 +2541,168 @@
         "prompt": "v2"
       },
       "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "ref-canarias",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Bajar el impuesto canario que se paga al comprar, el equivalente al IVA.",
+        "como": "Además, las empresas que inviertan en las islas podrían descontarse más en sus impuestos gracias a las reglas fiscales especiales de Canarias.",
+        "cifra": "Del 7 % al 5 %"
+      },
+      "citas": [
+        {
+          "texto": "Rebajaremos el IGIC general del 7 % al 5 % y ampliaremos las deducciones del Régimen Económico y Fiscal para las empresas que inviertan en las islas.",
+          "pagina": 17
+        }
+      ],
+      "viabilidad": {
+        "resultado": "muy_dificil",
+        "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "fuentes": [
+          {
+            "titulo": "INE: portada",
+            "url": "https://www.ine.es/"
+          },
+          {
+            "titulo": "BOE: portada",
+            "url": "https://www.boe.es/"
+          }
+        ],
+        "evaluaciones": [
+          {
+            "nivel": "muy_dificil",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          },
+          {
+            "nivel": "muy_dificil",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          }
+        ],
+        "versiones": {
+          "prompt": "viabilidad-v1",
+          "rubrica": "r1"
+        }
+      }
+    },
+    {
+      "partido": "prueba-b",
+      "tema": "migracion-atlantica",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Pedir a la Unión Europea que vigile de forma permanente las aguas de Canarias.",
+        "como": "Además, firmar acuerdos con los países de donde salen y por donde pasan las embarcaciones para que haya menos salidas hacia las islas.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Pediremos a la Unión Europea que despliegue Frontex de forma permanente en aguas canarias y firmaremos acuerdos con los países de origen y tránsito para frenar las salidas.",
+          "pagina": 18
+        }
+      ],
+      "viabilidad": {
+        "resultado": "muy_dificil",
+        "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "fuentes": [
+          {
+            "titulo": "INE: portada",
+            "url": "https://www.ine.es/"
+          },
+          {
+            "titulo": "BOE: portada",
+            "url": "https://www.boe.es/"
+          }
+        ],
+        "evaluaciones": [
+          {
+            "nivel": "muy_dificil",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          },
+          {
+            "nivel": "muy_dificil",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          }
+        ],
+        "versiones": {
+          "prompt": "viabilidad-v1",
+          "rubrica": "r1"
+        }
+      }
     },
     {
       "partido": "prueba-c",
@@ -3426,6 +3801,68 @@
       }
     },
     {
+      "partido": "prueba-c",
+      "tema": "ref-canarias",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Proteger las reglas fiscales especiales de Canarias con una ley más difícil de cambiar.",
+        "como": "Sería una ley orgánica. Ninguna reforma de impuestos del Estado podría quitar esas ventajas sin el acuerdo del Parlamento canario.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Blindaremos en una ley orgánica el Régimen Económico y Fiscal de Canarias para que ninguna reforma fiscal estatal pueda reducir sus ventajas sin el acuerdo del Parlamento canario.",
+          "pagina": 18
+        }
+      ],
+      "viabilidad": {
+        "resultado": "sin_concrecion",
+        "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "fuentes": [],
+        "evaluaciones": [
+          {
+            "nivel": "sin_concrecion",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": []
+          },
+          {
+            "nivel": "sin_concrecion",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": []
+          }
+        ],
+        "versiones": {
+          "prompt": "viabilidad-v1",
+          "rubrica": "r1"
+        }
+      }
+    },
+    {
+      "partido": "prueba-c",
+      "tema": "migracion-atlantica",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
       "partido": "prueba-d",
       "tema": "vivienda",
       "versiones": {
@@ -4354,15 +4791,429 @@
           "rubrica": "r1"
         }
       }
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "ref-canarias",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-d",
+      "tema": "migracion-atlantica",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "vivienda",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Limitar las nuevas licencias de pisos turísticos en las islas.",
+        "como": "Además, reservar una parte del suelo de cada nueva urbanización para viviendas protegidas destinadas a personas que vivan de forma habitual en las islas.",
+        "cifra": "20 % del suelo de cada nuevo desarrollo"
+      },
+      "citas": [
+        {
+          "texto": "Limitaremos las nuevas licencias de vivienda vacacional en las islas y destinaremos el 20 % del suelo de cada nuevo desarrollo a vivienda protegida para residentes.",
+          "pagina": 2
+        }
+      ],
+      "viabilidad": {
+        "resultado": "sin_concrecion",
+        "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "fuentes": [],
+        "evaluaciones": [
+          {
+            "nivel": "sin_concrecion",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": []
+          },
+          {
+            "nivel": "sin_concrecion",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": []
+          }
+        ],
+        "versiones": {
+          "prompt": "viabilidad-v1",
+          "rubrica": "r1"
+        }
+      }
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "empleo",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "sanidad",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "inmigracion",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "pensiones",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "coste-vida",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "impuestos",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "educacion",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "instituciones",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "energia-clima",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "cuidados",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "seguridad-justicia",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "territorial",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "igualdad",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "campo-agua",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "transporte",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Fijar por ley el descuento para residentes en vuelos y barcos.",
+        "como": "Se aplicaría a los viajes entre islas y con la península, y dejaría de depender de que se apruebe en cada presupuesto del Estado.",
+        "cifra": "Descuento del 75 %"
+      },
+      "citas": [
+        {
+          "texto": "Exigiremos que el descuento de residente del 75 % en vuelos y barcos entre islas y con la península quede fijado por ley y no dependa de cada presupuesto.",
+          "pagina": 3
+        }
+      ],
+      "viabilidad": {
+        "resultado": "viable_con_matices",
+        "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "fuentes": [
+          {
+            "titulo": "INE: portada",
+            "url": "https://www.ine.es/"
+          },
+          {
+            "titulo": "BOE: portada",
+            "url": "https://www.boe.es/"
+          }
+        ],
+        "evaluaciones": [
+          {
+            "nivel": "viable_con_matices",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          },
+          {
+            "nivel": "viable_con_matices",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          }
+        ],
+        "versiones": {
+          "prompt": "viabilidad-v1",
+          "rubrica": "r1"
+        }
+      }
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "defensa",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "europa-exterior",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "no_propone"
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "ref-canarias",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Exigir al Estado que invierta en Canarias lo que marcan sus reglas fiscales especiales.",
+        "como": "Además, mantener el impuesto canario a algunos productos de fuera, para proteger a la industria de las islas frente a la competencia.",
+        "cifra": "10 años más"
+      },
+      "citas": [
+        {
+          "texto": "Exigiremos que el Estado cumpla las inversiones que fija el Régimen Económico y Fiscal y que el AIEM proteja durante 10 años más a la industria local de las islas.",
+          "pagina": 4
+        }
+      ],
+      "viabilidad": {
+        "resultado": "sin_concrecion",
+        "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "fuentes": [],
+        "evaluaciones": [
+          {
+            "nivel": "sin_concrecion",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": []
+          },
+          {
+            "nivel": "sin_concrecion",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": []
+          }
+        ],
+        "versiones": {
+          "prompt": "viabilidad-v1",
+          "rubrica": "r1"
+        }
+      }
+    },
+    {
+      "partido": "prueba-e",
+      "tema": "migracion-atlantica",
+      "versiones": {
+        "prompt": "v2"
+      },
+      "estado": "propone",
+      "texto": {
+        "que": "Que el Estado pague todo lo que cuesta atender a los menores migrantes que llegan solos.",
+        "como": "Se aplicaría mientras esos menores sigan viviendo en Canarias, de modo que las islas no tengan que pagar su atención con su propio presupuesto.",
+        "cifra": "100 % del coste"
+      },
+      "citas": [
+        {
+          "texto": "Pediremos que el Estado asuma el 100 % del coste de atender a los menores migrantes que llegan solos a Canarias mientras sigan en las islas.",
+          "pagina": 5
+        }
+      ],
+      "viabilidad": {
+        "resultado": "dificil",
+        "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "fuentes": [
+          {
+            "titulo": "INE: portada",
+            "url": "https://www.ine.es/"
+          },
+          {
+            "titulo": "BOE: portada",
+            "url": "https://www.boe.es/"
+          }
+        ],
+        "evaluaciones": [
+          {
+            "nivel": "dificil",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          },
+          {
+            "nivel": "dificil",
+            "razones": {
+              "competencia": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "coste": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedentes": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "mayoria": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "porque": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "fuentes": [
+              {
+                "titulo": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "titulo": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          }
+        ],
+        "versiones": {
+          "prompt": "viabilidad-v1",
+          "rubrica": "r1"
+        }
+      }
     }
   ],
   "informes": [
     {
       "partido": "prueba-a",
-      "hashPdf": "f43d53e29e16b0cc3488c65a7f0dcfa7299daddf623f0bc30616648043b5f269",
+      "hashPdf": "761d446f5474bd208910ea4d5cd88480f9916c1f0c088166e24548e09888fcbd",
       "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
       "versionPrompt": "v2",
-      "extraidas": 14,
+      "extraidas": 16,
       "descartadas": 0,
       "publicable": true,
       "posturas": [
@@ -4453,6 +5304,16 @@
         },
         {
           "tema": "europa-exterior",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "ref-canarias",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "migracion-atlantica",
           "estado": "propone",
           "reescrituras": 0
         }
@@ -5193,13 +6054,13 @@
           "tema": "seguridad-justicia",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Seguridad y justicia; ninguna página los menciona"
+          "detalle": "términos buscados: seguridad, policía, Guardia Civil, delito, delincuen, justicia, judicial, juzgado, Código Penal, reincidencia, prisión, víctima; ninguna página los menciona"
         },
         {
           "tema": "territorial",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Comunidades autónomas y financiación; ninguna página los menciona"
+          "detalle": "términos buscados: comunidades autónomas, autonómic, financiación autonómica, competencias, descentraliza, federal, concierto, autogobierno, Estatuto, cupo, Constitución, referéndum, ordinalidad; ninguna página los menciona"
         },
         {
           "tema": "igualdad",
@@ -5271,7 +6132,7 @@
           "tema": "campo-agua",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Campo y agua; ninguna página los menciona"
+          "detalle": "términos buscados: agricultur, agrari, ganader, agricultor, rural, campo, regadío, agua, hídric, trasvase, sequía, PAC, pesca; ninguna página los menciona"
         },
         {
           "tema": "transporte",
@@ -5343,7 +6204,7 @@
           "tema": "defensa",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Defensa y OTAN; ninguna página los menciona"
+          "detalle": "términos buscados: defensa, OTAN, militar, Fuerzas Armadas, ejército, gasto en defensa, armamento, servicio militar, Ministerio de Defensa, seguridad nacional; ninguna página los menciona"
         },
         {
           "tema": "europa-exterior",
@@ -5410,15 +6271,147 @@
           "barrera": "V13",
           "resultado": "pasa",
           "detalle": "consenso: viable_con_matices"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V13",
+          "resultado": "pasa",
+          "detalle": "consenso: muy_dificil"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "no aplica: es la única propuesta publicada del tema"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V13",
+          "resultado": "pasa",
+          "detalle": "consenso: viable"
         }
       ]
     },
     {
       "partido": "prueba-b",
-      "hashPdf": "401d1540bb3579d1546a93223ad604c1d89e2275296620c0c6c52d6b2d27798a",
+      "hashPdf": "a6bfd01a14a06b59988df6241a14873e92b6c6a04dddb0f4ed2cca0363aa28f2",
       "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
       "versionPrompt": "v2",
-      "extraidas": 15,
+      "extraidas": 17,
       "descartadas": 0,
       "publicable": true,
       "posturas": [
@@ -5510,6 +6503,16 @@
         {
           "tema": "europa-exterior",
           "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "ref-canarias",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "migracion-atlantica",
+          "estado": "propone",
           "reescrituras": 0
         }
       ],
@@ -6381,7 +7384,7 @@
           "tema": "igualdad",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Igualdad y violencia contra las mujeres; ninguna página los menciona"
+          "detalle": "términos buscados: igualdad, mujer, violencia de género, violencia machista, violencia contra las mujeres, brecha salarial, feminis, paridad, LGTBI, machis, acoso; ninguna página los menciona"
         },
         {
           "tema": "campo-agua",
@@ -6453,7 +7456,7 @@
           "tema": "transporte",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Transporte; ninguna página los menciona"
+          "detalle": "términos buscados: transporte, tren, ferrocarril, ferroviari, Cercanías, carretera, autovía, autobús, movilidad, aeropuerto, abono, peaje, infraestructura; revisadas las páginas 15 sin propuesta"
         },
         {
           "tema": "defensa",
@@ -6525,16 +7528,148 @@
           "tema": "europa-exterior",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Europa y política exterior; ninguna página los menciona"
+          "detalle": "términos buscados: Unión Europea, europe, exterior, internacional, diplomac, cooperación al desarrollo, Palestina, Israel, Ucrania, Marruecos, Gibraltar, Latinoamérica, Naciones Unidas; revisadas las páginas 18 sin propuesta"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V13",
+          "resultado": "pasa",
+          "detalle": "consenso: muy_dificil"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V13",
+          "resultado": "pasa",
+          "detalle": "consenso: muy_dificil"
         }
       ]
     },
     {
       "partido": "prueba-c",
-      "hashPdf": "2c7484ba2c334d5c9ee9f30140a5c3f3c34d81b86973c5ea24ff02a8ddbddc6c",
+      "hashPdf": "37417d42ba3b32206ecd7649d111e6869891f2d3b7aaf2b5208300f8f0db9c5a",
       "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
       "versionPrompt": "v2",
-      "extraidas": 16,
+      "extraidas": 17,
       "descartadas": 0,
       "publicable": true,
       "posturas": [
@@ -6626,6 +7761,16 @@
         {
           "tema": "europa-exterior",
           "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "ref-canarias",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "migracion-atlantica",
+          "estado": "no_propone",
           "reescrituras": 0
         }
       ],
@@ -6837,7 +7982,7 @@
           "tema": "inmigracion",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Inmigración; ninguna página los menciona"
+          "detalle": "términos buscados: inmigra, migrante, migratori, extranjer, regulariza, frontera, asilo, refugiad, arraigo, irregular, integración; ninguna página los menciona"
         },
         {
           "tema": "pensiones",
@@ -7239,7 +8384,7 @@
           "tema": "cuidados",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Dependencia, crianza y cuidados; ninguna página los menciona"
+          "detalle": "términos buscados: dependencia, cuidad, cuidados, crianza, permiso de, natalidad, conciliación, residencia, mayores, discapacidad, familia, infancia; ninguna página los menciona"
         },
         {
           "tema": "seguridad-justicia",
@@ -7702,6 +8847,78 @@
           "barrera": "V13",
           "resultado": "pasa",
           "detalle": "consenso: sin_concrecion"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V13",
+          "resultado": "pasa",
+          "detalle": "consenso: sin_concrecion"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Canarias, canari, cayuco, patera, ruta atlántica, Atlántico, menores migrantes, menores no acompañados, acogida, Salvamento Marítimo, llegadas, Mauritania, Senegal; revisadas las páginas 18 sin propuesta"
         }
       ]
     },
@@ -7802,6 +9019,16 @@
         {
           "tema": "europa-exterior",
           "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "ref-canarias",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "migracion-atlantica",
+          "estado": "no_propone",
           "reescrituras": 0
         }
       ],
@@ -7947,7 +9174,7 @@
           "tema": "sanidad",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Sanidad; ninguna página los menciona"
+          "detalle": "términos buscados: sanidad, sanitari, salud, hospital, médic, atención primaria, lista de espera, listas de espera, enfermer, medicamento, farmac, salud mental; ninguna página los menciona"
         },
         {
           "tema": "inmigracion",
@@ -8085,31 +9312,31 @@
           "tema": "coste-vida",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Precios y coste de la vida; ninguna página los menciona"
+          "detalle": "términos buscados: precio, inflación, IPC, coste de la vida, cesta de la compra, alimento, factura, luz, electricidad, carburante, poder adquisitivo, IVA; ninguna página los menciona"
         },
         {
           "tema": "impuestos",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Impuestos; ninguna página los menciona"
+          "detalle": "términos buscados: impuesto, fiscal, tributa, IRPF, IVA, Sociedades, patrimonio, sucesiones, deducción, fraude fiscal, recaudación, tasa; ninguna página los menciona"
         },
         {
           "tema": "educacion",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Educación; ninguna página los menciona"
+          "detalle": "términos buscados: educación, educativ, escuela, colegio, docente, profesor, alumn, universidad, formación profesional, FP, beca, matrícula, infantil; ninguna página los menciona"
         },
         {
           "tema": "instituciones",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Corrupción e instituciones; ninguna página los menciona"
+          "detalle": "términos buscados: corrupción, transparencia, institucion, Poder Judicial, CGPJ, Tribunal Constitucional, aforamiento, indulto, ley electoral, puertas giratorias, financiación de partidos, regeneración; ninguna página los menciona"
         },
         {
           "tema": "energia-clima",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: Energía y cambio climático; ninguna página los menciona"
+          "detalle": "términos buscados: energía, energétic, renovable, clima, climático, emisiones, nuclear, solar, eólic, descarboniza, transición ecológica, autoconsumo, gas; revisadas las páginas 12 sin propuesta"
         },
         {
           "tema": "cuidados",
@@ -8638,6 +9865,496 @@
           "barrera": "V13",
           "resultado": "pasa",
           "detalle": "consenso: viable_con_matices"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: REF, Régimen Económico y Fiscal, ZEC, Zona Especial Canaria, AIEM, IGIC, Canarias, canari, ultraperiféric, RUP, insular, archipiélago; revisadas las páginas 13 sin propuesta"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Canarias, canari, cayuco, patera, ruta atlántica, Atlántico, menores migrantes, menores no acompañados, acogida, Salvamento Marítimo, llegadas, Mauritania, Senegal; revisadas las páginas 11 sin propuesta"
+        }
+      ]
+    },
+    {
+      "partido": "prueba-e",
+      "hashPdf": "3e4cef76e1ccdee484f8f7a3416c1841a234ac8826a0cb18c204c8542841cf27",
+      "url": "https://29n.jorgemasta.com/programas/prueba-e.pdf",
+      "versionPrompt": "v2",
+      "extraidas": 4,
+      "descartadas": 0,
+      "publicable": true,
+      "posturas": [
+        {
+          "tema": "vivienda",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "empleo",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "sanidad",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "inmigracion",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "pensiones",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "coste-vida",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "impuestos",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "educacion",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "instituciones",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "energia-clima",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "cuidados",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "seguridad-justicia",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "territorial",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "igualdad",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "campo-agua",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "transporte",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "defensa",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "europa-exterior",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "ref-canarias",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "migracion-atlantica",
+          "estado": "propone",
+          "reescrituras": 0
+        }
+      ],
+      "entradas": [
+        {
+          "barrera": "V7",
+          "resultado": "pasa",
+          "detalle": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V13",
+          "resultado": "pasa",
+          "detalle": "consenso: sin_concrecion"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: empleo, salario, sueldo, jornada, trabajador, paro, desemple, contrato, despido, convenio, reforma laboral, autónomo, SMI; ninguna página los menciona"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: sanidad, sanitari, salud, hospital, médic, atención primaria, lista de espera, listas de espera, enfermer, medicamento, farmac, salud mental; ninguna página los menciona"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: inmigra, migrante, migratori, extranjer, regulariza, frontera, asilo, refugiad, arraigo, irregular, integración; revisadas las páginas 5 sin propuesta"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: pensión, pensiones, pensionista, jubilación, jubilad, Seguridad Social, cotiza, revaloriza, Pacto de Toledo; ninguna página los menciona"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: precio, inflación, IPC, coste de la vida, cesta de la compra, alimento, factura, luz, electricidad, carburante, poder adquisitivo, IVA; ninguna página los menciona"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: impuesto, fiscal, tributa, IRPF, IVA, Sociedades, patrimonio, sucesiones, deducción, fraude fiscal, recaudación, tasa; revisadas las páginas 4 sin propuesta"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: educación, educativ, escuela, colegio, docente, profesor, alumn, universidad, formación profesional, FP, beca, matrícula, infantil; ninguna página los menciona"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: corrupción, transparencia, institucion, Poder Judicial, CGPJ, Tribunal Constitucional, aforamiento, indulto, ley electoral, puertas giratorias, financiación de partidos, regeneración; ninguna página los menciona"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: energía, energétic, renovable, clima, climático, emisiones, nuclear, solar, eólic, descarboniza, transición ecológica, autoconsumo, gas; ninguna página los menciona"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: dependencia, cuidad, cuidados, crianza, permiso de, natalidad, conciliación, residencia, mayores, discapacidad, familia, infancia; ninguna página los menciona"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: seguridad, policía, Guardia Civil, delito, delincuen, justicia, judicial, juzgado, Código Penal, reincidencia, prisión, víctima; ninguna página los menciona"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: comunidades autónomas, autonómic, financiación autonómica, competencias, descentraliza, federal, concierto, autogobierno, Estatuto, cupo, Constitución, referéndum, ordinalidad; ninguna página los menciona"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: igualdad, mujer, violencia de género, violencia machista, violencia contra las mujeres, brecha salarial, feminis, paridad, LGTBI, machis, acoso; ninguna página los menciona"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: agricultur, agrari, ganader, agricultor, rural, campo, regadío, agua, hídric, trasvase, sequía, PAC, pesca; ninguna página los menciona"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V13",
+          "resultado": "pasa",
+          "detalle": "consenso: viable_con_matices"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: defensa, OTAN, militar, Fuerzas Armadas, ejército, gasto en defensa, armamento, servicio militar, Ministerio de Defensa, seguridad nacional; ninguna página los menciona"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "términos buscados: Unión Europea, europe, exterior, internacional, diplomac, cooperación al desarrollo, Palestina, Israel, Ucrania, Marruecos, Gibraltar, Latinoamérica, Naciones Unidas; ninguna página los menciona"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "ref-canarias",
+          "barrera": "V13",
+          "resultado": "pasa",
+          "detalle": "consenso: sin_concrecion"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V11",
+          "resultado": "pasa",
+          "detalle": "acertada 0 de 3 veces, confianza media 0.00"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V8",
+          "resultado": "pasa",
+          "detalle": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
+        },
+        {
+          "tema": "migracion-atlantica",
+          "barrera": "V13",
+          "resultado": "pasa",
+          "detalle": "consenso: dificil"
         }
       ]
     }

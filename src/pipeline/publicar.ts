@@ -22,7 +22,15 @@ export function fusionarPrograma(
   anterior: Dataset,
   partido: Partido,
   resultado: ResultadoProceso,
-  args: { temas: Tema[]; generado: string; fecha?: string },
+  args: {
+    temas: Tema[];
+    generado: string;
+    fecha?: string;
+    /** Party registry (src/registro/partidos.ts): when given, every registered party without a
+     * processed programme is listed as "⏳ programa pendiente", scope always comes from the
+     * registry (criterion data may have changed) and parties no longer registered are dropped. */
+    registro?: Record<string, Omit<Partido, 'programa'>>;
+  },
 ): Fusion {
   if (!resultado.publicable) return { ok: false, motivo: resultado.informe.motivo ?? 'no publicable' };
   if (partido.programa.estado !== 'publicado') return { ok: false, motivo: 'el partido no tiene programa' };
@@ -31,12 +39,19 @@ export function fusionarPrograma(
     ...partido,
     programa: { ...partido.programa, hashPdf: resultado.informe.hashPdf, ...(args.fecha ? { fecha: args.fecha } : {}) },
   };
+  const { registro } = args;
+  const procesados = [...previos.partidos.filter((p) => p.id !== partido.id), conHash];
+  const partidos: Partido[] = registro
+    ? Object.values(registro).map(
+        (base) => ({ ...base, programa: procesados.find((p) => p.id === base.id)?.programa ?? { estado: 'pendiente' } }) as Partido,
+      )
+    : procesados;
   const dataset = construirDataset({
-    partidos: [...previos.partidos.filter((p) => p.id !== partido.id), conHash],
+    partidos,
     temas: args.temas,
     resultados: [
       ...previos.informes
-        .filter((i) => i.partido !== partido.id)
+        .filter((i) => i.partido !== partido.id && (!registro || registro[i.partido]))
         .map((informe) => ({ informe, posturas: previos.posturas.filter((p) => p.partido === informe.partido) })),
       resultado,
     ],
