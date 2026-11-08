@@ -1,8 +1,9 @@
 # Despliegue (paso humano)
 
 La web es estática: Cloudflare sirve `dist/` como *static assets* de un Worker (`wrangler.jsonc`). El Worker
-(`src/worker/index.ts`) solo atiende `/api/preguntar` (pregunta libre), `/api/avisar` (avisos sin cuenta) y
-bloquea `/textos/*`; todo lo demás va directo a los ficheros estáticos.
+(`src/worker/index.ts`) solo atiende `/api/preguntar` (pregunta libre), `/api/avisar` (avisos sin cuenta),
+bloquea `/textos/*` y, en `/` con `?r=reto`, cambia el og:title de la vista previa del enlace; todo lo demás va
+directo a los ficheros estáticos. La imagen og (`public/og.png`, 1200×630) se regenera con `npm run og`.
 No hay credenciales de Cloudflare ni de Anthropic en el repo.
 
 1. `npx wrangler login` (o `CLOUDFLARE_API_TOKEN` con permiso de Workers y DNS de `jorgemasta.com`).
@@ -107,3 +108,29 @@ caché de IA el resultado es idéntico y gratis). En local: `npx tsx scripts/vig
 --forzar --sin-publicar` (sin git, sin despliegue, avisos por consola; sí descarga y llama a Claude).
 
 Node: Astro está fijado a 7.4.1 porque esta máquina tiene Node 22.23.2 (Astro ≥ 7.4.2 exige 22.23.4).
+
+## Analítica (Umami Cloud, región UE) — opcional, desactivada por defecto
+
+Eventos (lista cerrada en `src/analitica/eventos.ts`, validados antes de enviarse; `src/web/analitica.ts`
+es el único módulo del cliente que habla con Umami, vía `window.umami.track`): `empezo`,
+`tema-completado {tema}`, `cinco-temas`, `vio-resultado`, `compartio {variante}`,
+`apuesta-acierto {tema}`, `apuesta-fallo {tema}`. Nunca el partido elegido o apostado, la provincia ni el
+ranking. El script no registra la query (`?provincia=`, `?r=`) ni el hash, y respeta Do Not Track.
+
+**Sin `UMAMI_WEBSITE_ID` en el build no se carga el script de Umami y no se envía nada.** Pasos humanos:
+
+1. Crear la cuenta en Umami Cloud eligiendo la **región UE** (sin cookies por defecto). Añadir el sitio
+   `29n.jorgemasta.com` y copiar su *website id*.
+2. Build/deploy a mano con `UMAMI_WEBSITE_ID=<website id> npm run deploy`. El vigilante (`vigilante.yml`)
+   lo lee de la **variable del repo** `UMAMI_WEBSITE_ID` (paso 3): sin ella, sus despliegues quitan la analítica.
+   Opcionales: `UMAMI_SCRIPT_URL` (por defecto `https://cloud.umami.is/script.js`; usar la URL del
+   script que muestre Umami para la región UE si es distinta) y `UMAMI_DOMAINS` (por defecto
+   `29n.jorgemasta.com`: los builds en otros dominios no envían nada).
+3. Comprobación periódica de apuestas (`.github/workflows/apuestas.yml`, lunes 06:41 UTC):
+   - Variable del repo (Settings → Secrets and variables → Actions → *Variables*): `UMAMI_WEBSITE_ID`;
+     opcional `UMAMI_API_URL` (por defecto `https://api.umami.is/v1`, la API de Umami Cloud).
+   - Secreto: `UMAMI_API_KEY` (Umami Cloud → Settings → API keys).
+   - El job usa `github.token` (permiso `issues: write`) y crea la etiqueta `reneutralizar` si no existe.
+   - Abre un issue por cada tema con más del 60 % de acierto y al menos 30 apuestas en los últimos 30 días,
+     salvo que ya haya uno abierto para ese tema. Sin las dos variables, el job termina sin hacer nada.
+   - En local: `UMAMI_API_KEY=… UMAMI_WEBSITE_ID=… npx tsx scripts/apuestas.ts --sin-publicar`.

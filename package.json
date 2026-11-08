@@ -13,6 +13,7 @@
     "schema": "tsx scripts/generar-esquema.ts",
     "procesar": "tsx scripts/procesar.ts",
     "municipios": "tsx scripts/generar-municipios.ts",
+    "og": "tsx scripts/generar-og.ts",
     "deploy": "npm run build && wrangler deploy",
     "deploy:privado": "npm run build:privado && wrangler deploy"
   },

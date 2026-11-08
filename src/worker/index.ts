@@ -3,6 +3,8 @@
 //   POST /api/preguntar  live free question (#15) — behind the PREGUNTA_LIBRE flag, off by default
 //   POST /api/avisar     "Reportar error" / "Falta un partido" without a GitHub account
 //   /textos/*            programme page texts: read internally through ASSETS, never served
+//   /?r=reto             challenge og:title so the shared link's preview changes (#9; nothing about
+//                        the user is in the link)
 //
 // No logs: this code never calls console.*, Workers observability is off in wrangler.jsonc, the
 // client IP is never read, and AI Gateway is told not to log each request (`cf-aig-collect-log`).
@@ -15,6 +17,7 @@ import { crearPreguntaLibre, type Almacen } from '../pregunta/libre';
 import { TextoPrograma, rutaTexto } from '../pregunta/textos';
 import { TERMINOS } from '../registro/terminos';
 import { crearAvisos } from '../transparencia/avisos';
+import { aplicarReto, esReto } from '../compartir';
 
 /** Minimal shapes of the Cloudflare bindings used here (no workers-types dependency). */
 interface Fetcher {
@@ -151,7 +154,10 @@ export function crearManejador(dep: Dependencias = {}) {
       return json(r, r.estado === 'invalido' ? 400 : 200);
     }
 
-    return env.ASSETS.fetch(peticion);
+    const res = await env.ASSETS.fetch(peticion);
+    if (url.pathname === '/' && esReto(url.search) && res.headers.get('content-type')?.includes('text/html'))
+      return new Response(aplicarReto(await res.text()), res);
+    return res;
   };
 }
 

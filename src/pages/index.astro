@@ -2,6 +2,8 @@
 import '../styles/global.css';
 import datos from '../../data/dataset.json';
 import { aplicarModo, type Dataset, type Modo } from '../dataset';
+import Umami from '../components/Umami.astro';
+import { OG } from '../compartir';
 
 // Mode switch, at build time: `MODO=privado` (private prototype) also ships provisional sources
 // (2023 programmes, party documents, public statements). Anything else ships only official
@@ -10,6 +12,7 @@ const modo: Modo = process.env.MODO === 'privado' ? 'privado' : 'publico';
 const dataset = aplicarModo(datos as Dataset, modo);
 const esPrueba = dataset.origen !== 'real';
 // Safe to inline in a <script type="application/json">: escape "<" so no "</script>" can close it.
+const imagenOg = new URL(OG.imagen.ruta, Astro.site).href;
 const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
 ---
 <!doctype html>
@@ -20,6 +23,23 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
     <meta name="robots" content="noindex, nofollow" />
     <title>29N · Elige a ciegas</title>
     <meta name="description" content="Lee lo que proponen los partidos sin saber de quién es." />
+    <Umami />
+    <!-- Link preview. /?r=reto gets OG.tituloReto: the Worker (worker/index.ts) rewrites these titles. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="29N" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:url" content={Astro.site?.href} />
+    <meta property="og:title" content={OG.titulo} />
+    <meta property="og:description" content={OG.descripcion} />
+    <meta property="og:image" content={imagenOg} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content={String(OG.imagen.ancho)} />
+    <meta property="og:image:height" content={String(OG.imagen.alto)} />
+    <meta property="og:image:alt" content="Tres tarjetas boca abajo con las letras A, B y C. Elecciones generales · 29 de noviembre." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={OG.titulo} />
+    <meta name="twitter:description" content={OG.descripcion} />
+    <meta name="twitter:image" content={imagenOg} />
   </head>
   <body>
     <main id="app" data-modo={modo}>

@@ -315,6 +315,15 @@ describe('Cloudflare function (src/worker)', () => {
     expect((await f(new Request(`${ORIGEN}/robots.txt`), { ASSETS: assets })).status).toBe(200);
   });
 
+  it('keeps the /?r=reto link preview (#9): only the og title of "/" changes', async () => {
+    const { OG } = await import('../src/compartir');
+    const html = `<meta property="og:title" content="${OG.titulo}">`;
+    const env = { ASSETS: { fetch: async () => new Response(html, { headers: { 'content-type': 'text/html' } }) } };
+    const f = await manejador();
+    expect(await (await f(new Request(`${ORIGEN}/?r=reto`), env)).text()).toContain(OG.tituloReto);
+    expect(await (await f(new Request(`${ORIGEN}/`), env)).text()).toBe(html);
+  });
+
   it('rejects requests from another site, non-JSON and oversized bodies', async () => {
     const f = await manejador();
     const env = { ASSETS: assets, PREGUNTAS: crearAlmacenEnMemoria(), PREGUNTA_LIBRE: '1' };

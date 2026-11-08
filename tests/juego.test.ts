@@ -674,14 +674,5 @@ describe('pending parties in the reveal', () => {
   });
 });
 
-describe('privacy', () => {
-  it('the engine and the client app make no network calls', async () => {
-    const { readFileSync, readdirSync } = await import('node:fs');
-    const dirs = ['src/juego', 'src/web'];
-    for (const d of dirs)
-      for (const f of readdirSync(d)) {
-        const codigo = readFileSync(`${d}/${f}`, 'utf8');
-        expect(codigo, `${d}/${f}`).not.toMatch(/\bfetch\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource/);
-      }
-  });
-});
+// The client network/privacy check (engine + web make no calls; only src/web/analitica.ts hands
+// validated events to Umami) lives in tests/analitica.test.ts.
