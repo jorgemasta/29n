@@ -3,6 +3,7 @@
 import '../styles/global.css';
 import { dataset } from '../transparencia/datos';
 import { REPO } from '../transparencia';
+import Umami from './Umami.astro';
 interface Props { titulo: string; descripcion: string; volver?: { href: string; texto: string } }
 const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Astro.props;
 ---
@@ -14,6 +15,7 @@ const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Ast
     <meta name="robots" content="noindex, nofollow" />
     <title>{titulo} · 29N</title>
     <meta name="description" content={descripcion} />
+    <Umami />
   </head>
   <body>
     <main class="info">

@@ -25,3 +25,4 @@ Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/d
 - `npm run municipios`: rebuilds `data/municipios.json` from the INE's official municipality list.
 - `npm run procesar`: processes a real programme with Claude. Deploy: `docs/deploy.md`.
 - `npx tsx scripts/vigilar.ts [--partido id] [--forzar] [--sin-publicar]`: programme watcher (cron in `.github/workflows/vigilante.yml`). Tests: `tests/vigilante.test.ts`.
+- `npx tsx scripts/apuestas.ts [--sin-publicar]`: bet hit-rate check (cron `.github/workflows/apuestas.yml`, needs Umami vars; off when unset). Analytics events: `src/analitica/eventos.ts`, tests `tests/analitica.test.ts`.

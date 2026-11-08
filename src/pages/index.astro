@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import datos from '../../data/dataset.json';
 import { aplicarModo, type Dataset, type Modo } from '../dataset';
+import Umami from '../components/Umami.astro';
 
 // Mode switch, at build time: `MODO=privado` (private prototype) also ships provisional sources
 // (2023 programmes, party documents, public statements). Anything else ships only official
@@ -20,6 +21,7 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
     <meta name="robots" content="noindex, nofollow" />
     <title>29N · Elige a ciegas</title>
     <meta name="description" content="Lee lo que proponen los partidos sin saber de quién es." />
+    <Umami />
   </head>
   <body>
     <main id="app" data-modo={modo}>

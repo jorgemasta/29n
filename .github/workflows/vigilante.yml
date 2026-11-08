@@ -53,6 +53,8 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+          # Without it the deploy ships the site with analytics off (docs/deploy.md).
+          UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
           PUSH: '1'
           PARTIDO: ${{ inputs.partido }}
           FORZAR: ${{ inputs.forzar }}

@@ -21,6 +21,7 @@ import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './prov
 import { boton, empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
 import { botonReportar } from './reportar';
+import { analiticaConfirmar, analiticaResultado, analiticaVerTema, configurarAnalitica } from './analitica';
 
 const CLAVE_SEMILLA = '29n:semilla';
 const CLAVE_ESTADO = '29n:estado';
@@ -66,6 +67,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
   let preferencias = leer<{ sinApuesta?: boolean }>(CLAVE_PREFERENCIAS) ?? {};
   const nueva = (estado?: EstadoPartida) => crearPartida(dataset, provincia ?? null, semilla!, estado, { modo });
   let partida: Partida = nueva(leer<EstadoPartida>(CLAVE_ESTADO) ?? undefined);
+  configurarAnalitica(dataset.partidos.map((p) => p.id));
   /** Saved on every confirmed action; an unconfirmed round is never saved. */
   const actualizar = (p: Partida) => {
     partida = p;
@@ -87,8 +89,8 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     else if (provincia === undefined) return irA('provincia'); // first visit: ask where they vote
     else if (ruta === 'inicio') raiz.replaceChildren(vistaVueltaApp());
     else if (ruta === 'temas') raiz.replaceChildren(vistaLista());
-    else if (ruta === 'resultado') raiz.replaceChildren(vistaResultadoApp());
-    else if (existe) raiz.replaceChildren(vistaTema(temaId!));
+    else if (ruta === 'resultado') raiz.replaceChildren(vistaResultadoApp()), analiticaResultado(partida);
+    else if (existe) raiz.replaceChildren(vistaTema(temaId!)), analiticaVerTema(partida);
     else if (!inicioMostrado && partida.hechos().length > 0) {
       inicioMostrado = true;
       return irA('inicio');
@@ -262,7 +264,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
   /** Confirm + optional bet in one tap: a chip reveals with that bet, the big button without. */
   const hojaConfirmar = (temaId: string, valor: string): HTMLElement => {
     const confirmar = (apuesta?: string) => {
+      const antes = partida;
       actualizar(partida.elegir(temaId, valor, apuesta ? { apuesta } : undefined));
+      analiticaConfirmar(antes, partida, temaId);
       seleccion = null;
       pintar();
     };
