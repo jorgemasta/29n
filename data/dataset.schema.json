@@ -680,6 +680,10 @@
                   "type": "string",
                   "pattern": "^[a-z0-9-]+$"
                 },
+                "pregunta": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
                 "barrera": {
                   "type": "string",
                   "enum": [
@@ -734,6 +738,213 @@
           "entradas"
         ],
         "additionalProperties": false
+      }
+    },
+    "preguntas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "texto": {
+            "type": "string",
+            "minLength": 1
+          },
+          "palabrasClave": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "orden": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "texto",
+          "palabrasClave",
+          "orden"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "respuestas": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "partido": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "pregunta": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versiones": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "estado": {
+                "type": "string",
+                "const": "responde"
+              },
+              "texto": {
+                "type": "object",
+                "properties": {
+                  "que": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "como": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "cifra": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "que",
+                  "como",
+                  "cifra"
+                ],
+                "additionalProperties": false
+              },
+              "citas": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "texto": {
+                      "type": "string",
+                      "minLength": 40,
+                      "maxLength": 600
+                    },
+                    "pagina": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "texto",
+                    "pagina"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "partido",
+              "pregunta",
+              "versiones",
+              "estado",
+              "texto",
+              "citas"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "partido": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "pregunta": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versiones": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "estado": {
+                "type": "string",
+                "const": "no_menciona"
+              }
+            },
+            "required": [
+              "partido",
+              "pregunta",
+              "versiones",
+              "estado"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "partido": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "pregunta": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versiones": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "estado": {
+                "type": "string",
+                "const": "sin_verificar"
+              }
+            },
+            "required": [
+              "partido",
+              "pregunta",
+              "versiones",
+              "estado"
+            ],
+            "additionalProperties": false
+          }
+        ]
       }
     }
   },

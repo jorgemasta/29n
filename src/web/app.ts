@@ -1,5 +1,5 @@
 // Client app: topic list ↔ topic (blind choice → reveal). All logic lives in the game engine;
-// this file only renders and routes (#provincia, #temas, #tema/<id>). Choices never leave the browser.
+// this file only renders and routes (#provincia, #temas, #tema/<id>, #preguntar[/<id>]). Choices never leave the browser.
 import type { Dataset, Modo, TipoFuente } from '../dataset/esquema';
 import {
   crearPartida,
@@ -14,6 +14,7 @@ import {
 } from '../juego';
 import { nuevaSemilla } from '../juego/azar';
 import { borrar, guardar, leer } from './almacen';
+import { vistaPreguntas, vistaRespuesta } from './preguntar';
 import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
 
@@ -69,6 +70,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     if (ruta === 'provincia') raiz.replaceChildren(vistaProvincia(provincia, elegirProvincia));
     else if (provincia === undefined) return irA('provincia'); // first visit: ask where they vote
     else if (ruta === 'temas') raiz.replaceChildren(vistaLista());
+    else if (ruta === 'preguntar') raiz.replaceChildren(vistaPreguntas(partida));
+    else if (ruta.startsWith('preguntar/') && partida.preguntas().some((p) => p.id === decodeURIComponent(ruta.slice(10))))
+      raiz.replaceChildren(vistaRespuesta(partida, decodeURIComponent(ruta.slice(10))));
     else if (existe) raiz.replaceChildren(vistaTema(temaId!));
     else {
       // Start: straight to the next pending topic (vivienda first), or the list if all are done.
@@ -125,6 +129,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       lista.extra.length ? h('h2', {}, 'Temas extra') : null,
       lista.extra.length ? h('ul', { class: 'filas', role: 'list' }, ...lista.extra.map(fila)) : null,
       bloquePartidos(partida),
+      partida.preguntas().length
+        ? h('p', {}, h('a', { href: '#preguntar', class: 'fila-tema' }, h('span', { class: 'nombre' }, 'Pregunta a los programas'), h('span', { class: 'estado' }, '→')))
+        : null,
       hechos ? reiniciar : null,
     );
   };

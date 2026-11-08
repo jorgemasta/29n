@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generado": "2026-11-08T22:08:33.424Z",
+  "generado": "2026-11-08T22:17:27.667Z",
   "origen": "simulado",
-  "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.",
+  "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso, también las respuestas de Preguntar. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.",
   "partidos": [
     {
       "id": "prueba-a",
@@ -16,7 +16,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
         "titulo": "Programa de prueba A",
-        "hashPdf": "761d446f5474bd208910ea4d5cd88480f9916c1f0c088166e24548e09888fcbd"
+        "hashPdf": "1793e77249c409f2b501538b803226da5d228d0387e7cc0efb6641b0c98ad14f"
       },
       "prueba": true
     },
@@ -32,7 +32,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
         "titulo": "Programa de prueba B",
-        "hashPdf": "a6bfd01a14a06b59988df6241a14873e92b6c6a04dddb0f4ed2cca0363aa28f2"
+        "hashPdf": "78d502092448fa6e16b8f31b8c7470b77d37edd7b592699423bad1b3b4ea3865"
       },
       "prueba": true
     },
@@ -48,7 +48,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
         "titulo": "Programa de prueba C",
-        "hashPdf": "37417d42ba3b32206ecd7649d111e6869891f2d3b7aaf2b5208300f8f0db9c5a"
+        "hashPdf": "167e321a0fd5e138cf6e1cbe9e50ed5363dc098a9563d240491fa2c2d4c2c9e3"
       },
       "prueba": true
     },
@@ -64,7 +64,7 @@
         "fuente": "programa-2023",
         "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
         "titulo": "Programa de prueba D (2023)",
-        "hashPdf": "3e0e5ce6a68e2a040b50fd33f38d59a86ebfc38e092bc0cb5d4c1f32ac70edda"
+        "hashPdf": "090e776986a1fb71781528e59412603973a394f6b1858ac184a3606109f62dc0"
       },
       "prueba": true
     },
@@ -84,7 +84,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-e.pdf",
         "titulo": "Programa de prueba E (regional)",
-        "hashPdf": "3e4cef76e1ccdee484f8f7a3416c1841a234ac8826a0cb18c204c8542841cf27"
+        "hashPdf": "2163bf30964600665772c99ec2002efea2a8b94d6ff08d8daa8094aeda2197b1"
       },
       "prueba": true
     },
@@ -5210,7 +5210,7 @@
   "informes": [
     {
       "partido": "prueba-a",
-      "hashPdf": "761d446f5474bd208910ea4d5cd88480f9916c1f0c088166e24548e09888fcbd",
+      "hashPdf": "1793e77249c409f2b501538b803226da5d228d0387e7cc0efb6641b0c98ad14f",
       "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
       "versionPrompt": "v2",
       "extraidas": 16,
@@ -6403,12 +6403,204 @@
           "barrera": "V13",
           "resultado": "pasa",
           "detalle": "consenso: viable"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: turístic, vacacional, vacacionales, pisos turísticos, viviendas de uso turístico, turismo; ninguna página los menciona"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "servicio-militar",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; ninguna página los menciona"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
         }
       ]
     },
     {
       "partido": "prueba-b",
-      "hashPdf": "a6bfd01a14a06b59988df6241a14873e92b6c6a04dddb0f4ed2cca0363aa28f2",
+      "hashPdf": "78d502092448fa6e16b8f31b8c7470b77d37edd7b592699423bad1b3b4ea3865",
       "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
       "versionPrompt": "v2",
       "extraidas": 17,
@@ -7661,12 +7853,174 @@
           "barrera": "V13",
           "resultado": "pasa",
           "detalle": "consenso: muy_dificil"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: turístic, vacacional, vacacionales, pisos turísticos, viviendas de uso turístico, turismo; ninguna página los menciona"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "servicio-militar",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; revisadas las páginas 16 sin respuesta"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: ley electoral, sistema electoral, LOREG, circunscripción, listas abiertas, D’Hondt, D'Hondt, proporcionalidad, voto rogado; ninguna página los menciona"
         }
       ]
     },
     {
       "partido": "prueba-c",
-      "hashPdf": "37417d42ba3b32206ecd7649d111e6869891f2d3b7aaf2b5208300f8f0db9c5a",
+      "hashPdf": "167e321a0fd5e138cf6e1cbe9e50ed5363dc098a9563d240491fa2c2d4c2c9e3",
       "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
       "versionPrompt": "v2",
       "extraidas": 17,
@@ -8384,7 +8738,7 @@
           "tema": "cuidados",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: dependencia, cuidad, cuidados, crianza, permiso de, natalidad, conciliación, residencia, mayores, discapacidad, familia, infancia; ninguna página los menciona"
+          "detalle": "términos buscados: dependencia, cuidad, cuidados, crianza, permiso de, natalidad, conciliación, residencia, mayores, discapacidad, familia, infancia; revisadas las páginas 19 sin propuesta"
         },
         {
           "tema": "seguridad-justicia",
@@ -8919,12 +9273,114 @@
           "barrera": "V12",
           "resultado": "pasa",
           "detalle": "términos buscados: Canarias, canari, cayuco, patera, ruta atlántica, Atlántico, menores migrantes, menores no acompañados, acogida, Salvamento Marítimo, llegadas, Mauritania, Senegal; revisadas las páginas 18 sin propuesta"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: IVA, luz, electricidad, eléctric, factura energética, bono social; ninguna página los menciona"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: cuatro días, 4 días, semana laboral, jornada, horas semanales, 32 horas; ninguna página los menciona"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: jubilación, jubilar, edad de retiro, retiro, pensiones, prejubila; revisadas las páginas 5 sin respuesta"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "servicio-militar",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; ninguna página los menciona"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: ley electoral, sistema electoral, LOREG, circunscripción, listas abiertas, D’Hondt, D'Hondt, proporcionalidad, voto rogado; ninguna página los menciona"
         }
       ]
     },
     {
       "partido": "prueba-d",
-      "hashPdf": "3e0e5ce6a68e2a040b50fd33f38d59a86ebfc38e092bc0cb5d4c1f32ac70edda",
+      "hashPdf": "090e776986a1fb71781528e59412603973a394f6b1858ac184a3606109f62dc0",
       "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
       "versionPrompt": "v2",
       "extraidas": 12,
@@ -9312,13 +9768,13 @@
           "tema": "coste-vida",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: precio, inflación, IPC, coste de la vida, cesta de la compra, alimento, factura, luz, electricidad, carburante, poder adquisitivo, IVA; ninguna página los menciona"
+          "detalle": "términos buscados: precio, inflación, IPC, coste de la vida, cesta de la compra, alimento, factura, luz, electricidad, carburante, poder adquisitivo, IVA; revisadas las páginas 14 sin propuesta"
         },
         {
           "tema": "impuestos",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: impuesto, fiscal, tributa, IRPF, IVA, Sociedades, patrimonio, sucesiones, deducción, fraude fiscal, recaudación, tasa; ninguna página los menciona"
+          "detalle": "términos buscados: impuesto, fiscal, tributa, IRPF, IVA, Sociedades, patrimonio, sucesiones, deducción, fraude fiscal, recaudación, tasa; revisadas las páginas 14 sin propuesta"
         },
         {
           "tema": "educacion",
@@ -9877,12 +10333,144 @@
           "barrera": "V12",
           "resultado": "pasa",
           "detalle": "términos buscados: Canarias, canari, cayuco, patera, ruta atlántica, Atlántico, menores migrantes, menores no acompañados, acogida, Salvamento Marítimo, llegadas, Mauritania, Senegal; revisadas las páginas 11 sin propuesta"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: turístic, vacacional, vacacionales, pisos turísticos, viviendas de uso turístico, turismo; ninguna página los menciona"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: cuatro días, 4 días, semana laboral, jornada, horas semanales, 32 horas; ninguna página los menciona"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "servicio-militar",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; ninguna página los menciona"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: ley electoral, sistema electoral, LOREG, circunscripción, listas abiertas, D’Hondt, D'Hondt, proporcionalidad, voto rogado; ninguna página los menciona"
         }
       ]
     },
     {
       "partido": "prueba-e",
-      "hashPdf": "3e4cef76e1ccdee484f8f7a3416c1841a234ac8826a0cb18c204c8542841cf27",
+      "hashPdf": "2163bf30964600665772c99ec2002efea2a8b94d6ff08d8daa8094aeda2197b1",
       "url": "https://29n.jorgemasta.com/programas/prueba-e.pdf",
       "versionPrompt": "v2",
       "extraidas": 4,
@@ -10090,13 +10678,13 @@
           "tema": "coste-vida",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: precio, inflación, IPC, coste de la vida, cesta de la compra, alimento, factura, luz, electricidad, carburante, poder adquisitivo, IVA; ninguna página los menciona"
+          "detalle": "términos buscados: precio, inflación, IPC, coste de la vida, cesta de la compra, alimento, factura, luz, electricidad, carburante, poder adquisitivo, IVA; revisadas las páginas 6 sin propuesta"
         },
         {
           "tema": "impuestos",
           "barrera": "V12",
           "resultado": "pasa",
-          "detalle": "términos buscados: impuesto, fiscal, tributa, IRPF, IVA, Sociedades, patrimonio, sucesiones, deducción, fraude fiscal, recaudación, tasa; revisadas las páginas 4 sin propuesta"
+          "detalle": "términos buscados: impuesto, fiscal, tributa, IRPF, IVA, Sociedades, patrimonio, sucesiones, deducción, fraude fiscal, recaudación, tasa; revisadas las páginas 4, 6 sin propuesta"
         },
         {
           "tema": "educacion",
@@ -10355,8 +10943,668 @@
           "barrera": "V13",
           "resultado": "pasa",
           "detalle": "consenso: dificil"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "iva-luz",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V1",
+          "resultado": "pasa",
+          "detalle": "1 cita(s) localizadas"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V3",
+          "resultado": "pasa",
+          "detalle": "sin marcas identificativas"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
+        },
+        {
+          "pregunta": "alquiler-turistico",
+          "barrera": "V10",
+          "resultado": "pasa",
+          "detalle": "fiel a la cita según un verificador independiente"
+        },
+        {
+          "pregunta": "semana-4-dias",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: cuatro días, 4 días, semana laboral, jornada, horas semanales, 32 horas; ninguna página los menciona"
+        },
+        {
+          "pregunta": "edad-jubilacion",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: jubilación, jubilar, edad de retiro, retiro, pensiones, prejubila; ninguna página los menciona"
+        },
+        {
+          "pregunta": "cuidado-mayores",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: personas mayores, persona mayor, gente mayor, dependen, residencia, cuidados, ayuda a domicilio, teleasistencia, envejecimiento; ninguna página los menciona"
+        },
+        {
+          "pregunta": "servicio-militar",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; ninguna página los menciona"
+        },
+        {
+          "pregunta": "ley-electoral",
+          "barrera": "V12",
+          "resultado": "pasa",
+          "detalle": "no lo menciona: términos buscados: ley electoral, sistema electoral, LOREG, circunscripción, listas abiertas, D’Hondt, D'Hondt, proporcionalidad, voto rogado; ninguna página los menciona"
         }
       ]
+    }
+  ],
+  "preguntas": [
+    {
+      "id": "iva-luz",
+      "texto": "¿Quién propone bajar el IVA de la luz?",
+      "palabrasClave": [
+        "IVA",
+        "luz",
+        "electricidad",
+        "eléctric",
+        "factura energética",
+        "bono social"
+      ],
+      "orden": 1
+    },
+    {
+      "id": "alquiler-turistico",
+      "texto": "¿Qué dicen del alquiler turístico?",
+      "palabrasClave": [
+        "turístic",
+        "vacacional",
+        "vacacionales",
+        "pisos turísticos",
+        "viviendas de uso turístico",
+        "turismo"
+      ],
+      "orden": 2
+    },
+    {
+      "id": "semana-4-dias",
+      "texto": "¿Alguien propone la semana de 4 días?",
+      "palabrasClave": [
+        "cuatro días",
+        "4 días",
+        "semana laboral",
+        "jornada",
+        "horas semanales",
+        "32 horas"
+      ],
+      "orden": 3
+    },
+    {
+      "id": "edad-jubilacion",
+      "texto": "¿Qué pasa con la edad de jubilación?",
+      "palabrasClave": [
+        "jubilación",
+        "jubilar",
+        "edad de retiro",
+        "retiro",
+        "pensiones",
+        "prejubila"
+      ],
+      "orden": 4
+    },
+    {
+      "id": "cuidado-mayores",
+      "texto": "¿Qué proponen para cuidar a personas mayores?",
+      "palabrasClave": [
+        "personas mayores",
+        "persona mayor",
+        "gente mayor",
+        "dependen",
+        "residencia",
+        "cuidados",
+        "ayuda a domicilio",
+        "teleasistencia",
+        "envejecimiento"
+      ],
+      "orden": 5
+    },
+    {
+      "id": "servicio-militar",
+      "texto": "¿Qué dicen sobre el servicio militar?",
+      "palabrasClave": [
+        "servicio militar",
+        "mili",
+        "reclutamiento",
+        "conscripción",
+        "reservistas",
+        "servicio civil",
+        "Fuerzas Armadas"
+      ],
+      "orden": 6
+    },
+    {
+      "id": "ley-electoral",
+      "texto": "¿Alguien quiere cambiar la ley electoral?",
+      "palabrasClave": [
+        "ley electoral",
+        "sistema electoral",
+        "LOREG",
+        "circunscripción",
+        "listas abiertas",
+        "D’Hondt",
+        "D'Hondt",
+        "proporcionalidad",
+        "voto rogado"
+      ],
+      "orden": 7
+    }
+  ],
+  "respuestas": [
+    {
+      "partido": "prueba-a",
+      "pregunta": "iva-luz",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Bajar el IVA de la factura de la luz de forma permanente.",
+        "como": "La rebaja sería permanente, no temporal, y se aplicaría a todos los hogares y también a los pequeños comercios en su factura de electricidad.",
+        "cifra": "Del 21 % al 5 %"
+      },
+      "citas": [
+        {
+          "texto": "Bajaremos el IVA de la factura de la luz del 21 % al 5 % de forma permanente para todos los hogares y pequeños comercios.",
+          "pagina": 18
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "pregunta": "alquiler-turistico",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-a",
+      "pregunta": "semana-4-dias",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Probar la semana laboral de cuatro días con el mismo sueldo.",
+        "como": "Sería un programa piloto, no una obligación: solo participarían las empresas que se presenten de forma voluntaria, con una jornada de 32 horas semanales.",
+        "cifra": "32 horas"
+      },
+      "citas": [
+        {
+          "texto": "Abriremos un programa piloto de semana laboral de cuatro días, con 32 horas y el mismo sueldo, en las empresas que se presenten voluntariamente.",
+          "pagina": 18
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "pregunta": "edad-jubilacion",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Mantener la edad legal de jubilación y permitir adelantarla sin recorte.",
+        "como": "La edad legal seguiría en 67 años. Quien haya cotizado 40 años podría jubilarse a los 63 sin que le recorten la pensión.",
+        "cifra": "Jubilación a los 63 con 40 años cotizados"
+      },
+      "citas": [
+        {
+          "texto": "Mantendremos la edad legal de jubilación en 67 años y permitiremos jubilarse a los 63 sin recorte de la pensión a quien haya cotizado 40 años.",
+          "pagina": 18
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "pregunta": "cuidado-mayores",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Garantizar la ayuda a domicilio pública a las personas mayores dependientes.",
+        "como": "Sería un derecho para todas ellas, con un plazo máximo de tres meses desde que hacen la solicitud hasta que empiezan a recibir la ayuda en casa.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Garantizaremos la ayuda a domicilio pública a todas las personas mayores dependientes en un plazo máximo de tres meses desde que la soliciten.",
+          "pagina": 18
+        }
+      ]
+    },
+    {
+      "partido": "prueba-a",
+      "pregunta": "servicio-militar",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-a",
+      "pregunta": "ley-electoral",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Cambiar la ley electoral para que los escaños sean proporcionales a los votos.",
+        "como": "El reparto se haría con una circunscripción única para todo el país, en lugar de repartir los escaños provincia a provincia como se hace ahora.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Reformaremos la ley electoral para que el reparto de escaños sea proporcional a los votos en todo el país, con una circunscripción única.",
+          "pagina": 18
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "pregunta": "iva-luz",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Rebajar el IVA de la electricidad durante los meses de invierno.",
+        "como": "La rebaja sería solo para las familias con menos ingresos y se aplicaría únicamente durante los meses de invierno de cada año, no el resto del año.",
+        "cifra": "IVA del 10 %"
+      },
+      "citas": [
+        {
+          "texto": "Rebajaremos el IVA de la electricidad al 10 % durante los meses de invierno para las familias con menos ingresos.",
+          "pagina": 19
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "pregunta": "alquiler-turistico",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-b",
+      "pregunta": "semana-4-dias",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "No imponer por ley una semana laboral de cuatro días.",
+        "como": "La duración de la jornada se decidiría en cada sector, mediante su convenio colectivo, negociado entre las empresas y los representantes de los trabajadores.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "No impondremos por ley una semana laboral de cuatro días: la jornada de cada sector se pactará en su convenio colectivo.",
+          "pagina": 19
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "pregunta": "edad-jubilacion",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Permitir una jubilación flexible a partir de los 65 años.",
+        "como": "Quien quiera podría seguir trabajando desde esa edad y, al mismo tiempo, cobrar la mitad de su pensión, en lugar de tener que elegir entre una cosa y otra.",
+        "cifra": "La mitad de la pensión"
+      },
+      "citas": [
+        {
+          "texto": "Fomentaremos la jubilación flexible: se podrá seguir trabajando a partir de los 65 años y cobrar a la vez la mitad de la pensión.",
+          "pagina": 19
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "pregunta": "cuidado-mayores",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Crear una deducción fiscal para las familias que cuidan a un mayor.",
+        "como": "La deducción sería para las familias que cuidan en su propia casa a una persona mayor dependiente, y se descontaría cada año en la declaración de impuestos.",
+        "cifra": "Hasta 3.000 euros al año"
+      },
+      "citas": [
+        {
+          "texto": "Aprobaremos una deducción fiscal de hasta 3.000 euros al año para las familias que cuiden en casa a una persona mayor dependiente.",
+          "pagina": 19
+        }
+      ]
+    },
+    {
+      "partido": "prueba-b",
+      "pregunta": "servicio-militar",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-b",
+      "pregunta": "ley-electoral",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-c",
+      "pregunta": "iva-luz",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-c",
+      "pregunta": "alquiler-turistico",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Permitir a los ayuntamientos prohibir nuevos pisos turísticos en algunos barrios.",
+        "como": "Podrían hacerlo en los barrios donde falte vivienda para las personas que viven allí, porque tendrían la competencia para decidirlo ellos mismos.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Daremos a los ayuntamientos la competencia para prohibir nuevos pisos turísticos en los barrios donde falte vivienda para los residentes.",
+          "pagina": 19
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "pregunta": "semana-4-dias",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-c",
+      "pregunta": "edad-jubilacion",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-c",
+      "pregunta": "cuidado-mayores",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Crear una red pública de residencias para personas mayores.",
+        "como": "Tendría plazas nuevas y un precio máximo para cada residente, que dependería de la pensión que cobre, de modo que nadie pague más de lo que puede.",
+        "cifra": "60.000 plazas nuevas"
+      },
+      "citas": [
+        {
+          "texto": "Crearemos una red pública de residencias con 60.000 plazas nuevas y un precio máximo ligado a la pensión de cada residente.",
+          "pagina": 19
+        }
+      ]
+    },
+    {
+      "partido": "prueba-c",
+      "pregunta": "servicio-militar",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-c",
+      "pregunta": "ley-electoral",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-d",
+      "pregunta": "iva-luz",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Mantener el IVA de la luz en el tipo general, sin rebajas.",
+        "como": "Lo recaudado por ese impuesto en la factura se destinaría a ampliar el bono social eléctrico, que reciben los hogares que cumplen ciertos requisitos.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Mantendremos el IVA de la luz en el tipo general y destinaremos lo recaudado a ampliar el bono social eléctrico.",
+          "pagina": 14
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "pregunta": "alquiler-turistico",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-d",
+      "pregunta": "semana-4-dias",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-d",
+      "pregunta": "edad-jubilacion",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Permitir retrasar la jubilación de forma voluntaria hasta una edad más alta.",
+        "como": "Por cada año más que se trabaje, la pensión subiría un 4 %. Sería voluntario: nadie estaría obligado a retrasar su jubilación hasta los 72 años.",
+        "cifra": "Hasta los 72 años"
+      },
+      "citas": [
+        {
+          "texto": "Permitiremos retrasar voluntariamente la jubilación hasta los 72 años con un incremento del 4 % de la pensión por cada año adicional trabajado.",
+          "pagina": 14
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "pregunta": "cuidado-mayores",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Crear centros de día públicos para personas mayores dependientes.",
+        "como": "Habría al menos uno en cada municipio de más de 10.000 habitantes, para que las personas mayores dependientes puedan pasar el día atendidas cerca de casa.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Crearemos una red pública de centros de día en todos los municipios de más de 10.000 habitantes para personas mayores dependientes.",
+          "pagina": 14
+        }
+      ]
+    },
+    {
+      "partido": "prueba-d",
+      "pregunta": "servicio-militar",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-d",
+      "pregunta": "ley-electoral",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-e",
+      "pregunta": "iva-luz",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Mantener sin impuesto indirecto la electricidad en las islas.",
+        "como": "Se pediría que el impuesto canario equivalente al IVA siga en el 0 % para la luz, de forma permanente y en todas las islas, no solo en algunas.",
+        "cifra": "0 %"
+      },
+      "citas": [
+        {
+          "texto": "Pediremos que el impuesto canario sobre la electricidad se mantenga en el 0 % en todas las islas y de forma permanente.",
+          "pagina": 6
+        }
+      ]
+    },
+    {
+      "partido": "prueba-e",
+      "pregunta": "alquiler-turistico",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "responde",
+      "texto": {
+        "que": "Limitar las nuevas licencias de pisos turísticos en las islas.",
+        "como": "El objetivo sería que el alquiler a turistas no reduzca la cantidad de viviendas disponibles para las personas que viven de forma habitual en las islas.",
+        "cifra": null
+      },
+      "citas": [
+        {
+          "texto": "Limitaremos las nuevas licencias de vivienda vacacional en las islas para que el alquiler turístico no reduzca la vivienda disponible para residentes.",
+          "pagina": 6
+        }
+      ]
+    },
+    {
+      "partido": "prueba-e",
+      "pregunta": "semana-4-dias",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-e",
+      "pregunta": "edad-jubilacion",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-e",
+      "pregunta": "cuidado-mayores",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-e",
+      "pregunta": "servicio-militar",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
+    },
+    {
+      "partido": "prueba-e",
+      "pregunta": "ley-electoral",
+      "versiones": {
+        "prompt": "pregunta-v1"
+      },
+      "estado": "no_menciona"
     }
   ]
 }

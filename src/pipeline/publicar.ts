@@ -2,7 +2,8 @@
 // the watcher). Real data replaces simulated data entirely; the party's previous posturas and
 // report are replaced by the new ones, the other parties are kept as they were.
 import { construirDataset, validarDataset } from '../dataset';
-import type { Dataset, Partido, Tema } from '../dataset/esquema';
+import type { Dataset, Partido, Pregunta, Tema } from '../dataset/esquema';
+import { PREGUNTAS_SUGERIDAS } from '../registro/preguntas';
 import type { OpcionesProceso, ResultadoProceso } from './index';
 import { contarPalabras } from './texto';
 
@@ -24,6 +25,8 @@ export function fusionarPrograma(
   resultado: ResultadoProceso,
   args: {
     temas: Tema[];
+    /** Suggested questions (default: registro/preguntas). */
+    preguntas?: Pregunta[];
     generado: string;
     fecha?: string;
     /** Party registry (src/registro/partidos.ts): when given, every registered party without a
@@ -34,7 +37,7 @@ export function fusionarPrograma(
 ): Fusion {
   if (!resultado.publicable) return { ok: false, motivo: resultado.informe.motivo ?? 'no publicable' };
   if (partido.programa.estado !== 'publicado') return { ok: false, motivo: 'el partido no tiene programa' };
-  const previos = anterior.origen === 'real' ? anterior : { partidos: [], posturas: [], informes: [] };
+  const previos = anterior.origen === 'real' ? anterior : { partidos: [], posturas: [], informes: [], respuestas: [] };
   const conHash: Partido = {
     ...partido,
     programa: { ...partido.programa, hashPdf: resultado.informe.hashPdf, ...(args.fecha ? { fecha: args.fecha } : {}) },
@@ -49,10 +52,18 @@ export function fusionarPrograma(
   const dataset = construirDataset({
     partidos,
     temas: args.temas,
+    preguntas: args.preguntas ?? PREGUNTAS_SUGERIDAS,
     resultados: [
       ...previos.informes
         .filter((i) => i.partido !== partido.id && (!registro || registro[i.partido]))
-        .map((informe) => ({ informe, posturas: previos.posturas.filter((p) => p.partido === informe.partido) })),
+        .map((informe) => ({
+          informe,
+          posturas: previos.posturas.filter((p) => p.partido === informe.partido),
+          // Answers to questions no longer suggested are dropped (V9 rejects unknown questions).
+          respuestas: (previos.respuestas ?? []).filter(
+            (r) => r.partido === informe.partido && (args.preguntas ?? PREGUNTAS_SUGERIDAS).some((q) => q.id === r.pregunta),
+          ),
+        })),
       resultado,
     ],
     generado: args.generado,

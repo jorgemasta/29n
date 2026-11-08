@@ -2,7 +2,8 @@
 // fake AI adapter. Used while no real programme can be processed (no credentials / PDF on this
 // machine). The dataset is marked origen: "simulado" and every party prueba: true. Content lives in
 // scripts/datos-simulados.ts; party D is a provisional source (private prototype only), E is a
-// regional (Canary) party and F a regional party with its programme pending.
+// regional (Canary) party and F a regional party with its programme pending. Each fictional PDF
+// ends with a page of answers to the suggested questions (Preguntar), see RESPUESTAS_SIMULADAS.
 //   npx tsx scripts/generar-simulado.ts
 import { mkdir, writeFile } from 'node:fs/promises';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
@@ -11,7 +12,8 @@ import { crearIAFalsa } from '../src/ia/falsa';
 import { procesarPrograma } from '../src/pipeline';
 import { TEMAS } from '../src/registro/temas';
 import { contarPalabras } from '../src/pipeline/texto';
-import { FICTICIOS, PENDIENTES_FICTICIOS } from './datos-simulados';
+import { PREGUNTAS_SUGERIDAS } from '../src/registro/preguntas';
+import { FICTICIOS, PENDIENTES_FICTICIOS, RESPUESTAS_SIMULADAS } from './datos-simulados';
 
 // Simulated feasibility (V13): fictional, generic answers that vary by party and topic so the
 // reveal shows every kind of note (agreement, "sin concreción", "sin consenso").
@@ -82,6 +84,10 @@ for (const f of FICTICIOS) {
     paginas.push([tema.titulo, ...lineas(p[0])]);
     pagina[tema.id] = paginas.length;
   }
+  // Last page: what the fictional programme says about the suggested questions.
+  const respuestasF = RESPUESTAS_SIMULADAS[f.id] ?? {};
+  const paginaRespuestas = paginas.length + 1;
+  paginas.push(['Otras propuestas', ...Object.values(respuestasF).flatMap((r) => [...lineas(r[0]), ''])]);
   const pdf = await pdfFicticio(paginas);
   await writeFile(`public/programas/${f.id}.pdf`, pdf);
   const partido: Partido = {
@@ -100,6 +106,13 @@ for (const f of FICTICIOS) {
     'adivinar-partido': () => ({ asignaciones: [] }),
     'confirmar-ausencia': () => ({ propone: false, citas: [] }),
     'evaluar-viabilidad': (e) => viabilidadSimulada(f.id, e.tema.id, e.evaluacion),
+    'responder-pregunta': (e) => {
+      const r = respuestasF[e.pregunta.id];
+      if (!r) return { menciona: false, que: '', como: '', cifra: null, citas: [] };
+      if (!e.paginas.some((p: { pagina: number }) => p.pagina === paginaRespuestas))
+        throw new Error(`${f.id}/${e.pregunta.id}: las palabras clave no encuentran la página de respuestas`);
+      return { menciona: true, que: r[1], como: r[2], cifra: r[3], citas: [{ texto: r[0], pagina: paginaRespuestas }] };
+    },
   });
   const r = await procesarPrograma(pdf, partido, ia, {
     temas: TEMAS,
@@ -112,6 +125,8 @@ for (const f of FICTICIOS) {
   for (const p of r.posturas) if (p.estado === 'propone') (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);
   const fallidas = r.posturas.filter((p) => p.estado === 'sin_verificar');
+  const sinVerificar = r.respuestas.filter((x) => x.estado === 'sin_verificar');
+  if (sinVerificar.length) throw new Error(`${f.id}: respuestas sin verificar ${sinVerificar.map((x) => x.pregunta).join(', ')}: ${JSON.stringify(r.informe.entradas.filter((e) => e.pregunta && e.resultado !== 'pasa'))}`);
   if (fallidas.length) throw new Error(`${f.id}: sin verificar ${fallidas.map((p) => p.tema).join(', ')}: ${JSON.stringify(r.informe.entradas.filter((e) => e.resultado === 'descartar'))}`);
   partidos.push({ ...partido, programa: { ...partido.programa, hashPdf: r.informe.hashPdf } } as Partido);
   resultados.push(r);
@@ -123,10 +138,11 @@ for (const f of PENDIENTES_FICTICIOS)
 const dataset = construirDataset({
   partidos,
   temas: TEMAS,
+  preguntas: PREGUNTAS_SUGERIDAS,
   resultados,
   generado: new Date().toISOString(),
   origen: 'simulado',
-  nota: 'Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.',
+  nota: 'Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso, también las respuestas de Preguntar. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.',
 });
 const v = validarDataset(dataset);
 if (!v.valido) throw new Error(`V9: ${v.errores.join('\n')}`);

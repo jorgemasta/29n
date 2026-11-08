@@ -13,7 +13,9 @@ export type Tarea =
   /** V12: second, targeted pass before marking "proposes nothing". */
   | 'confirmar-ausencia'
   /** V13: blind feasibility evaluation with the public rubric (run twice, independently). */
-  | 'evaluar-viabilidad';
+  | 'evaluar-viabilidad'
+  /** Answer a voter's question from one programme, with literal quotes (Preguntar). */
+  | 'responder-pregunta';
 
 export interface PeticionIA<T> {
   tarea: Tarea;

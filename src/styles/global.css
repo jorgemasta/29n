@@ -149,3 +149,10 @@ a { color: var(--acento); }
 .tabla-rubrica { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
 .tabla-rubrica th, .tabla-rubrica td { text-align: left; vertical-align: top; padding: 0.5rem; border-bottom: 1px solid var(--borde); }
 pre.prompt { white-space: pre-wrap; background: var(--piedra-2); padding: 0.75rem; border-radius: 0.5rem; font-size: 0.8rem; }
+
+/* Preguntar (#14) */
+.tarjeta-respuesta { cursor: default; }
+.tarjeta-respuesta .gris { font-size: 0.85rem; font-style: italic; }
+.pregunta-libre { margin: 1.5rem 0 1rem; display: grid; gap: 0.5rem; }
+.pregunta-libre textarea:disabled, .pregunta-libre button:disabled { opacity: 0.6; cursor: not-allowed; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
