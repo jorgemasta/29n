@@ -9,6 +9,7 @@ import { construirDataset, validarDataset, type Partido } from '../src/dataset';
 import { crearIAFalsa } from '../src/ia/falsa';
 import { procesarPrograma } from '../src/pipeline';
 import { TEMAS } from '../src/registro/temas';
+import { contarPalabras } from '../src/pipeline/texto';
 import { FICTICIOS } from './datos-simulados';
 
 /** Wraps a paragraph into lines that fit an A4 page in 10pt Helvetica. */
@@ -36,6 +37,8 @@ async function pdfFicticio(paginas: string[][]): Promise<Uint8Array> {
 }
 
 const partidos: Partido[] = [];
+// V5: each text is compared with the median length of the ones already processed for that topic.
+const longitudesTema: Record<string, number[]> = {};
 const resultados = [];
 await mkdir('public/programas', { recursive: true });
 for (const f of FICTICIOS) {
@@ -63,7 +66,12 @@ for (const f of FICTICIOS) {
     'extraer-postura': (e) => (de(e) ? { propone: true, citas: [{ texto: de(e)![0], pagina: pagina[e.tema.id]! }] } : { propone: false, citas: [] }),
     neutralizar: (e) => ({ que: de(e)![1], como: de(e)![2], cifra: de(e)![3] }),
   });
-  const r = await procesarPrograma(pdf, partido, ia, { temas: TEMAS });
+  const r = await procesarPrograma(pdf, partido, ia, {
+    temas: TEMAS,
+    dominios: { [f.id]: ['29n.jorgemasta.com'] },
+    longitudesTema,
+  });
+  for (const p of r.posturas) if (p.estado === 'propone') (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
   if (!r.publicable) throw new Error(`${f.id} no publicable: ${r.informe.motivo}`);
   const fallidas = r.posturas.filter((p) => p.estado === 'sin_verificar');
   if (fallidas.length) throw new Error(`${f.id}: sin verificar ${fallidas.map((p) => p.tema).join(', ')}: ${JSON.stringify(r.informe.entradas.filter((e) => e.resultado === 'descartar'))}`);

@@ -26,3 +26,9 @@ export const terminosDePrueba: TerminosIdentificativos = {
   pej: ['Partido Ejemplo', 'PEJ', 'Ana Líder'],
   otro: ['Otro Partido', 'OTP', 'Bruno Jefe', 'Avanzamos Juntos'],
 };
+
+/** Official domains of the fictional parties (V7). */
+export const dominiosDePrueba: Record<string, string[]> = {
+  pej: ['ejemplo.org'],
+  otro: ['otro-partido.es'],
+};

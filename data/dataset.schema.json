@@ -372,6 +372,12 @@
             "type": "string",
             "pattern": "^[0-9a-f]{64}$"
           },
+          "url": {
+            "type": "string"
+          },
+          "fecha": {
+            "type": "string"
+          },
           "versionPrompt": {
             "type": "string"
           },
@@ -391,6 +397,40 @@
           "motivo": {
             "type": "string"
           },
+          "posturas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tema": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "estado": {
+                  "type": "string",
+                  "enum": [
+                    "propone",
+                    "no_propone",
+                    "sin_verificar"
+                  ]
+                },
+                "reescrituras": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "motivo": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "tema",
+                "estado",
+                "reescrituras"
+              ],
+              "additionalProperties": false
+            }
+          },
           "entradas": {
             "type": "array",
             "items": {
@@ -406,6 +446,10 @@
                     "V1",
                     "V2",
                     "V3",
+                    "V4",
+                    "V5",
+                    "V6",
+                    "V7",
                     "V9"
                   ]
                 },
@@ -415,7 +459,8 @@
                     "pasa",
                     "corregir",
                     "reescribir",
-                    "descartar"
+                    "descartar",
+                    "bloquear"
                   ]
                 },
                 "detalle": {
@@ -423,7 +468,6 @@
                 }
               },
               "required": [
-                "tema",
                 "barrera",
                 "resultado",
                 "detalle"
@@ -439,6 +483,7 @@
           "extraidas",
           "descartadas",
           "publicable",
+          "posturas",
           "entradas"
         ],
         "additionalProperties": false

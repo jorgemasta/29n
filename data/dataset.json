@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generado": "2026-11-08T21:47:22.599Z",
+  "generado": "2026-11-08T21:51:27.230Z",
   "origen": "simulado",
   "nota": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado).",
   "partidos": [
@@ -16,7 +16,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
         "titulo": "Programa de prueba A",
-        "hashPdf": "ccb663cfd7ac7c3e3b798ad7d199a135d6f1f7ebdb4b49bc3218435bf5313541"
+        "hashPdf": "cf9767674b3cef0531bb1cd70399db1348b8d1984c9f48cd5e1538116b984546"
       },
       "prueba": true
     },
@@ -32,7 +32,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
         "titulo": "Programa de prueba B",
-        "hashPdf": "e563e1cd483e8489993acd4271bef85722c02b1145f22fbfc29e2fa8c5b61afe"
+        "hashPdf": "df8e355297ce98934553a8f2165a1c9f6faf54c2c4646ba4dcd364a3f91f43f7"
       },
       "prueba": true
     },
@@ -48,7 +48,7 @@
         "fuente": "programa-29n",
         "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
         "titulo": "Programa de prueba C",
-        "hashPdf": "d09d8d1f84b1b1a5b2ba0b5ce341d1f8c67b9ac2e490a094da4c2c22a7b537a6"
+        "hashPdf": "772f4678140050eaa2aceb217923a2cc9ff117d6087417f8ab1dd89e881cb12b"
       },
       "prueba": true
     },
@@ -64,7 +64,7 @@
         "fuente": "programa-2023",
         "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
         "titulo": "Programa de prueba D (2023)",
-        "hashPdf": "57672835e9edd5f206b69aecb1ed20c26b82e831dfca18a42811c9ab9f3a6764"
+        "hashPdf": "a10dcf9fa7031d0e2a9aa9acdd01c569c04fb477a603ed4e4f02aca103f70ed7"
       },
       "prueba": true
     }
@@ -207,12 +207,12 @@
       "partido": "prueba-a",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Crear una empresa pública estatal que construya vivienda de alquiler asequible.",
-        "como": "Los alquileres de esas viviendas no superarían el 30 % de los ingresos del hogar.",
+        "como": "Los alquileres de esas viviendas no superarían el 30 % de los ingresos del hogar que viva en ellas, y la empresa dependería del Estado.",
         "cifra": "50.000 viviendas al año"
       },
       "citas": [
@@ -226,12 +226,12 @@
       "partido": "prueba-a",
       "tema": "empleo",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Bajar la jornada laboral máxima sin bajar el sueldo.",
-        "como": "Además, subir el salario mínimo hasta el 60 % del salario medio.",
+        "como": "Se aprobaría por ley para todos los sectores. Además, subir el salario mínimo hasta el 60 % del salario medio del país.",
         "cifra": "35 horas semanales"
       },
       "citas": [
@@ -245,12 +245,12 @@
       "partido": "prueba-a",
       "tema": "sanidad",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Fijar por ley un plazo máximo de espera para operarse.",
-        "como": "Y contratar más profesionales en los centros de salud.",
+        "como": "El plazo se garantizaría por ley en todo el país. Además, contratar más médicos, enfermeras y otros profesionales en los centros de salud de atención primaria.",
         "cifra": "60 días de espera como máximo; 10.000 profesionales"
       },
       "citas": [
@@ -264,12 +264,12 @@
       "partido": "prueba-a",
       "tema": "inmigracion",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Abrir vías legales para venir a trabajar con una oferta de empleo.",
-        "como": "Y dar papeles a quienes ya viven y trabajan en España sin ellos.",
+        "como": "Y aprobar una regularización para dar papeles a quienes ya viven y trabajan en España sin ellos, con requisitos de residencia y empleo.",
         "cifra": null
       },
       "citas": [
@@ -283,12 +283,12 @@
       "partido": "prueba-a",
       "tema": "pensiones",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Subir todas las pensiones cada año lo mismo que los precios.",
-        "como": "Se pagaría haciendo que los sueldos más altos coticen por todo lo que ganan.",
+        "como": "Se pagaría haciendo que los sueldos más altos coticen a la Seguridad Social por todo lo que ganan, sin el límite máximo actual.",
         "cifra": null
       },
       "citas": [
@@ -302,12 +302,12 @@
       "partido": "prueba-a",
       "tema": "coste-vida",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Quitar el IVA a los alimentos básicos de forma permanente.",
-        "como": "Y crear una empresa pública que venda la luz a precio de coste.",
+        "como": "La rebaja del IVA sería permanente. Además, crear una empresa pública de energía que venda la electricidad a los hogares a precio de coste.",
         "cifra": "IVA del 0 % en alimentos básicos"
       },
       "citas": [
@@ -321,13 +321,13 @@
       "partido": "prueba-a",
       "tema": "impuestos",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Crear un impuesto permanente a los patrimonios más grandes.",
-        "como": "Y subir el impuesto que pagan las grandes empresas por sus beneficios.",
-        "cifra": "Desde 3 millones de euros; 2 puntos más"
+        "como": "Lo pagarían quienes tengan un patrimonio grande. Además, subir el impuesto de sociedades, el que pagan las grandes empresas por sus beneficios.",
+        "cifra": "Desde 3 millones de euros; dos puntos más"
       },
       "citas": [
         {
@@ -340,12 +340,12 @@
       "partido": "prueba-a",
       "tema": "educacion",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Hacer gratis la escuela infantil de 0 a 3 años.",
-        "como": "Y quitar las tasas de la universidad pública en la primera matrícula.",
+        "como": "Sería gratis en toda España para todas las familias. Además, bajar las tasas de la universidad pública hasta quitarlas en la primera matrícula.",
         "cifra": null
       },
       "citas": [
@@ -359,12 +359,12 @@
       "partido": "prueba-a",
       "tema": "instituciones",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Crear un organismo independiente que investigue los contratos públicos.",
-        "como": "Y prohibir que las empresas den dinero a los partidos.",
+        "como": "Ese organismo podría investigar los contratos públicos por su cuenta. Además, prohibir que las empresas den dinero a los partidos políticos.",
         "cifra": null
       },
       "citas": [
@@ -378,12 +378,12 @@
       "partido": "prueba-a",
       "tema": "energia-clima",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Cerrar las centrales nucleares según el calendario ya previsto.",
-        "como": "Y que toda la electricidad venga de fuentes renovables.",
+        "como": "Las centrales se cerrarían según el calendario de cierre ya previsto. Además, aprobar un plan para que toda la electricidad venga de fuentes renovables.",
         "cifra": "100 % renovable en 2035"
       },
       "citas": [
@@ -397,13 +397,13 @@
       "partido": "prueba-a",
       "tema": "cuidados",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Acabar con la lista de espera para recibir la ayuda a la dependencia.",
-        "como": "Y alargar el permiso por nacimiento de cada progenitor.",
-        "cifra": "En 2 años; 24 semanas"
+        "como": "Atender a todas las personas que esperan la ayuda a la dependencia. Además, alargar el permiso por nacimiento para cada uno de los progenitores.",
+        "cifra": "En dos años; 24 semanas"
       },
       "citas": [
         {
@@ -416,7 +416,7 @@
       "partido": "prueba-a",
       "tema": "seguridad-justicia",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -424,7 +424,7 @@
       "partido": "prueba-a",
       "tema": "territorial",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -432,12 +432,12 @@
       "partido": "prueba-a",
       "tema": "igualdad",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Obligar a las empresas a publicar lo que pagan a mujeres y a hombres.",
-        "como": "Lo harían por ley, separado por categoría profesional.",
+        "como": "Lo harían por ley: las empresas tendrían que publicar sus salarios separados por sexo y por categoría profesional para que se puedan comparar.",
         "cifra": "Empresas de más de 25 personas"
       },
       "citas": [
@@ -451,7 +451,7 @@
       "partido": "prueba-a",
       "tema": "campo-agua",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -459,12 +459,12 @@
       "partido": "prueba-a",
       "tema": "transporte",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Crear un abono único para todo el transporte público estatal.",
-        "como": "Valdría para trenes de cercanías y media distancia y autobuses entre ciudades.",
+        "como": "Valdría para los trenes de cercanías y de media distancia y para los autobuses entre ciudades, con un precio fijo al mes en todo el país.",
         "cifra": "30 euros al mes"
       },
       "citas": [
@@ -478,7 +478,7 @@
       "partido": "prueba-a",
       "tema": "defensa",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -486,12 +486,12 @@
       "partido": "prueba-a",
       "tema": "europa-exterior",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Pedir un presupuesto común europeo más grande.",
-        "como": "Se pagaría con impuestos europeos a las grandes empresas tecnológicas.",
+        "como": "Se pagaría con nuevos impuestos europeos a las grandes empresas tecnológicas, y la Unión Europea tendría más dinero propio para sus políticas comunes.",
         "cifra": null
       },
       "citas": [
@@ -505,12 +505,12 @@
       "partido": "prueba-b",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Quitar el impuesto que se paga al comprar la primera vivienda.",
-        "como": "Además, liberar suelo público para que se construyan más viviendas.",
+        "como": "Además, liberar suelo público para que se construyan más viviendas en venta y en alquiler, con el objetivo de que aumente la oferta disponible.",
         "cifra": null
       },
       "citas": [
@@ -524,12 +524,12 @@
       "partido": "prueba-b",
       "tema": "empleo",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Bajar lo que pagan las empresas a la Seguridad Social por contratar a jóvenes.",
-        "como": "Solo con contrato indefinido y durante los tres primeros años.",
+        "como": "La rebaja sería solo para contratos indefinidos y duraría los tres primeros años de cada contrato, para animar a contratar a jóvenes.",
         "cifra": "Menores de 30 años"
       },
       "citas": [
@@ -543,12 +543,12 @@
       "partido": "prueba-b",
       "tema": "sanidad",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Reducir las listas de espera para operarse.",
-        "como": "Pagando también operaciones en clínicas privadas con dinero público.",
+        "como": "Se haría usando todos los recursos disponibles, públicos y privados, y pagando también operaciones en clínicas privadas con dinero público mediante conciertos.",
         "cifra": "A la mitad"
       },
       "citas": [
@@ -562,12 +562,12 @@
       "partido": "prueba-b",
       "tema": "inmigracion",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Que la inmigración dependa de los empleos que haga falta cubrir.",
-        "como": "Contratando en el país de origen y reforzando el control de fronteras y las devoluciones.",
+        "como": "Se contrataría en el país de origen según los empleos que haga falta cubrir. Además, reforzar el control de fronteras y los acuerdos de devolución.",
         "cifra": null
       },
       "citas": [
@@ -581,12 +581,12 @@
       "partido": "prueba-b",
       "tema": "pensiones",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Crear un ahorro para la jubilación en las empresas, además de la pensión pública.",
-        "como": "Los trabajadores aportarían de forma automática salvo que digan que no.",
+        "como": "Los trabajadores aportarían una parte de su sueldo de forma automática salvo que digan que no, y sería un ahorro gestionado desde las empresas.",
         "cifra": null
       },
       "citas": [
@@ -600,12 +600,12 @@
       "partido": "prueba-b",
       "tema": "coste-vida",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Ajustar cada año el IRPF a la subida de los precios.",
-        "como": "Así nadie pagaría más impuestos solo porque suba la inflación.",
+        "como": "Se actualizarían cada año los tramos del impuesto sobre la renta según la inflación, para que nadie pague más solo porque suben los precios.",
         "cifra": null
       },
       "citas": [
@@ -619,12 +619,12 @@
       "partido": "prueba-b",
       "tema": "impuestos",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Bajar el IRPF a todos.",
-        "como": "Y quitar el impuesto de patrimonio y el de herencias entre padres e hijos.",
+        "como": "La rebaja llegaría a todas las rentas. Además, quitar el impuesto de patrimonio y el impuesto de sucesiones en las herencias entre padres e hijos.",
         "cifra": "Tipo mínimo del 15 %"
       },
       "citas": [
@@ -638,12 +638,12 @@
       "partido": "prueba-b",
       "tema": "educacion",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Dar a las familias un cheque para elegir colegio.",
-        "como": "Y hacer a todos los alumnos un mismo examen en todo el país.",
+        "como": "Las familias recibirían un cheque para pagar el colegio que elijan. Además, hacer a todos los alumnos un mismo examen común en todo el país.",
         "cifra": null
       },
       "citas": [
@@ -657,12 +657,12 @@
       "partido": "prueba-b",
       "tema": "instituciones",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Cambiar cómo se elige el órgano que gobierna a los jueces.",
-        "como": "La mayoría de sus miembros los elegirían los propios jueces.",
+        "como": "La mayoría de los miembros del órgano de gobierno de los jueces los elegirían los propios jueces, en lugar de elegirlos el Parlamento como ahora.",
         "cifra": null
       },
       "citas": [
@@ -676,12 +676,12 @@
       "partido": "prueba-b",
       "tema": "energia-clima",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Mantener abiertas las centrales nucleares mientras sean seguras.",
-        "como": "Y bajar los impuestos a la producción de electricidad.",
+        "como": "Las centrales seguirían funcionando más años si los organismos de control dicen que son seguras. Además, bajar los impuestos a la producción de electricidad.",
         "cifra": null
       },
       "citas": [
@@ -695,12 +695,12 @@
       "partido": "prueba-b",
       "tema": "cuidados",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Rebajar los impuestos a las familias trabajadoras con hijos pequeños.",
-        "como": "Por cada hijo menor de tres años.",
+        "como": "Sería una deducción en el impuesto sobre la renta por cada hijo menor de tres años, para las familias en las que se trabaje.",
         "cifra": "2.000 euros al año"
       },
       "citas": [
@@ -714,12 +714,12 @@
       "partido": "prueba-b",
       "tema": "seguridad-justicia",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Contratar más policías y guardias civiles.",
-        "como": "Y castigar más a quien repite delitos leves.",
+        "como": "Se incorporarían nuevos agentes a la Policía Nacional y a la Guardia Civil. Además, castigar con penas más duras a quien repite delitos leves.",
         "cifra": "8.000 agentes"
       },
       "citas": [
@@ -733,12 +733,12 @@
       "partido": "prueba-b",
       "tema": "territorial",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Hacer un nuevo sistema de financiación igual para todas las comunidades.",
-        "como": "Con un fondo común que asegure los mismos servicios en todas.",
+        "como": "Las reglas serían iguales para todas las comunidades, con un fondo común de nivelación que asegure los mismos servicios públicos en todas ellas.",
         "cifra": null
       },
       "citas": [
@@ -752,7 +752,7 @@
       "partido": "prueba-b",
       "tema": "igualdad",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -760,12 +760,12 @@
       "partido": "prueba-b",
       "tema": "campo-agua",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Hacer un plan nacional del agua que lleve agua de unas cuencas a otras.",
-        "como": "Y construir más embalses y depósitos para el regadío.",
+        "como": "El plan conectaría unas cuencas con otras para llevar agua donde falta. Además, construir más embalses y depósitos de agua para el regadío.",
         "cifra": null
       },
       "citas": [
@@ -779,7 +779,7 @@
       "partido": "prueba-b",
       "tema": "transporte",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -787,12 +787,12 @@
       "partido": "prueba-b",
       "tema": "defensa",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Llegar al gasto en defensa acordado con los aliados de la OTAN.",
-        "como": "Y renovar el material de las Fuerzas Armadas.",
+        "como": "Se llegaría al nivel de gasto acordado con los aliados de la alianza. Además, renovar y modernizar el material y el equipamiento de las Fuerzas Armadas.",
         "cifra": null
       },
       "citas": [
@@ -806,7 +806,7 @@
       "partido": "prueba-b",
       "tema": "europa-exterior",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -814,12 +814,12 @@
       "partido": "prueba-c",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Limitar el precio del alquiler en las zonas con más demanda.",
-        "como": "Y subir el IBI, el impuesto municipal sobre la casa, a viviendas vacías más de dos años.",
+        "como": "Y subir el IBI, el impuesto municipal sobre la casa, a las viviendas que estén vacías durante más de dos años.",
         "cifra": null
       },
       "citas": [
@@ -833,13 +833,13 @@
       "partido": "prueba-c",
       "tema": "empleo",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Pagar a los trabajadores mientras se forman para cambiar de oficio.",
-        "como": "Cobrarían una parte de su sueldo durante la formación.",
-        "cifra": "6 meses al 70 % del sueldo"
+        "como": "Cualquier trabajador podría reciclarse durante seis meses cobrando una parte de su sueldo mientras se forma, con una prestación pública para ello.",
+        "cifra": "Seis meses al 70 % del sueldo"
       },
       "citas": [
         {
@@ -852,12 +852,12 @@
       "partido": "prueba-c",
       "tema": "sanidad",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Incluir el dentista y la salud mental en la sanidad pública.",
-        "como": "Con un psicólogo en cada centro de salud.",
+        "como": "El dentista y la atención a la salud mental pasarían a ser gratis en la sanidad pública, con un psicólogo en cada centro de salud.",
         "cifra": null
       },
       "citas": [
@@ -871,7 +871,7 @@
       "partido": "prueba-c",
       "tema": "inmigracion",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -879,12 +879,12 @@
       "partido": "prueba-c",
       "tema": "pensiones",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Permitir cobrar la pensión entera y trabajar a la vez.",
-        "como": "Y subir las pensiones más bajas hasta el umbral de la pobreza.",
+        "como": "Se podría cobrar la pensión completa mientras se sigue trabajando. Además, subir las pensiones más bajas hasta llegar al umbral de la pobreza.",
         "cifra": null
       },
       "citas": [
@@ -898,12 +898,12 @@
       "partido": "prueba-c",
       "tema": "coste-vida",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Dar una ayuda para la compra de comida a los hogares con menos ingresos.",
-        "como": "Solo para hogares que ingresen menos de 20.000 euros al año.",
+        "como": "Sería un cheque para comprar alimentos, solo para los hogares que ingresen menos de 20.000 euros al año, gestionado por las administraciones públicas.",
         "cifra": "200 euros"
       },
       "citas": [
@@ -917,13 +917,13 @@
       "partido": "prueba-c",
       "tema": "impuestos",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Simplificar el IRPF a pocos tramos.",
-        "como": "Quitando casi todas las deducciones sin cambiar lo que se recauda en total.",
-        "cifra": "3 tramos"
+        "como": "El impuesto sobre la renta pasaría a tener solo tres tramos, quitando casi todas las deducciones sin cambiar lo que se recauda en total.",
+        "cifra": "Tres tramos"
       },
       "citas": [
         {
@@ -936,12 +936,12 @@
       "partido": "prueba-c",
       "tema": "educacion",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Bajar el número de alumnos por clase.",
-        "como": "Y ofrecer más plazas de FP que combinen clase y trabajo en empresas.",
+        "como": "Habría un máximo de alumnos en cada aula. Además, ofrecer más plazas de FP dual, que combina las clases con el trabajo en empresas.",
         "cifra": "Máximo 20 por aula; el doble de plazas"
       },
       "citas": [
@@ -955,12 +955,12 @@
       "partido": "prueba-c",
       "tema": "instituciones",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Publicar al momento las agendas de los cargos públicos.",
-        "como": "Con un registro obligatorio de sus reuniones con grupos de interés.",
+        "como": "Las agendas de los cargos públicos se publicarían al momento, con un registro obligatorio de todas sus reuniones con empresas y grupos de interés.",
         "cifra": null
       },
       "citas": [
@@ -974,12 +974,12 @@
       "partido": "prueba-c",
       "tema": "energia-clima",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Poner placas solares en todos los edificios públicos.",
-        "como": "Y pagar la mitad de las placas de las comunidades de vecinos.",
+        "como": "Las placas se pondrían en todos los edificios públicos. Además, pagar con dinero público la mitad del autoconsumo solar de las comunidades de vecinos.",
         "cifra": "50 % de subvención"
       },
       "citas": [
@@ -993,7 +993,7 @@
       "partido": "prueba-c",
       "tema": "cuidados",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -1001,12 +1001,12 @@
       "partido": "prueba-c",
       "tema": "seguridad-justicia",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Digitalizar los juzgados y nombrar más jueces.",
-        "como": "Para que los juicios tarden la mitad.",
+        "como": "Todos los juzgados trabajarían de forma digital y se crearían nuevas plazas de jueces, con el objetivo de que los juicios tarden la mitad.",
         "cifra": "500 jueces más"
       },
       "citas": [
@@ -1020,12 +1020,12 @@
       "partido": "prueba-c",
       "tema": "territorial",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Convertir el Senado en la cámara de las comunidades autónomas.",
-        "como": "Allí se negociarían las leyes que les afectan.",
+        "como": "El Senado pasaría a ser una cámara de representación de los territorios, donde se negociarían las leyes que afectan a las comunidades autónomas.",
         "cifra": null
       },
       "citas": [
@@ -1039,12 +1039,12 @@
       "partido": "prueba-c",
       "tema": "igualdad",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Crear juzgados especializados en violencia contra las mujeres en cada provincia.",
-        "como": "Con atención psicológica gratis para las víctimas.",
+        "como": "Habría juzgados especializados en violencia contra las mujeres en todas las provincias, con atención psicológica gratis para las víctimas.",
         "cifra": null
       },
       "citas": [
@@ -1058,12 +1058,12 @@
       "partido": "prueba-c",
       "tema": "campo-agua",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Prohibir que los agricultores vendan por debajo de lo que les cuesta producir.",
-        "como": "Con un observatorio público que vigile los precios.",
+        "como": "Se garantizaría por ley que nadie pague a los agricultores menos de lo que cuesta producir, con un observatorio público que vigile los precios.",
         "cifra": null
       },
       "citas": [
@@ -1077,12 +1077,12 @@
       "partido": "prueba-c",
       "tema": "transporte",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Volver a poner trenes nocturnos y líneas regionales que se cerraron.",
-        "como": "Para conectar los pueblos y las zonas rurales.",
+        "como": "Se recuperarían los trenes nocturnos y las líneas de tren regional que se cerraron en los últimos años, para conectar mejor los pueblos y las zonas rurales.",
         "cifra": null
       },
       "citas": [
@@ -1096,12 +1096,12 @@
       "partido": "prueba-c",
       "tema": "defensa",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Impulsar un ejército común europeo.",
-        "como": "El aumento del gasto en defensa iría a proyectos compartidos con otros países europeos.",
+        "como": "El aumento del gasto en defensa iría a proyectos compartidos con otros países de la Unión Europea, con el objetivo de crear un ejército común.",
         "cifra": null
       },
       "citas": [
@@ -1115,12 +1115,12 @@
       "partido": "prueba-c",
       "tema": "europa-exterior",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Quitar la unanimidad en las decisiones europeas de política exterior.",
-        "como": "Para que la Unión Europea pueda actuar con una sola voz.",
+        "como": "Las decisiones de política exterior de la Unión Europea se tomarían por mayoría y no por unanimidad, para que pueda actuar con una sola voz.",
         "cifra": null
       },
       "citas": [
@@ -1134,12 +1134,12 @@
       "partido": "prueba-d",
       "tema": "vivienda",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Que el Estado avale a los jóvenes para comprar su primera vivienda.",
-        "como": "Podrían pedir una hipoteca por el precio completo de la casa.",
+        "como": "El Estado daría avales públicos para que puedan pedir una hipoteca por el precio completo de la casa, sin tener que pagar una entrada.",
         "cifra": "Menores de 35 años"
       },
       "citas": [
@@ -1153,12 +1153,12 @@
       "partido": "prueba-d",
       "tema": "empleo",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Hacer que los autónomos paguen su cuota según lo que ganen de verdad.",
-        "como": "Y que tengan derecho a paro si cierran su negocio.",
+        "como": "Los autónomos pagarían su cuota según lo que ganen de verdad cada año. Además, tendrían derecho a cobrar el paro si cierran su negocio.",
         "cifra": null
       },
       "citas": [
@@ -1172,7 +1172,7 @@
       "partido": "prueba-d",
       "tema": "sanidad",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -1180,12 +1180,12 @@
       "partido": "prueba-d",
       "tema": "inmigracion",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Crear un sistema de puntos para decidir quién puede venir a trabajar.",
-        "como": "Se valoraría la formación, el idioma y tener una oferta de empleo.",
+        "como": "Un sistema de puntos decidiría quién puede venir a trabajar, valorando la formación, el conocimiento del idioma y tener una oferta de empleo.",
         "cifra": null
       },
       "citas": [
@@ -1199,12 +1199,12 @@
       "partido": "prueba-d",
       "tema": "pensiones",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Permitir retrasar la jubilación de forma voluntaria.",
-        "como": "La pensión subiría por cada año de más trabajado.",
+        "como": "Quien quiera podría jubilarse más tarde, y la pensión subiría por cada año de más que trabaje, con un límite de edad para retrasarla.",
         "cifra": "Hasta los 72 años; 4 % por año"
       },
       "citas": [
@@ -1218,7 +1218,7 @@
       "partido": "prueba-d",
       "tema": "coste-vida",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -1226,7 +1226,7 @@
       "partido": "prueba-d",
       "tema": "impuestos",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -1234,7 +1234,7 @@
       "partido": "prueba-d",
       "tema": "educacion",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -1242,7 +1242,7 @@
       "partido": "prueba-d",
       "tema": "instituciones",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -1250,7 +1250,7 @@
       "partido": "prueba-d",
       "tema": "energia-clima",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "no_propone"
     },
@@ -1258,12 +1258,12 @@
       "partido": "prueba-d",
       "tema": "cuidados",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Crear centros de día públicos para personas mayores dependientes.",
-        "como": "En todos los municipios de más de 10.000 habitantes.",
+        "como": "Se crearía una red pública de centros de día para personas mayores dependientes en todos los municipios de más de 10.000 habitantes.",
         "cifra": null
       },
       "citas": [
@@ -1277,12 +1277,12 @@
       "partido": "prueba-d",
       "tema": "seguridad-justicia",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Crear una unidad contra los delitos por internet en cada provincia.",
-        "como": "Y una oficina para atender a las víctimas de estafas en internet.",
+        "como": "Habría una unidad especializada en delitos por internet en cada provincia. Además, crear una oficina para atender a las víctimas de estafas en internet.",
         "cifra": null
       },
       "citas": [
@@ -1296,12 +1296,12 @@
       "partido": "prueba-d",
       "tema": "territorial",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Negociar la financiación con cada comunidad por separado.",
-        "como": "Teniendo en cuenta su población, lo dispersa que está y su envejecimiento.",
+        "como": "Cada comunidad tendría su propio acuerdo de financiación, teniendo en cuenta su población, lo dispersa que está y lo envejecida que está.",
         "cifra": null
       },
       "citas": [
@@ -1315,12 +1315,12 @@
       "partido": "prueba-d",
       "tema": "igualdad",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Obligar a tener planes de igualdad a las administraciones.",
-        "como": "Y a las empresas que reciban dinero público.",
+        "como": "Los planes de igualdad serían obligatorios en todas las administraciones públicas y también en las empresas que reciban subvenciones o dinero público.",
         "cifra": null
       },
       "citas": [
@@ -1334,12 +1334,12 @@
       "partido": "prueba-d",
       "tema": "campo-agua",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Dar una ayuda a los jóvenes que empiecen como agricultores o ganaderos en pueblos pequeños.",
-        "como": "Solo en municipios de menos de 5.000 habitantes.",
+        "como": "Sería una ayuda para empezar como agricultor o ganadero, solo en los municipios de menos de 5.000 habitantes, para atraer a gente joven al campo.",
         "cifra": "50.000 euros"
       },
       "citas": [
@@ -1353,12 +1353,12 @@
       "partido": "prueba-d",
       "tema": "transporte",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Terminar los grandes corredores de tren de mercancías.",
-        "como": "Darían prioridad a estos corredores frente a nuevas líneas de alta velocidad.",
+        "como": "Los corredores de tren de mercancías del Mediterráneo y del Atlántico se terminarían primero, con prioridad sobre nuevas líneas de alta velocidad.",
         "cifra": "Antes de 2030"
       },
       "citas": [
@@ -1372,12 +1372,12 @@
       "partido": "prueba-d",
       "tema": "defensa",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Mantener el gasto en defensa como está.",
-        "como": "Y dar prioridad a las misiones de paz de Naciones Unidas.",
+        "como": "El gasto en defensa se quedaría en el nivel actual. Además, dar prioridad a la participación en misiones de paz con mandato de Naciones Unidas.",
         "cifra": null
       },
       "citas": [
@@ -1391,12 +1391,12 @@
       "partido": "prueba-d",
       "tema": "europa-exterior",
       "versiones": {
-        "prompt": "v1"
+        "prompt": "v2"
       },
       "estado": "propone",
       "texto": {
         "que": "Reforzar las relaciones con América Latina y el Mediterráneo.",
-        "como": "Y pedir que España sea miembro permanente del G20.",
+        "como": "Se reforzarían las relaciones con los países de América Latina y del Mediterráneo, y se pediría que España sea miembro permanente del G20.",
         "cifra": null
       },
       "citas": [
@@ -1410,13 +1410,111 @@
   "informes": [
     {
       "partido": "prueba-a",
-      "hashPdf": "ccb663cfd7ac7c3e3b798ad7d199a135d6f1f7ebdb4b49bc3218435bf5313541",
-      "versionPrompt": "v1",
+      "hashPdf": "cf9767674b3cef0531bb1cd70399db1348b8d1984c9f48cd5e1538116b984546",
+      "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
+      "versionPrompt": "v2",
       "extraidas": 14,
       "descartadas": 0,
       "publicable": true,
+      "posturas": [
+        {
+          "tema": "vivienda",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "empleo",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "sanidad",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "inmigracion",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "pensiones",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "coste-vida",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "impuestos",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "educacion",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "instituciones",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "energia-clima",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "cuidados",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "seguridad-justicia",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "territorial",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "igualdad",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "campo-agua",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "transporte",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "defensa",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "europa-exterior",
+          "estado": "propone",
+          "reescrituras": 0
+        }
+      ],
       "entradas": [
         {
+          "barrera": "V7",
+          "resultado": "pasa",
+          "detalle": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
+        },
+        {
           "tema": "vivienda",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1424,9 +1522,33 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "vivienda",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "empleo",
@@ -1436,9 +1558,33 @@
         },
         {
           "tema": "empleo",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "empleo",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "sanidad",
@@ -1448,9 +1594,33 @@
         },
         {
           "tema": "sanidad",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "sanidad",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "inmigracion",
@@ -1460,9 +1630,33 @@
         },
         {
           "tema": "inmigracion",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "inmigracion",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "pensiones",
@@ -1472,9 +1666,33 @@
         },
         {
           "tema": "pensiones",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "pensiones",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "coste-vida",
@@ -1484,9 +1702,33 @@
         },
         {
           "tema": "coste-vida",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "coste-vida",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "impuestos",
@@ -1496,9 +1738,33 @@
         },
         {
           "tema": "impuestos",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "impuestos",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "educacion",
@@ -1508,9 +1774,33 @@
         },
         {
           "tema": "educacion",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "educacion",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "instituciones",
@@ -1520,9 +1810,33 @@
         },
         {
           "tema": "instituciones",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "instituciones",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "energia-clima",
@@ -1532,9 +1846,33 @@
         },
         {
           "tema": "energia-clima",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "energia-clima",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "cuidados",
@@ -1544,9 +1882,33 @@
         },
         {
           "tema": "cuidados",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "cuidados",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "igualdad",
@@ -1556,9 +1918,33 @@
         },
         {
           "tema": "igualdad",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "igualdad",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "transporte",
@@ -1568,9 +1954,33 @@
         },
         {
           "tema": "transporte",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "transporte",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "europa-exterior",
@@ -1580,21 +1990,143 @@
         },
         {
           "tema": "europa-exterior",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "europa-exterior",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         }
       ]
     },
     {
       "partido": "prueba-b",
-      "hashPdf": "e563e1cd483e8489993acd4271bef85722c02b1145f22fbfc29e2fa8c5b61afe",
-      "versionPrompt": "v1",
+      "hashPdf": "df8e355297ce98934553a8f2165a1c9f6faf54c2c4646ba4dcd364a3f91f43f7",
+      "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
+      "versionPrompt": "v2",
       "extraidas": 15,
       "descartadas": 0,
       "publicable": true,
+      "posturas": [
+        {
+          "tema": "vivienda",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "empleo",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "sanidad",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "inmigracion",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "pensiones",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "coste-vida",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "impuestos",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "educacion",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "instituciones",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "energia-clima",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "cuidados",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "seguridad-justicia",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "territorial",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "igualdad",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "campo-agua",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "transporte",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "defensa",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "europa-exterior",
+          "estado": "no_propone",
+          "reescrituras": 0
+        }
+      ],
       "entradas": [
         {
+          "barrera": "V7",
+          "resultado": "pasa",
+          "detalle": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
+        },
+        {
           "tema": "vivienda",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1602,9 +2134,33 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "vivienda",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "empleo",
@@ -1614,9 +2170,33 @@
         },
         {
           "tema": "empleo",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "empleo",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "sanidad",
@@ -1626,9 +2206,33 @@
         },
         {
           "tema": "sanidad",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "sanidad",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "inmigracion",
@@ -1638,9 +2242,33 @@
         },
         {
           "tema": "inmigracion",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "inmigracion",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "pensiones",
@@ -1650,9 +2278,33 @@
         },
         {
           "tema": "pensiones",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "pensiones",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "coste-vida",
@@ -1662,9 +2314,33 @@
         },
         {
           "tema": "coste-vida",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "coste-vida",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "impuestos",
@@ -1674,9 +2350,33 @@
         },
         {
           "tema": "impuestos",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "impuestos",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "educacion",
@@ -1686,9 +2386,33 @@
         },
         {
           "tema": "educacion",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "educacion",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "instituciones",
@@ -1698,9 +2422,33 @@
         },
         {
           "tema": "instituciones",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "instituciones",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "energia-clima",
@@ -1710,9 +2458,33 @@
         },
         {
           "tema": "energia-clima",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "energia-clima",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "cuidados",
@@ -1722,9 +2494,33 @@
         },
         {
           "tema": "cuidados",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "cuidados",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "seguridad-justicia",
@@ -1734,9 +2530,33 @@
         },
         {
           "tema": "seguridad-justicia",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "seguridad-justicia",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "territorial",
@@ -1746,9 +2566,33 @@
         },
         {
           "tema": "territorial",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "territorial",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "campo-agua",
@@ -1758,9 +2602,33 @@
         },
         {
           "tema": "campo-agua",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "campo-agua",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "defensa",
@@ -1770,21 +2638,143 @@
         },
         {
           "tema": "defensa",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "defensa",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         }
       ]
     },
     {
       "partido": "prueba-c",
-      "hashPdf": "d09d8d1f84b1b1a5b2ba0b5ce341d1f8c67b9ac2e490a094da4c2c22a7b537a6",
-      "versionPrompt": "v1",
+      "hashPdf": "772f4678140050eaa2aceb217923a2cc9ff117d6087417f8ab1dd89e881cb12b",
+      "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
+      "versionPrompt": "v2",
       "extraidas": 16,
       "descartadas": 0,
       "publicable": true,
+      "posturas": [
+        {
+          "tema": "vivienda",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "empleo",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "sanidad",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "inmigracion",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "pensiones",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "coste-vida",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "impuestos",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "educacion",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "instituciones",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "energia-clima",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "cuidados",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "seguridad-justicia",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "territorial",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "igualdad",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "campo-agua",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "transporte",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "defensa",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "europa-exterior",
+          "estado": "propone",
+          "reescrituras": 0
+        }
+      ],
       "entradas": [
         {
+          "barrera": "V7",
+          "resultado": "pasa",
+          "detalle": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
+        },
+        {
           "tema": "vivienda",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1792,9 +2782,33 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "vivienda",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "empleo",
@@ -1804,9 +2818,33 @@
         },
         {
           "tema": "empleo",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "empleo",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "sanidad",
@@ -1816,9 +2854,33 @@
         },
         {
           "tema": "sanidad",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "sanidad",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "sanidad",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "pensiones",
@@ -1828,9 +2890,33 @@
         },
         {
           "tema": "pensiones",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "pensiones",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "coste-vida",
@@ -1840,9 +2926,33 @@
         },
         {
           "tema": "coste-vida",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "coste-vida",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "coste-vida",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "impuestos",
@@ -1852,9 +2962,33 @@
         },
         {
           "tema": "impuestos",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "impuestos",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "impuestos",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "educacion",
@@ -1864,9 +2998,33 @@
         },
         {
           "tema": "educacion",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "educacion",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "educacion",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "instituciones",
@@ -1876,9 +3034,33 @@
         },
         {
           "tema": "instituciones",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "instituciones",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "instituciones",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "energia-clima",
@@ -1888,9 +3070,33 @@
         },
         {
           "tema": "energia-clima",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "energia-clima",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "energia-clima",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "seguridad-justicia",
@@ -1900,9 +3106,33 @@
         },
         {
           "tema": "seguridad-justicia",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "seguridad-justicia",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "territorial",
@@ -1912,9 +3142,33 @@
         },
         {
           "tema": "territorial",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "territorial",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "igualdad",
@@ -1924,9 +3178,33 @@
         },
         {
           "tema": "igualdad",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "igualdad",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "campo-agua",
@@ -1936,9 +3214,33 @@
         },
         {
           "tema": "campo-agua",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "campo-agua",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "transporte",
@@ -1948,9 +3250,33 @@
         },
         {
           "tema": "transporte",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "transporte",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "defensa",
@@ -1960,9 +3286,33 @@
         },
         {
           "tema": "defensa",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "defensa",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "europa-exterior",
@@ -1972,21 +3322,143 @@
         },
         {
           "tema": "europa-exterior",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "europa-exterior",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         }
       ]
     },
     {
       "partido": "prueba-d",
-      "hashPdf": "57672835e9edd5f206b69aecb1ed20c26b82e831dfca18a42811c9ab9f3a6764",
-      "versionPrompt": "v1",
+      "hashPdf": "a10dcf9fa7031d0e2a9aa9acdd01c569c04fb477a603ed4e4f02aca103f70ed7",
+      "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
+      "versionPrompt": "v2",
       "extraidas": 12,
       "descartadas": 0,
       "publicable": true,
+      "posturas": [
+        {
+          "tema": "vivienda",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "empleo",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "sanidad",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "inmigracion",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "pensiones",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "coste-vida",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "impuestos",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "educacion",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "instituciones",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "energia-clima",
+          "estado": "no_propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "cuidados",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "seguridad-justicia",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "territorial",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "igualdad",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "campo-agua",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "transporte",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "defensa",
+          "estado": "propone",
+          "reescrituras": 0
+        },
+        {
+          "tema": "europa-exterior",
+          "estado": "propone",
+          "reescrituras": 0
+        }
+      ],
       "entradas": [
         {
+          "barrera": "V7",
+          "resultado": "pasa",
+          "detalle": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
+        },
+        {
           "tema": "vivienda",
           "barrera": "V1",
           "resultado": "pasa",
@@ -1994,9 +3466,33 @@
         },
         {
           "tema": "vivienda",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "vivienda",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "vivienda",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "empleo",
@@ -2006,9 +3502,33 @@
         },
         {
           "tema": "empleo",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "empleo",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "empleo",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "inmigracion",
@@ -2018,9 +3538,33 @@
         },
         {
           "tema": "inmigracion",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "inmigracion",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "inmigracion",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "pensiones",
@@ -2030,9 +3574,33 @@
         },
         {
           "tema": "pensiones",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "pensiones",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "pensiones",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "cuidados",
@@ -2042,9 +3610,33 @@
         },
         {
           "tema": "cuidados",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "cuidados",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "cuidados",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "seguridad-justicia",
@@ -2054,9 +3646,33 @@
         },
         {
           "tema": "seguridad-justicia",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "seguridad-justicia",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "seguridad-justicia",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "territorial",
@@ -2066,9 +3682,33 @@
         },
         {
           "tema": "territorial",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "territorial",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "territorial",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "igualdad",
@@ -2078,9 +3718,33 @@
         },
         {
           "tema": "igualdad",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "igualdad",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "igualdad",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "campo-agua",
@@ -2090,9 +3754,33 @@
         },
         {
           "tema": "campo-agua",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "campo-agua",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "campo-agua",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "transporte",
@@ -2102,9 +3790,33 @@
         },
         {
           "tema": "transporte",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "transporte",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "transporte",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "defensa",
@@ -2114,9 +3826,33 @@
         },
         {
           "tema": "defensa",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "defensa",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "defensa",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         },
         {
           "tema": "europa-exterior",
@@ -2126,9 +3862,33 @@
         },
         {
           "tema": "europa-exterior",
+          "barrera": "V2",
+          "resultado": "pasa",
+          "detalle": "páginas declaradas correctas"
+        },
+        {
+          "tema": "europa-exterior",
           "barrera": "V3",
           "resultado": "pasa",
           "detalle": "sin marcas identificativas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V4",
+          "resultado": "pasa",
+          "detalle": "cifras trazables a las citas"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V5",
+          "resultado": "pasa",
+          "detalle": "longitud dentro del rango"
+        },
+        {
+          "tema": "europa-exterior",
+          "barrera": "V6",
+          "resultado": "pasa",
+          "detalle": "plantilla completa"
         }
       ]
     }
