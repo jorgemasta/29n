@@ -1,6 +1,8 @@
 # Despliegue (paso humano)
 
-La web es estática: Cloudflare sirve `dist/` como *static assets* de un Worker (`wrangler.jsonc`).
+La web es estática: Cloudflare sirve `dist/` como *static assets* de un Worker (`wrangler.jsonc`). Solo `/` pasa
+antes por `worker/index.ts`, que con `?r=reto` cambia el og:title de la vista previa del enlace. La imagen og
+(`public/og.png`, 1200×630) se regenera con `npm run og`.
 No hay credenciales de Cloudflare ni de Anthropic en el repo.
 
 1. `npx wrangler login` (o `CLOUDFLARE_API_TOKEN` con permiso de Workers y DNS de `jorgemasta.com`).

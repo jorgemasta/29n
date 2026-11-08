@@ -1,10 +1,13 @@
-// Cloudflare Workers (static assets only for now). Deploy: see docs/deploy.md.
+// Cloudflare Workers: static assets, plus worker/index.ts on "/" only (?r=reto link preview). Deploy: see docs/deploy.md.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "29n",
   "compatibility_date": "2026-11-01",
+  "main": "worker/index.ts",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/"],
     "not_found_handling": "404-page"
   },
   "routes": [{ "pattern": "29n.jorgemasta.com", "custom_domain": true }]

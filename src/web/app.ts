@@ -2,6 +2,7 @@
 // game engine; this file only renders and routes (#provincia, #inicio, #temas, #tema/<id>, #resultado,
 // #datos). Choices, bets and the result never leave the browser.
 import type { Dataset, Modo, TipoFuente } from '../dataset/esquema';
+import { textoPortadaReto } from '../compartir';
 import {
   crearPartida,
   META_TEMAS,
@@ -21,6 +22,7 @@ import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './prov
 import { boton, empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
 import { botonReportar } from './reportar';
+import { avisoReto, vistaCompartir } from './compartir';
 
 const CLAVE_SEMILLA = '29n:semilla';
 const CLAVE_ESTADO = '29n:estado';
@@ -58,6 +60,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
   // Without storage (private mode…) everything works in memory; we say so once.
   const hayAlmacen = almacenamientoDisponible();
   let avisoAlmacen = !hayAlmacen;
+  let reto = textoPortadaReto(location.search);
   let semilla = leer<string>(CLAVE_SEMILLA);
   if (!semilla) {
     semilla = nuevaSemilla();
@@ -88,6 +91,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     else if (ruta === 'inicio') raiz.replaceChildren(vistaVueltaApp());
     else if (ruta === 'temas') raiz.replaceChildren(vistaLista());
     else if (ruta === 'resultado') raiz.replaceChildren(vistaResultadoApp());
+    else if (ruta === 'compartir') raiz.replaceChildren(vistaCompartirApp());
     else if (existe) raiz.replaceChildren(vistaTema(temaId!));
     else if (!inicioMostrado && partida.hechos().length > 0) {
       inicioMostrado = true;
@@ -101,6 +105,11 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       // Once, on the screen after choosing: who is in play here.
       raiz.prepend(avisoZona(partida));
       mostrarAviso = false;
+    }
+    if (reto) {
+      // ?r=reto: once, on the first screen shown (#12's first-visit home can place it above its headline).
+      raiz.prepend(avisoReto(reto));
+      reto = null;
     }
     if (avisoAlmacen) {
       raiz.prepend(h('p', { class: 'aviso-zona', role: 'status' }, 'En este modo no podemos recordar tu progreso si cierras.'));
@@ -158,6 +167,13 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
         },
         siguienteTema: irASiguiente,
       }, avisoPrioridad),
+    );
+
+  const vistaCompartirApp = () =>
+    h('div', {},
+      h('header', { class: 'cabecera' }, h('a', { href: '#resultado', class: 'volver' }, '← Mi resultado')),
+      // #13: analytics "compartió" event goes in `compartido` (medium only, never the content).
+      vistaCompartir(partida, { compartido: () => {} }),
     );
 
   const vistaDatosApp = () =>

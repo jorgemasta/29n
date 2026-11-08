@@ -23,5 +23,6 @@ Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/d
 - `npm run schema`: regenerates `data/dataset.schema.json` from `src/dataset/esquema.ts`.
 - `npx tsx scripts/generar-simulado.ts`: rebuilds the simulated (fictional) `data/dataset.json`.
 - `npm run municipios`: rebuilds `data/municipios.json` from the INE's official municipality list.
+- `npm run og`: regenerates `public/og.png` (link preview). Share card texts: `src/compartir/` (tests `tests/compartir.test.ts`); `worker/index.ts` swaps og:title for `/?r=reto`.
 - `npm run procesar`: processes a real programme with Claude. Deploy: `docs/deploy.md`.
 - `npx tsx scripts/vigilar.ts [--partido id] [--forzar] [--sin-publicar]`: programme watcher (cron in `.github/workflows/vigilante.yml`). Tests: `tests/vigilante.test.ts`.
