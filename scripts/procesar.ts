@@ -6,11 +6,11 @@
 // Writes the dataset only if the programme is publishable and the dataset passes V9.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
-import { construirDataset, validarDataset, Dataset, TipoFuente, type Partido } from '../src/dataset';
+import { Dataset, TipoFuente, type Partido } from '../src/dataset';
 import { crearCacheEnDisco } from '../src/ia/cache-disco';
 import { crearIAClaude } from '../src/ia/claude';
 import { procesarPrograma } from '../src/pipeline';
-import { contarPalabras } from '../src/pipeline/texto';
+import { contextoPublicado, fusionarPrograma } from '../src/pipeline/publicar';
 import { PARTIDOS } from '../src/registro/partidos';
 import { TEMAS } from '../src/registro/temas';
 
@@ -37,46 +37,33 @@ const pdf = new Uint8Array(await readFile(values.pdf));
 const fuente = TipoFuente.parse(values.fuente);
 const partido: Partido = { ...base, programa: { estado: 'publicado', fuente, url: values.url, titulo: values.titulo } };
 const anterior = Dataset.parse(JSON.parse(await readFile(values.dataset, 'utf8')));
-// Real data replaces simulated data entirely.
-const previos = anterior.origen === 'real' ? anterior : { ...anterior, partidos: [], posturas: [], informes: [] };
-// V5: word counts of the other parties' published texts, per topic (for the topic median).
-const longitudesTema: Record<string, number[]> = {};
-for (const p of previos.posturas)
-  if (p.estado === 'propone' && p.partido !== partido.id) (longitudesTema[p.tema] ??= []).push(contarPalabras(p.texto));
 
 const resultado = await procesarPrograma(pdf, partido, crearIAClaude(), {
   temas: TEMAS,
   cache: crearCacheEnDisco('data/cache/ia'),
-  longitudesTema,
   fecha: values.fecha,
-  // V11 mixes this programme's posturas with the ones already published.
-  publicado: { partidos: previos.partidos, posturas: previos.posturas },
+  // V5 lengths and V11's mix come from the parties already published.
+  ...contextoPublicado(anterior, partido.id),
 });
 
+if (!resultado.publicable) {
+  // A blocked programme leaves the published report (and dataset) intact.
+  await mkdir('data/informes/bloqueados', { recursive: true });
+  await writeFile(`data/informes/bloqueados/${partido.id}.json`, JSON.stringify(resultado.informe, null, 2) + '\n');
+  console.error(`No publicable: ${resultado.informe.motivo}. Informe en data/informes/bloqueados/${partido.id}.json`);
+  process.exit(1);
+}
+
+const fusion = fusionarPrograma(anterior, partido, resultado, {
+  temas: TEMAS,
+  generado: new Date().toISOString(),
+  fecha: values.fecha,
+});
+if (!fusion.ok) {
+  console.error(fusion.motivo);
+  process.exit(1);
+}
 await mkdir('data/informes', { recursive: true });
 await writeFile(`data/informes/${partido.id}.json`, JSON.stringify(resultado.informe, null, 2) + '\n');
-if (!resultado.publicable) {
-  console.error(`No publicable: ${resultado.informe.motivo}. Informe en data/informes/${partido.id}.json`);
-  process.exit(1);
-}
-
-const conHash: Partido = { ...partido, programa: { ...partido.programa, hashPdf: resultado.informe.hashPdf, fecha: values.fecha } } as Partido;
-const dataset = construirDataset({
-  partidos: [...previos.partidos.filter((p) => p.id !== partido.id), conHash],
-  temas: TEMAS,
-  resultados: [
-    ...previos.informes
-      .filter((i) => i.partido !== partido.id)
-      .map((informe) => ({ informe, posturas: previos.posturas.filter((p) => p.partido === informe.partido) })),
-    resultado,
-  ],
-  generado: new Date().toISOString(),
-  origen: 'real',
-});
-const v = validarDataset(dataset);
-if (!v.valido) {
-  console.error(`V9: el dataset no valida:\n${v.errores.join('\n')}`);
-  process.exit(1);
-}
-await writeFile(values.dataset, JSON.stringify(dataset, null, 2) + '\n');
+await writeFile(values.dataset, JSON.stringify(fusion.dataset, null, 2) + '\n');
 console.log(`${partido.id}: ${resultado.posturas.length} postura(s) publicadas en ${values.dataset}`);

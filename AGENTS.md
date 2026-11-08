@@ -23,3 +23,4 @@ Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/d
 - `npm run schema`: regenerates `data/dataset.schema.json` from `src/dataset/esquema.ts`.
 - `npx tsx scripts/generar-simulado.ts`: rebuilds the simulated (fictional) `data/dataset.json`.
 - `npm run procesar`: processes a real programme with Claude. Deploy: `docs/deploy.md`.
+- `npx tsx scripts/vigilar.ts [--partido id] [--forzar] [--sin-publicar]`: programme watcher (cron in `.github/workflows/vigilante.yml`). Tests: `tests/vigilante.test.ts`.
