@@ -1,4 +1,15 @@
-import { Dataset, FUENTES_PUBLICAS, type Informe, type Modo, type Partido, type Postura, type Tema, type TipoFuente } from './esquema';
+import {
+  Dataset,
+  FUENTES_PUBLICAS,
+  type Informe,
+  type Modo,
+  type Partido,
+  type Postura,
+  type Pregunta,
+  type RespuestaPregunta,
+  type Tema,
+  type TipoFuente,
+} from './esquema';
 
 export * from './esquema';
 
@@ -21,7 +32,9 @@ export function validarDataset(datos: unknown): ResultadoValidacion {
 export function construirDataset(args: {
   partidos: Partido[];
   temas: Tema[];
-  resultados: { posturas: Postura[]; informe: Informe }[];
+  /** Suggested questions; their answers come from each result's `respuestas`. */
+  preguntas?: Pregunta[];
+  resultados: { posturas: Postura[]; informe: Informe; respuestas?: RespuestaPregunta[] }[];
   generado: string;
   origen: Dataset['origen'];
   nota?: string;
@@ -35,6 +48,12 @@ export function construirDataset(args: {
     temas: [...args.temas].sort((a, b) => a.orden - b.orden),
     posturas: args.resultados.flatMap((r) => r.posturas),
     informes: args.resultados.map((r) => r.informe),
+    ...(args.preguntas
+      ? {
+          preguntas: [...args.preguntas].sort((a, b) => a.orden - b.orden),
+          respuestas: args.resultados.flatMap((r) => r.respuestas ?? []),
+        }
+      : {}),
   };
 }
 
@@ -59,5 +78,6 @@ export function aplicarModo(d: Dataset, modo: Modo): Dataset {
     partidos: d.partidos.map((p) => (provisionales.has(p.id) ? { ...p, programa: { estado: 'pendiente' } } : p)),
     posturas: d.posturas.filter((p) => !provisionales.has(p.partido)),
     informes: d.informes.filter((i) => !provisionales.has(i.partido)),
+    ...(d.respuestas ? { respuestas: d.respuestas.filter((r) => !provisionales.has(r.partido)) } : {}),
   };
 }

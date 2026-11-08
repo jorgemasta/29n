@@ -18,6 +18,8 @@ export const MODELOS: Record<Tarea, string> = {
   'adivinar-partido': 'claude-opus-5-5',
   'confirmar-ausencia': 'claude-sonnet-5-5',
   'evaluar-viabilidad': 'claude-opus-5-5',
+  // Precomputed suggested questions. The live free question (#15) uses Haiku 5.5 (spec).
+  'responder-pregunta': 'claude-sonnet-5-5',
 };
 
 export function crearIAClaude(opciones: { apiKey?: string; baseURL?: string } = {}): AdaptadorIA {

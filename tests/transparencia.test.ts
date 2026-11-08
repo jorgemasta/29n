@@ -115,6 +115,27 @@ describe('resumenInforme', () => {
     expect(r.publicadas).toBe(1);
   });
 
+  it('groups the checks of the answers to suggested questions apart, in the questions\' order', () => {
+    const conRespuestas: Informe = {
+      ...informe,
+      entradas: [
+        ...informe.entradas,
+        { pregunta: 'mili', barrera: 'V12', resultado: 'pasa', detalle: 'no lo menciona' },
+        { pregunta: 'luz', barrera: 'V1', resultado: 'pasa', detalle: 'ok' },
+      ],
+    };
+    const preguntas = [
+      { id: 'mili', texto: '¿Servicio militar?', palabrasClave: ['mili'], orden: 2 },
+      { id: 'luz', texto: '¿IVA de la luz?', palabrasClave: ['luz'], orden: 1 },
+    ];
+    const r = resumenInforme(conRespuestas, datasetEjemplo.temas, preguntas);
+    expect(r.programa.map((e) => e.barrera)).toEqual(['V7']);
+    expect(r.preguntas.map((p) => [p.pregunta.texto, p.entradas.map((e) => e.barrera)])).toEqual([
+      ['¿IVA de la luz?', ['V1']],
+      ['¿Servicio militar?', ['V12']],
+    ]);
+  });
+
   it('labels each entry with its barrier name', () => {
     const r = resumenInforme(informe, datasetEjemplo.temas);
     expect(r.programa[0]!.nombre).toBe(BARRERAS.V7.nombre);

@@ -1,7 +1,7 @@
 // Transparency data (#11): derived views of the dataset for the methodology, parties-and-programmes
 // and verification-report pages, plus the prefilled GitHub issue links ("Reportar error", "Falta un partido").
 // Pure functions: the pages only render what these return.
-import type { Dataset, EntradaInforme, Informe, Partido, ResultadoViabilidad, ResumenPostura, Tema, TipoFuente } from '../dataset/esquema';
+import type { Dataset, EntradaInforme, Informe, Partido, Pregunta, ResultadoViabilidad, ResumenPostura, Tema, TipoFuente } from '../dataset/esquema';
 import { BARRERAS } from '../registro/barreras';
 import { provinciaPorCodigo } from '../registro/territorio';
 
@@ -113,9 +113,11 @@ export interface ResumenInforme {
   /** Programme-level entries (V7…). */
   programa: EntradaResumen[];
   temas: (Omit<ResumenPostura, 'tema'> & { tema: { id: string; titulo: string }; entradas: EntradaResumen[] })[];
+  /** Checks of the precomputed answers to the suggested questions (Preguntar), per question. */
+  preguntas: { pregunta: { id: string; texto: string }; entradas: EntradaResumen[] }[];
 }
 
-export function resumenInforme(informe: Informe, temas: Tema[]): ResumenInforme {
+export function resumenInforme(informe: Informe, temas: Tema[], preguntas: Pregunta[] = []): ResumenInforme {
   const conNombre = (e: EntradaInforme): EntradaResumen => ({ ...e, nombre: BARRERAS[e.barrera].nombre });
   const orden = new Map(temas.map((t) => [t.id, t]));
   const ids = [...new Set([...informe.posturas.map((p) => p.tema), ...informe.entradas.flatMap((e) => (e.tema ? [e.tema] : []))])];
@@ -123,7 +125,11 @@ export function resumenInforme(informe: Informe, temas: Tema[]): ResumenInforme 
   return {
     informe,
     publicadas: informe.posturas.filter((p) => p.estado === 'propone').length,
-    programa: informe.entradas.filter((e) => !e.tema).map(conNombre),
+    programa: informe.entradas.filter((e) => !e.tema && !e.pregunta).map(conNombre),
+    preguntas: [...new Set(informe.entradas.flatMap((e) => (e.pregunta ? [e.pregunta] : [])))]
+      .map((id) => preguntas.find((p) => p.id === id) ?? { id, texto: id, orden: Infinity })
+      .sort((a, b) => a.orden - b.orden || a.id.localeCompare(b.id))
+      .map(({ id, texto }) => ({ pregunta: { id, texto }, entradas: informe.entradas.filter((e) => e.pregunta === id).map(conNombre) })),
     temas: ids.map((id) => {
       const resumen = informe.posturas.find((p) => p.tema === id);
       return {
