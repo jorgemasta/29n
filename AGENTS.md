@@ -20,6 +20,7 @@ Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/d
 
 - `npm test`: Vitest. Test point A `tests/pipeline.test.ts`, test point B `tests/juego.test.ts`.
 - `npm run build`: static Astro build into `dist/`. `npx tsc --noEmit -p .` typechecks.
+- `npm run e2e`: builds, then the end-to-end smoke test in a real Chrome via agent-browser (`tests/e2e/humo.e2e.ts`; setup in `docs/e2e.md`). Not part of `npm test`.
 - `npm run schema`: regenerates `data/dataset.schema.json` from `src/dataset/esquema.ts`.
 - `npx tsx scripts/generar-simulado.ts`: rebuilds the simulated (fictional) `data/dataset.json`.
 - `npm run municipios`: rebuilds `data/municipios.json` from the INE's official municipality list.

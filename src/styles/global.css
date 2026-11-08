@@ -7,8 +7,13 @@
   --acento: #0f5c66;
   --acento-claro: #e1eef0;
   --borde: #8a8f96;
+  --ambar: #6b5400; /* provisional / test labels (AA on stone) */
+  --peligro: #a3261c;
   font-size: 112.5%; /* 18px base, in rem so it respects system text size */
+  --alto-pestanas: 0px; /* set by app.ts from the real tab bar height */
 }
+/* 'Aa': large text, 22px base (src/web/letra.ts). */
+:root[data-letra='grande'] { font-size: 137.5%; }
 @media (prefers-color-scheme: dark) {
   :root {
     --piedra: #1b1d20;
@@ -18,6 +23,8 @@
     --acento: #6fc2cc;
     --acento-claro: #16363a;
     --borde: #80858c;
+    --ambar: #e0b84a;
+    --peligro: #ff8a7a;
   }
 }
 * { box-sizing: border-box; }
@@ -88,7 +95,7 @@ h2 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
   border: 2px solid var(--acento); border-radius: 0.75rem; cursor: pointer;
 }
 .fuente { font-size: 0.85rem; color: var(--tinta-suave); margin: 0.75rem 0 0; }
-.fuente.provisional { color: #8a6d00; font-weight: 600; }
+.fuente.provisional { color: var(--ambar); font-weight: 600; }
 .enlace { font: inherit; background: none; border: none; color: var(--acento); text-decoration: underline; padding: 0.75rem 0; min-height: 3rem; cursor: pointer; }
 
 .antetitulo { margin: 1rem 0 0; color: var(--tinta-suave); }
@@ -99,13 +106,14 @@ h2 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
 .sin-propuesta { border: 2px dashed var(--piedra-2); border-radius: 0.75rem; margin: 0 0 0.75rem; padding: 0.9rem 1rem; color: var(--tinta-suave); }
 .sin-propuesta .partido { font-weight: 600; }
 .sin-propuesta p { margin: 0.25rem 0 0; }
-.etiqueta { font-size: 0.7rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; color: #8a6d00; }
+.etiqueta { font-size: 0.7rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; color: var(--ambar); }
 blockquote { margin: 0.75rem 0 0; padding: 0.5rem 0.75rem; border-left: 4px solid var(--acento); background: var(--piedra); }
 blockquote p { margin: 0 0 0.25rem; }
 blockquote footer { font-size: 0.85rem; color: var(--tinta-suave); }
 a { color: var(--acento); }
 .pie { max-width: 36rem; margin: 0 auto; padding: 1rem; font-size: 0.8rem; color: var(--tinta-suave); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+/* Reduced motion: nothing moves; every animation below has a fade (or static) variant. */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-property: opacity !important; scroll-behavior: auto !important; } }
 
 /* Province (#7) */
 .cabecera, .cabecera-fila { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; }
@@ -160,7 +168,7 @@ pre.prompt { white-space: pre-wrap; background: var(--piedra-2); padding: 0.75re
 .chip[aria-pressed='true'] { border-color: var(--acento); background: var(--acento-claro); }
 .fila-botones { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 .fila-botones > .secundario { flex: 1; }
-.peligro { color: #a3261c; border-color: currentColor; }
+.peligro { color: var(--peligro); border-color: currentColor; }
 .recorrido { margin: 0 0 1rem; color: var(--tinta-suave); }
 .acciones { display: grid; gap: 0.75rem; margin: 1.5rem 0; }
 .boton-enlace { display: grid; place-items: center; text-decoration: none; text-align: center; }
@@ -206,3 +214,84 @@ main:has(.hoja) { padding-bottom: 62vh; }
 .reportar fieldset { border: none; padding: 0; margin: 0 0 0.75rem; }
 .reportar label { display: flex; gap: 0.5rem; align-items: center; min-height: 3rem; }
 .reportar textarea { width: 100%; font: inherit; padding: 0.5rem; border: 2px solid var(--borde); border-radius: 0.5rem; background: var(--piedra); color: inherit; }
+
+/* Accessibility and polish (#12): header 'Aa', bottom tab bar, first-visit home, help layer,
+   'Escuchar todas', reveal flip. Every motion has a reduced-motion variant (fade or static). */
+.barra-sup { max-width: 36rem; margin: 0 auto; padding: 0.5rem 1rem 0; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; }
+.marca { font-weight: 800; color: var(--tinta); text-decoration: none; display: inline-flex; align-items: center; min-height: 3rem; }
+.boton-aa {
+  min-width: 3rem; min-height: 3rem; font: inherit; font-weight: 700; color: var(--tinta); background: transparent;
+  border: 2px solid var(--borde); border-radius: 0.75rem; cursor: pointer;
+}
+.boton-aa[aria-pressed='true'] { background: var(--acento-claro); border-color: var(--acento); border-width: 3px; }
+.info .cabecera-fila { margin-bottom: 0.5rem; }
+
+.pestanas {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr);
+  background: var(--piedra); border-top: 2px solid var(--borde); padding: 0 max(0px, calc((100% - 36rem) / 2));
+}
+.pestanas[hidden] { display: none; }
+.pestanas a {
+  min-height: 3.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.1rem;
+  padding: 0.25rem; font-size: 0.85rem; font-weight: 600; color: var(--tinta); text-decoration: none; text-align: center;
+  border-top: 4px solid transparent; overflow-wrap: anywhere;
+}
+.pestanas a[aria-current='page'] { color: var(--acento); border-top-color: var(--acento); text-decoration: underline; font-weight: 800; }
+body[data-pestanas='si'] { padding-bottom: var(--alto-pestanas); }
+body[data-pestanas='si'] .barra-fija { bottom: var(--alto-pestanas); }
+body:has(.hoja) .pestanas { display: none; }
+body:has(.hoja) .barra-fija { bottom: 0; }
+
+.portada .antetitulo { font-weight: 600; font-size: 0.9rem; }
+.portada h1 { font-size: 1.7rem; }
+.subtitulo { font-size: 1.1rem; margin: 0 0 1rem; }
+.cartas { display: flex; justify-content: center; gap: 0.75rem; margin: 1.5rem 0; perspective: 40rem; }
+.carta {
+  position: relative; width: 4.5rem; height: 6rem; border-radius: 0.6rem; background: var(--piedra-2);
+  border: 2px solid var(--borde); font-weight: 700; font-size: 1.6rem; transform-style: preserve-3d;
+}
+.carta .cara, .carta .dorso { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 0.5rem; backface-visibility: hidden; }
+.carta .dorso { transform: rotateY(180deg); background: var(--acento-claro); }
+.logo-generico { width: 2rem; height: 2rem; border-radius: 50%; border: 0.4rem solid var(--acento); }
+.carta.gira { animation: girar-carta 3s ease-in-out infinite; }
+@keyframes girar-carta {
+  0%, 15% { transform: none; box-shadow: none; }
+  30% { transform: none; box-shadow: 0 0 0 4px var(--acento); }
+  50%, 85% { transform: rotateY(180deg); box-shadow: 0 0 0 4px var(--acento); }
+  100% { transform: none; box-shadow: none; }
+}
+.pasos { list-style: none; padding: 0; margin: 1rem 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1.25rem; font-weight: 600; }
+.confianza { padding-left: 1.2rem; margin: 1.5rem 0; }
+.confianza li { margin: 0.4rem 0; }
+
+dialog.ayuda {
+  max-width: min(30rem, calc(100% - 2rem)); border: 3px solid var(--acento); border-radius: 1rem; padding: 1.25rem;
+  background: var(--piedra); color: var(--tinta); font-size: 1.1rem; animation: fundido 200ms ease-out;
+}
+dialog.ayuda::backdrop { background: rgb(0 0 0 / 0.55); }
+dialog.ayuda p { margin: 0 0 1rem; }
+
+.utilidades { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0 0 1rem; }
+.utilidades .secundario { width: auto; padding: 0 1rem; }
+.tarjeta { transition: transform 150ms ease-out, opacity 150ms ease-out; }
+.tarjeta[aria-pressed='true'] { transform: scale(1.02); }
+.tarjeta.sonando { outline: 3px dashed var(--acento); outline-offset: 3px; }
+
+.aviso-zona { transition: opacity 300ms ease-out; }
+.aviso-zona.saliendo { opacity: 0; }
+
+@keyframes fundido { from { opacity: 0; } to { opacity: 1; } }
+@keyframes girar { from { transform: rotateY(90deg); opacity: 0.3; } to { transform: none; opacity: 1; } }
+.revelacion { perspective: 60rem; }
+.revelacion.animar .antetitulo { animation: fundido 300ms ease-out both; }
+.revelacion.animar :is(.revelada, .sin-propuesta) {
+  animation: girar 500ms cubic-bezier(0.2, 0.7, 0.3, 1) both; animation-delay: calc(600ms + var(--i, 0) * 250ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .carta.gira { animation: none; transform: rotateY(180deg); box-shadow: 0 0 0 4px var(--acento); }
+  .tarjeta[aria-pressed='true'] { transform: none; }
+  .revelacion.animar :is(.revelada, .sin-propuesta) { animation-name: fundido; animation-duration: 300ms; animation-delay: 0ms; }
+}
+/* Reflow: the reveal summary wraps instead of pushing the feasibility chip off-screen. */
+.revelada summary { flex-wrap: wrap; }
+.chip-viabilidad { white-space: normal; max-width: 100%; }

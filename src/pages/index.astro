@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import datos from '../../data/dataset.json';
 import { aplicarModo, type Dataset, type Modo } from '../dataset';
+import LetraInicial from '../components/LetraInicial.astro';
 
 // Mode switch, at build time: `MODO=privado` (private prototype) also ships provisional sources
 // (2023 programmes, party documents, public statements). Anything else ships only official
@@ -20,8 +21,13 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
     <meta name="robots" content="noindex, nofollow" />
     <title>29N · Elige a ciegas</title>
     <meta name="description" content="Lee lo que proponen los partidos sin saber de quién es." />
+    <LetraInicial />
   </head>
   <body>
+    <header class="barra-sup">
+      <a href="/" class="marca">29N</a>
+      <button type="button" id="aa" class="boton-aa" aria-pressed="false" aria-label="Letra grande">Aa</button>
+    </header>
     <main id="app" data-modo={modo}>
       {esPrueba && (
         <p class="aviso-prueba" role="note">
@@ -38,6 +44,11 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
         <noscript><p>Esta página necesita JavaScript para barajar las propuestas en tu móvil.</p></noscript>
       </div>
     </main>
+    <nav class="pestanas" aria-label="Secciones" hidden>
+      <a href="#temas"><span aria-hidden="true">☰</span> Temas</a>
+      <a href="#preguntar"><span aria-hidden="true">💬</span> Preguntar</a>
+      <a href="#resultado"><span aria-hidden="true">📊</span> Mi resultado</a>
+    </nav>
     <footer class="pie">
       <nav class="enlaces-pie" aria-label="Información">
         <a href="/metodologia/">Cómo funciona</a> · <a href="/partidos/">Partidos y programas</a> · <a href="https://github.com/jorgemasta/29n">Código abierto</a>
@@ -47,7 +58,9 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
     <script is:inline type="application/json" id="datos" set:html={json} />
     <script>
       import { montarApp } from '../web/app';
+      import { montarBotonLetra } from '../web/letra';
       import type { Dataset, Modo } from '../dataset/esquema';
+      montarBotonLetra(document.getElementById('aa') as HTMLButtonElement);
       const app = document.getElementById('app')!;
       const dataset = JSON.parse(document.getElementById('datos')!.textContent!) as Dataset;
       montarApp(document.getElementById('vista')!, dataset, app.dataset.modo as Modo);

@@ -1,0 +1,8 @@
+---
+// Applies the saved 'Aa' preference (src/web/letra.ts, key 29n:letra) before the first paint.
+---
+<script is:inline>
+  try {
+    if (JSON.parse(localStorage.getItem('29n:letra') || 'null')?.grande === true) document.documentElement.dataset.letra = 'grande';
+  } catch {}
+</script>

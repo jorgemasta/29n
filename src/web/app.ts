@@ -1,6 +1,7 @@
-// Client app: topic list ↔ topic (blind choice → confirm/bet → reveal) → result. All logic lives in the
-// game engine; this file only renders and routes (#provincia, #inicio, #temas, #tema/<id>, #resultado,
-// #datos). Choices, bets and the result never leave the browser.
+// Client app: first-visit home → province → topic (blind choice → confirm/bet → reveal) → result. All
+// logic lives in the game engine; this file only renders and routes (#portada, #provincia, #inicio,
+// #temas, #tema/<id>, #resultado, #preguntar, #datos) and drives the bottom tab bar (static in
+// index.astro). Choices, bets and the result never leave the browser.
 import type { Dataset, Modo, TipoFuente } from '../dataset/esquema';
 import {
   crearPartida,
@@ -21,14 +22,23 @@ import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './prov
 import { boton, empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
 import { chipViabilidad, notaViabilidad } from './viabilidad';
 import { botonReportar } from './reportar';
+import { vistaPortada } from './portada';
+import { crearLector } from './escuchar';
+import { CLAVE_LETRA, letraGrande } from './letra';
 
 const CLAVE_SEMILLA = '29n:semilla';
 const CLAVE_ESTADO = '29n:estado';
 /** { codigo: "35" } or { codigo: null } ("Prefiero no decirlo"); absent = not asked yet. */
 const CLAVE_PROVINCIA = '29n:provincia';
-/** { sinApuesta: true } after "No preguntarme más"; reactivated in Tus datos. */
+/** { sinApuesta: true } after "No preguntarme más" (reactivated in Tus datos); { ayudaVista: true } after
+ * the first-time help layer of topic 1. */
 const CLAVE_PREFERENCIAS = '29n:preferencias';
-const CLAVES = [CLAVE_SEMILLA, CLAVE_ESTADO, CLAVE_PROVINCIA, CLAVE_PREFERENCIAS];
+const CLAVES = [CLAVE_SEMILLA, CLAVE_ESTADO, CLAVE_PROVINCIA, CLAVE_PREFERENCIAS, CLAVE_LETRA];
+/** The province summary shows ~2 s on the screen after choosing (ux-spec screen 3). */
+const DURACION_AVISO_ZONA = 2000;
+/** Routes without the bottom tab bar (onboarding). */
+const SIN_PESTANAS = new Set(['portada', 'provincia']);
+type Preferencias = { sinApuesta?: boolean; ayudaVista?: boolean };
 
 export const ETIQUETA_FUENTE: Record<TipoFuente, string> = {
   'programa-29n': 'Programa 29N',
@@ -63,7 +73,11 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     semilla = nuevaSemilla();
     guardar(CLAVE_SEMILLA, semilla);
   }
-  let preferencias = leer<{ sinApuesta?: boolean }>(CLAVE_PREFERENCIAS) ?? {};
+  let preferencias = leer<Preferencias>(CLAVE_PREFERENCIAS) ?? {};
+  const cambiarPreferencias = (cambios: Preferencias) => {
+    preferencias = { ...preferencias, ...cambios };
+    guardar(CLAVE_PREFERENCIAS, preferencias);
+  };
   const nueva = (estado?: EstadoPartida) => crearPartida(dataset, provincia ?? null, semilla!, estado, { modo });
   let partida: Partida = nueva(leer<EstadoPartida>(CLAVE_ESTADO) ?? undefined);
   /** Saved on every confirmed action; an unconfirmed round is never saved. */
@@ -77,6 +91,19 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
   let inicioMostrado = false;
   let seleccion: string | null = null;
   let avisoPrioridad: string | null = null;
+  /** Only right after confirming: the reveal flips (or fades, with reduced motion) once. */
+  let animarRevelacion = false;
+  let leyendo = false;
+  const lector = crearLector((id) => {
+    leyendo = id !== null;
+    marcarLectura();
+  });
+  /** Highlights the card being read and keeps the button label in sync (survives re-renders). */
+  const marcarLectura = () => {
+    for (const t of raiz.querySelectorAll<HTMLElement>('.tarjeta[data-valor]')) t.classList.toggle('sonando', t.dataset.valor === lector.actual);
+    const b = raiz.querySelector<HTMLElement>('.escuchar');
+    if (b) b.replaceChildren(...etiquetaEscuchar(leyendo));
+  };
 
   const pintar = (enfocar: string | null = 'h1') => {
     const ruta = location.hash.slice(1);
@@ -84,8 +111,10 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     const existe = temaId !== null && partida.temas().some((t) => t.id === temaId);
     if (ruta === 'provincia') raiz.replaceChildren(vistaProvincia(provincia, elegirProvincia));
     else if (ruta === 'datos') raiz.replaceChildren(vistaDatosApp());
-    else if (provincia === undefined) return irA('provincia'); // first visit: ask where they vote
+    else if (ruta === 'portada') raiz.replaceChildren(vistaPortada(() => (provincia === undefined ? irA('provincia') : irASiguiente())));
+    else if (provincia === undefined) return irA('portada'); // first visit: the home page, then the province
     else if (ruta === 'inicio') raiz.replaceChildren(vistaVueltaApp());
+    else if (ruta === 'preguntar') raiz.replaceChildren(vistaPreguntar());
     else if (ruta === 'temas') raiz.replaceChildren(vistaLista());
     else if (ruta === 'resultado') raiz.replaceChildren(vistaResultadoApp());
     else if (existe) raiz.replaceChildren(vistaTema(temaId!));
@@ -98,10 +127,13 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       return irA(siguiente ? `tema/${siguiente.id}` : 'temas');
     }
     if (mostrarAviso && ruta !== 'provincia') {
-      // Once, on the screen after choosing: who is in play here.
-      raiz.prepend(avisoZona(partida));
+      // Once, on the screen after choosing: who is in play here. It goes away after ~2 s.
+      const aviso = avisoZona(partida);
+      raiz.prepend(aviso);
+      retirarTras(aviso, DURACION_AVISO_ZONA);
       mostrarAviso = false;
     }
+    pintarPestanas(ruta);
     if (avisoAlmacen) {
       raiz.prepend(h('p', { class: 'aviso-zona', role: 'status' }, 'En este modo no podemos recordar tu progreso si cierras.'));
       avisoAlmacen = false;
@@ -163,17 +195,15 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
   const vistaDatosApp = () =>
     h('div', {},
       h('header', { class: 'cabecera' }, h('a', { href: '#temas', class: 'volver' }, '← Temas')),
-      vistaDatos(partida, { provinciaElegida: provincia !== undefined, apuestaActiva: !preferencias.sinApuesta, almacenamiento: hayAlmacen }, {
-        cambiarApuesta: (activa) => {
-          preferencias = { ...preferencias, sinApuesta: !activa };
-          guardar(CLAVE_PREFERENCIAS, preferencias);
-        },
+      vistaDatos(partida, { provinciaElegida: provincia !== undefined, apuestaActiva: !preferencias.sinApuesta, almacenamiento: hayAlmacen, letraGrande: letraGrande() }, {
+        cambiarApuesta: (activa) => cambiarPreferencias({ sinApuesta: !activa }),
         borrarTodo,
       }),
     );
 
   window.addEventListener('hashchange', () => {
     seleccion = null;
+    lector.parar();
     pintar();
     window.scrollTo(0, 0);
   });
@@ -227,7 +257,9 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       }, ...contenido);
       b.addEventListener('click', () => {
         seleccion = valor;
+        navigator.vibrate?.(10); // short haptic tap where supported
         pintar(`[data-valor="${valor}"]`);
+        marcarLectura();
       });
       return b;
     };
@@ -246,9 +278,10 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       cabecera(partida, temaId),
       h('h1', { tabindex: '-1' }, vista.tema.pregunta),
       vista.tema.explicacion ? h('p', { class: 'explicacion' }, vista.tema.explicacion) : null,
-      h('p', { class: 'ayuda' }, 'Lee y toca la que más te convenza. No pone de quién es: lo verás después.'),
+      utilidades(vista.tarjetas),
       lista,
       h('p', { class: 'gris' }, `Hay ${vista.tarjetas.length} propuestas.${sinPropuesta}`),
+      ayudaPrimeraVez(temaId),
       h('p', { class: 'gris' }, `El orden y las letras se barajan para ti en cada tema. Tu barajado: #${vista.barajado} `,
         boton('Barajar otra vez', 'enlace', () => {
           actualizar(partida.barajarOtraVez(temaId));
@@ -264,6 +297,8 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
     const confirmar = (apuesta?: string) => {
       actualizar(partida.elegir(temaId, valor, apuesta ? { apuesta } : undefined));
       seleccion = null;
+      lector.parar();
+      animarRevelacion = true;
       pintar();
     };
     if (valor === NINGUNA)
@@ -287,8 +322,7 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
         }),
         apostar
           ? boton('No preguntarme más', 'enlace', () => {
-              preferencias = { ...preferencias, sinApuesta: true };
-              guardar(CLAVE_PREFERENCIAS, preferencias);
+              cambiarPreferencias({ sinApuesta: true });
               pintar('.barra-fija .principal');
             })
           : null,
@@ -314,7 +348,14 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
       actualizar(partida.volverAElegir(r.tema.id));
       pintar();
     };
-    return h('section', { class: 'revelacion' },
+    const animar = animarRevelacion;
+    animarRevelacion = false;
+    let orden = 0;
+    const enCascada = (el: HTMLElement) => {
+      el.style.setProperty('--i', String(orden++));
+      return el;
+    };
+    const seccion = h('section', { class: animar ? 'revelacion animar' : 'revelacion' },
       cabecera(partida, r.tema.id),
       h('p', { class: 'antetitulo' }, '¿De quién era?'),
       h('h1', { tabindex: '-1' }, banner),
@@ -324,11 +365,11 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
             h('p', {}, nuevas === 1 ? 'Hay una propuesta nueva. ¿Sigues prefiriendo la misma?' : `Hay ${nuevas} propuestas nuevas. ¿Sigues prefiriendo la misma?`),
             boton('Volver a elegir', 'secundario', volverAElegir))
         : null,
-      mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), tarjetaRevelada(mia, true, r.tema)) : null,
+      mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), enCascada(tarjetaRevelada(mia, true, r.tema))) : null,
       otras.length ? h('h2', {}, mia ? 'Las demás' : 'Todas las propuestas') : null,
-      ...otras.map((t) => tarjetaRevelada(t, false, r.tema)),
-      ...r.sinPropuesta.map((p) => tarjetaSinPropuesta(p, 'Este partido no propone nada sobre esto')),
-      ...r.sinVerificar.map((p) => tarjetaSinPropuesta(p, 'No pudimos verificar su propuesta')),
+      ...otras.map((t) => enCascada(tarjetaRevelada(t, false, r.tema))),
+      ...r.sinPropuesta.map((p) => enCascada(tarjetaSinPropuesta(p, 'Este partido no propone nada sobre esto'))),
+      ...r.sinVerificar.map((p) => enCascada(tarjetaSinPropuesta(p, 'No pudimos verificar su propuesta'))),
       r.pendientes.length
         ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${unir(r.pendientes.map((p) => p.nombre))}. `,
             'Mientras falte, no aparece en los temas ni en tu resultado. ', h('a', { href: '/partidos/' }, 'Partidos y programas'))
@@ -347,9 +388,94 @@ export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void
         boton('Elegir otro tema', 'secundario', () => irA('temas')),
       ),
     );
+    // One tap skips the flip.
+    if (animar) seccion.addEventListener('pointerdown', () => seccion.classList.remove('animar'), { once: true });
+    return seccion;
   };
 
+  /** "🔊 Escuchar todas" (only if the browser has a voice). Reads the cards in their order. */
+  const utilidades = (tarjetas: { letra: string; titular: string; detalle: string }[]): HTMLElement | null => {
+    if (!lector.disponible || !tarjetas.length) return null;
+    const frase = (t: string) => `${t.trim().replace(/[.\s]+$/, '')}.`;
+    const b = boton('', 'secundario escuchar', () => {
+      if (leyendo) return lector.parar();
+      leyendo = true;
+      marcarLectura();
+      lector.leer(tarjetas.map((t) => ({ id: t.letra, texto: `Propuesta ${t.letra}. ${frase(t.titular)} ${frase(t.detalle)}` })));
+    });
+    b.replaceChildren(...etiquetaEscuchar(leyendo));
+    return h('div', { class: 'utilidades' }, b);
+  };
+
+  /** First time only, on topic 1: a layer closed with one tap (anywhere) or Escape. */
+  const ayudaPrimeraVez = (temaId: string): HTMLElement | null => {
+    const pos = partida.posicion(temaId);
+    if (preferencias.ayudaVista || pos.tipo !== 'meta' || pos.numero !== 1) return null;
+    const capa = h('dialog', { class: 'ayuda', 'aria-labelledby': 'ayuda-texto' },
+      h('p', { id: 'ayuda-texto' }, 'Lee y toca la que más te convenza. No pone de quién es: lo verás después.'),
+      h('button', { type: 'button', class: 'principal', autofocus: '' }, 'Entendido'),
+    ) as HTMLDialogElement;
+    capa.addEventListener('click', () => capa.close());
+    capa.addEventListener('close', () => {
+      cambiarPreferencias({ ayudaVista: true });
+      capa.remove();
+    });
+    // Opened once it is in the document (pintar has already focused the heading, which gets the
+    // focus back when the layer closes).
+    queueMicrotask(() => {
+      if (capa.isConnected && !capa.open) capa.showModal();
+    });
+    return capa;
+  };
+
+  /** Placeholder for #14 (Preguntar tab with precomputed questions). */
+  const vistaPreguntar = () =>
+    h('section', { class: 'preguntar' },
+      h('h1', { tabindex: '-1' }, 'Preguntar'),
+      h('p', {}, 'Muy pronto podrás preguntar qué propone cada partido sobre algo concreto, con la cita de su programa.'),
+      h('a', { href: '#temas', class: 'secundario boton-enlace' }, 'Volver a los temas'),
+    );
+
   pintar();
+}
+
+const etiquetaEscuchar = (leyendo: boolean): (Node | string)[] => [
+  h('span', { 'aria-hidden': 'true' }, leyendo ? '⏹ ' : '🔊 '),
+  leyendo ? 'Parar' : 'Escuchar todas',
+];
+
+let observada = false;
+/** Bottom tab bar (Temas · Preguntar · Mi resultado): hidden during onboarding, current tab marked. */
+function pintarPestanas(ruta: string): void {
+  const nav = document.querySelector<HTMLElement>('.pestanas');
+  if (!nav) return;
+  const visible = !SIN_PESTANAS.has(ruta);
+  nav.hidden = !visible;
+  document.body.dataset.pestanas = visible ? 'si' : 'no';
+  // Fixed bars stack above the tabs, whatever their height (large text, 200 % zoom…).
+  if (!observada) {
+    observada = true;
+    new ResizeObserver(() => document.documentElement.style.setProperty('--alto-pestanas', `${nav.offsetHeight}px`)).observe(nav);
+  }
+  const actual = ruta.startsWith('tema/') ? null : ruta;
+  for (const a of nav.querySelectorAll('a')) {
+    if (a.getAttribute('href') === `#${actual}`) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  }
+}
+
+/** Removes a transient notice after `ms`, but not while it is focused or covered by a layer. */
+function retirarTras(el: HTMLElement, ms: number): void {
+  setTimeout(() => {
+    if (!el.isConnected) return;
+    // Behind the help layer nobody has seen it yet: start again once the layer is closed.
+    if (document.querySelector('dialog[open]')) return retirarTras(el, ms);
+    // Not while a keyboard/screen-reader user is on its "Cambiar" link. (No :hover check: on phones
+    // hover sticks after a tap and the notice would never go.)
+    if (el.matches(':focus-within')) return retirarTras(el, 1000);
+    el.classList.add('saliendo');
+    setTimeout(() => el.remove(), 300);
+  }, ms);
 }
 
 /** Factual, never a judgement: "Tu primera elección." / "Primera vez que eliges a X." / "3 temas, 2 partidos distintos." */

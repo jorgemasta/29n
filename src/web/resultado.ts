@@ -188,7 +188,7 @@ export interface AccionesDatos {
 }
 
 /** "Tus datos": what is stored (only on this phone), the bet switch and "Borrar todo". */
-export function vistaDatos(partida: Partida, opciones: { provinciaElegida: boolean; apuestaActiva: boolean; almacenamiento: boolean }, acciones: AccionesDatos): HTMLElement {
+export function vistaDatos(partida: Partida, opciones: { provinciaElegida: boolean; apuestaActiva: boolean; almacenamiento: boolean; letraGrande?: boolean }, acciones: AccionesDatos): HTMLElement {
   const prioritarios = partida.prioritarios().map((id) => partida.temas().find((t) => t.id === id)!.titulo);
   const interruptor = h('input', { type: 'checkbox', id: 'pref-apuesta', class: 'interruptor' }) as HTMLInputElement;
   interruptor.checked = !opciones.apuestaActiva;
@@ -203,6 +203,7 @@ export function vistaDatos(partida: Partida, opciones: { provinciaElegida: boole
       h('li', {}, `Temas hechos: ${partida.hechos().length}, con tus elecciones y apuestas`),
       h('li', {}, `Tus temas importantes: ${prioritarios.length ? unir(prioritarios) : 'ninguno'}`),
       h('li', {}, 'Tu barajado (la semilla que ordena las tarjetas)'),
+      h('li', {}, `Tamaño de letra: ${opciones.letraGrande ? 'grande' : 'normal'} (botón Aa)`),
     ),
     h('p', { class: 'gris' }, 'Nada de esto sale de tu móvil: ni tus elecciones, ni tus apuestas, ni tu resultado.'),
     h('p', { class: 'fila-interruptor' }, interruptor, ' ', h('label', { for: 'pref-apuesta' }, 'No preguntarme la apuesta')),

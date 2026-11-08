@@ -3,6 +3,7 @@
 import '../styles/global.css';
 import { dataset } from '../transparencia/datos';
 import { REPO } from '../transparencia';
+import LetraInicial from './LetraInicial.astro';
 interface Props { titulo: string; descripcion: string; volver?: { href: string; texto: string } }
 const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Astro.props;
 ---
@@ -14,10 +15,14 @@ const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Ast
     <meta name="robots" content="noindex, nofollow" />
     <title>{titulo} · 29N</title>
     <meta name="description" content={descripcion} />
+    <LetraInicial />
   </head>
   <body>
     <main class="info">
-      <p><a href={volver.href} class="volver">{volver.texto}</a></p>
+      <div class="cabecera-fila">
+        <a href={volver.href} class="volver">{volver.texto}</a>
+        <button type="button" id="aa" class="boton-aa" aria-pressed="false" aria-label="Letra grande">Aa</button>
+      </div>
       {dataset.origen !== 'real' && (
         <p class="aviso-prueba" role="note"><strong>Prototipo con datos de prueba.</strong> {dataset.nota}</p>
       )}
@@ -29,5 +34,9 @@ const { titulo, descripcion, volver = { href: '/', texto: '← Volver' } } = Ast
       </nav>
       <p>Proyecto personal de Jorge Masta, sin afiliación a ningún partido.</p>
     </footer>
+    <script>
+      import { montarBotonLetra } from '../web/letra';
+      montarBotonLetra(document.getElementById('aa') as HTMLButtonElement);
+    </script>
   </body>
 </html>

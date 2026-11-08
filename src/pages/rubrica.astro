@@ -1,6 +1,7 @@
 ---
 // Public feasibility rubric, rendered from the versioned source (src/registro/rubrica.ts).
 import '../styles/global.css';
+import LetraInicial from '../components/LetraInicial.astro';
 import { CRITERIOS, FUERA_DE_ESCALA, NIVELES, VERSION_RUBRICA } from '../registro/rubrica';
 import { DOMINIOS_INSTITUCIONALES } from '../registro/dominios-institucionales';
 import { INSTRUCCIONES_VIABILIDAD, VERSION_PROMPT_VIABILIDAD } from '../pipeline/prompts-viabilidad';
@@ -14,6 +15,7 @@ import { MODELOS } from '../ia/claude';
     <meta name="robots" content="noindex, nofollow" />
     <title>Cómo se valora la viabilidad · 29N</title>
     <meta name="description" content="Rúbrica pública de la nota de viabilidad de 29N." />
+    <LetraInicial />
   </head>
   <body>
     <main>
