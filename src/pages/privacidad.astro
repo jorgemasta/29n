@@ -82,8 +82,10 @@ import { MODELOS_PREGUNTA_LIBRE } from '../ia/claude';
       pestaña; la función solo guarda un resumen cifrado (hash) con un contador que caduca en 24 horas.
     </li>
     <li>
-      Las preguntas frecuentes se guardan con su respuesta hasta 14 días, sin asociarlas a nadie, para responderlas gratis.
-      Una pregunta hecha más de una vez puede aparecer en la lista de frecuentes que ven otras personas: no escribas datos personales.
+      Las respuestas se guardan hasta 14 días, sin asociarlas a nadie, para responder gratis si alguien repite la pregunta.
+      Se guardan bajo un resumen cifrado (hash) de la pregunta, no bajo sus palabras. El texto de una pregunta solo se
+      guarda cuando la hace una segunda persona: entonces pasa a la lista de frecuentes que ven los demás, así que no
+      escribas datos personales.
     </li>
     <li>
       <strong>Qué hace Anthropic con ella.</strong> Según su documentación, en la API borra automáticamente las entradas y

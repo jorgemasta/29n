@@ -235,6 +235,16 @@ describe('pregunta libre: limits, cache and spending cap', () => {
     expect(almacen.ttl(sesiones[0]!)).toBeGreaterThan(0);
   });
 
+  it('a question asked only once leaves no trace of its text; only repeated ones are kept in words', async () => {
+    const { servicio, almacen } = montar();
+    const unica = '¿Qué proponen sobre las pensiones de mi abuela Carmen?';
+    await servicio.preguntar({ pregunta: unica, sesion: 's1' });
+    expect(JSON.stringify(almacen.volcado())).not.toMatch(/abuela|Carmen/);
+    // Asked again by someone else: now it is frequent, and its wording may be stored and shown.
+    await servicio.preguntar({ pregunta: unica, sesion: 's2' });
+    expect(JSON.stringify(almacen.volcado())).toMatch(/abuela Carmen/);
+  });
+
   it('lists a question as frequent once it has been asked more than once', async () => {
     const { servicio } = montar({ limiteSesion: 1 });
     await servicio.preguntar({ pregunta: PREGUNTA, sesion: 's1' });

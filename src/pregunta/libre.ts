@@ -117,19 +117,20 @@ const normalizarPregunta = (texto: string) =>
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
 
-async function sha256(texto: string): Promise<string> {
+export async function sha256(texto: string): Promise<string> {
   const datos = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
   return [...new Uint8Array(datos)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 type Publicado = Partido & { programa: Extract<Partido['programa'], { estado: 'publicado' }> };
+// Privacy (/privacidad/): the cache keeps answers under a hash of the question, never its words.
+// A question's wording is stored only once a second person asks it (it becomes "frecuente").
 interface EnCache {
-  texto: string;
   respuestas: RespuestaPregunta[];
 }
 interface Frecuente {
   clave: string;
-  texto: string;
+  texto?: string;
   veces: number;
 }
 
@@ -156,12 +157,15 @@ export function crearPreguntaLibre(puertos: PuertosPreguntaLibre, config: Config
       return [];
     }
   };
-  const listaFrecuentes = async () => (await frecuentes()).filter((f) => f.veces >= 2).map((f) => f.texto);
+  const listaFrecuentes = async () =>
+    (await frecuentes()).flatMap((f) => (f.veces >= 2 && f.texto ? [f.texto] : []));
   const contarFrecuente = async (clave: string, texto: string) => {
     const lista = await frecuentes();
     const f = lista.find((x) => x.clave === clave);
-    if (f) f.veces++;
-    else lista.push({ clave, texto, veces: 1 });
+    if (f) {
+      f.veces++;
+      f.texto ??= texto;
+    } else lista.push({ clave, veces: 1 });
     lista.sort((a, b) => b.veces - a.veces);
     await almacen.put(`frecuentes:${await version}`, JSON.stringify(lista.slice(0, MAX_FRECUENTES)), { expirationTtl: TTL_CACHE });
   };
@@ -203,10 +207,10 @@ export function crearPreguntaLibre(puertos: PuertosPreguntaLibre, config: Config
       const guardada = await almacen.get(claveCache);
       if (guardada) {
         const enCache = JSON.parse(guardada) as EnCache;
-        await contarFrecuente(clave, enCache.texto);
+        await contarFrecuente(clave, texto);
         return {
           estado: 'ok',
-          pregunta: { id: pregunta.id, texto: enCache.texto },
+          pregunta,
           respuestas: enCache.respuestas,
           quedan: Math.max(0, limiteSesion - usadas),
           deCache: true,
@@ -268,7 +272,7 @@ export function crearPreguntaLibre(puertos: PuertosPreguntaLibre, config: Config
       }
 
       await almacen.put(claveSesion, String(usadas + 1), { expirationTtl: TTL_SESION });
-      await almacen.put(claveCache, JSON.stringify({ texto, respuestas } satisfies EnCache), { expirationTtl: TTL_CACHE });
+      await almacen.put(claveCache, JSON.stringify({ respuestas } satisfies EnCache), { expirationTtl: TTL_CACHE });
       await contarFrecuente(clave, texto);
       return { estado: 'ok', pregunta, respuestas, quedan: Math.max(0, limiteSesion - usadas - 1), deCache: false };
     },
