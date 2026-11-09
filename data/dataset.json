@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-11-09T22:02:06.494Z",
+  "generated": "2026-11-09T22:28:06.101Z",
   "origin": "simulated",
   "note": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso, también las respuestas de Preguntar. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.",
   "parties": [
@@ -253,7 +253,7 @@
       "order": 20
     }
   ],
-  "positions": [
+  "topicPositions": [
     {
       "party": "prueba-a",
       "topic": "vivienda",
@@ -303,7 +303,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -384,7 +384,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -456,7 +456,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -537,7 +537,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -609,7 +609,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -690,7 +690,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -771,7 +771,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -852,7 +852,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -915,7 +915,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -996,7 +996,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1050,7 +1050,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1147,7 +1147,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1236,7 +1236,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1325,7 +1325,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1406,7 +1406,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1487,7 +1487,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1541,7 +1541,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1595,7 +1595,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1676,7 +1676,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1748,7 +1748,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1802,7 +1802,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1874,7 +1874,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -1955,7 +1955,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2036,7 +2036,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2117,7 +2117,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2198,7 +2198,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2252,7 +2252,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2306,7 +2306,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2378,7 +2378,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2440,7 +2440,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2529,7 +2529,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2618,7 +2618,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2699,7 +2699,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2753,7 +2753,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2807,7 +2807,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2888,7 +2888,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -2977,7 +2977,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3031,7 +3031,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3085,7 +3085,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3166,7 +3166,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3247,7 +3247,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3301,7 +3301,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3363,7 +3363,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3444,7 +3444,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3516,7 +3516,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3579,7 +3579,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3660,7 +3660,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3741,7 +3741,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3795,7 +3795,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3849,7 +3849,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3920,7 +3920,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -3974,7 +3974,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4063,7 +4063,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4144,7 +4144,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4247,7 +4247,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4301,7 +4301,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4382,7 +4382,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4463,7 +4463,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4544,7 +4544,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4625,7 +4625,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4706,7 +4706,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4787,7 +4787,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -4857,7 +4857,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -5050,7 +5050,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -5120,7 +5120,7 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -5201,7 +5201,288 @@
           }
         ],
         "versions": {
-          "prompt": "viabilidad-v1",
+          "prompt": "viabilidad-v2",
+          "rubric": "r1"
+        }
+      }
+    }
+  ],
+  "positions": [
+    {
+      "party": "prueba-a",
+      "question": "vivienda-asequible",
+      "versions": {
+        "prompt": "v3"
+      },
+      "state": "proposes",
+      "proposal": {
+        "what": "Crear una empresa pública estatal que construya vivienda de alquiler asequible.",
+        "how": "Los alquileres de esas viviendas no superarían el 30 % de los ingresos del hogar que viva en ellas, y la empresa dependería del Estado.",
+        "figure": "50.000 viviendas al año"
+      },
+      "quotes": [
+        {
+          "text": "Crearemos una empresa pública estatal de vivienda que construya 50.000 viviendas de alquiler asequible al año, con precios que no superen el 30 % de los ingresos.",
+          "page": 2
+        }
+      ],
+      "feasibility": {
+        "result": "notConcrete",
+        "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "sources": [],
+        "assessments": [
+          {
+            "level": "notConcrete",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": []
+          },
+          {
+            "level": "notConcrete",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": []
+          }
+        ],
+        "versions": {
+          "prompt": "viabilidad-v2",
+          "rubric": "r1"
+        }
+      }
+    },
+    {
+      "party": "prueba-b",
+      "question": "vivienda-asequible",
+      "versions": {
+        "prompt": "v3"
+      },
+      "state": "proposes",
+      "proposal": {
+        "what": "Quitar el impuesto que se paga al comprar la primera vivienda.",
+        "how": "Además, liberar suelo público para que se construyan más viviendas en venta y en alquiler, con el objetivo de que aumente la oferta disponible.",
+        "figure": null
+      },
+      "quotes": [
+        {
+          "text": "Eliminaremos el impuesto de transmisiones patrimoniales en la compra de la primera vivienda y liberaremos suelo público para que se construya más vivienda.",
+          "page": 2
+        }
+      ],
+      "feasibility": {
+        "result": "notConcrete",
+        "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "sources": [],
+        "assessments": [
+          {
+            "level": "notConcrete",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": []
+          },
+          {
+            "level": "notConcrete",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": []
+          }
+        ],
+        "versions": {
+          "prompt": "viabilidad-v2",
+          "rubric": "r1"
+        }
+      }
+    },
+    {
+      "party": "prueba-c",
+      "question": "vivienda-asequible",
+      "versions": {
+        "prompt": "v3"
+      },
+      "state": "proposes",
+      "proposal": {
+        "what": "Limitar el precio del alquiler en las zonas con más demanda.",
+        "how": "Y subir el IBI, el impuesto municipal sobre la casa, a las viviendas que estén vacías durante más de dos años.",
+        "figure": null
+      },
+      "quotes": [
+        {
+          "text": "Limitaremos el precio del alquiler en las zonas tensionadas y penalizaremos en el IBI las viviendas vacías durante más de dos años.",
+          "page": 2
+        }
+      ],
+      "feasibility": {
+        "result": "notConcrete",
+        "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "sources": [],
+        "assessments": [
+          {
+            "level": "notConcrete",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": []
+          },
+          {
+            "level": "notConcrete",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": []
+          }
+        ],
+        "versions": {
+          "prompt": "viabilidad-v2",
+          "rubric": "r1"
+        }
+      }
+    },
+    {
+      "party": "prueba-d",
+      "question": "vivienda-asequible",
+      "versions": {
+        "prompt": "v3"
+      },
+      "state": "proposes",
+      "proposal": {
+        "what": "Que el Estado avale a los jóvenes para comprar su primera vivienda.",
+        "how": "El Estado daría avales públicos para que puedan pedir una hipoteca por el precio completo de la casa, sin tener que pagar una entrada.",
+        "figure": "Menores de 35 años"
+      },
+      "quotes": [
+        {
+          "text": "Daremos avales públicos para que los jóvenes menores de 35 años puedan financiar el 100 % de la compra de su primera vivienda.",
+          "page": 2
+        }
+      ],
+      "feasibility": {
+        "result": "noConsensus",
+        "why": null,
+        "sources": [],
+        "assessments": [
+          {
+            "level": "notConcrete",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": []
+          },
+          {
+            "level": "viable",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": [
+              {
+                "title": "INE: portada",
+                "url": "https://www.ine.es/"
+              },
+              {
+                "title": "BOE: portada",
+                "url": "https://www.boe.es/"
+              }
+            ]
+          }
+        ],
+        "versions": {
+          "prompt": "viabilidad-v2",
+          "rubric": "r1"
+        }
+      }
+    },
+    {
+      "party": "prueba-e",
+      "question": "vivienda-asequible",
+      "versions": {
+        "prompt": "v3"
+      },
+      "state": "proposes",
+      "proposal": {
+        "what": "Limitar las nuevas licencias de pisos turísticos en las islas.",
+        "how": "Además, reservar una parte del suelo de cada nueva urbanización para viviendas protegidas destinadas a personas que vivan de forma habitual en las islas.",
+        "figure": "20 % del suelo de cada nuevo desarrollo"
+      },
+      "quotes": [
+        {
+          "text": "Limitaremos las nuevas licencias de vivienda vacacional en las islas y destinaremos el 20 % del suelo de cada nuevo desarrollo a vivienda protegida para residentes.",
+          "page": 2
+        }
+      ],
+      "feasibility": {
+        "result": "notConcrete",
+        "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+        "sources": [],
+        "assessments": [
+          {
+            "level": "notConcrete",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": []
+          },
+          {
+            "level": "notConcrete",
+            "reasons": {
+              "competence": "[Simulado] Texto de ejemplo sobre quién tiene la competencia.",
+              "cost": "[Simulado] Texto de ejemplo sobre el coste y cómo se paga.",
+              "legal": "[Simulado] Texto de ejemplo sobre el encaje legal.",
+              "precedents": "[Simulado] Texto de ejemplo sobre precedentes.",
+              "majority": "[Simulado] Texto de ejemplo sobre los votos necesarios."
+            },
+            "why": "[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.",
+            "sources": []
+          }
+        ],
+        "versions": {
+          "prompt": "viabilidad-v2",
           "rubric": "r1"
         }
       }
@@ -5212,110 +5493,14 @@
       "party": "prueba-a",
       "hashPdf": "1793e77249c409f2b501538b803226da5d228d0387e7cc0efb6641b0c98ad14f",
       "url": "https://29n.jorgemasta.com/programas/prueba-a.pdf",
-      "promptVersion": "v2",
-      "extracted": 16,
+      "promptVersion": "v3",
+      "extracted": 1,
       "discarded": 0,
       "publishable": true,
       "positions": [
         {
-          "topic": "vivienda",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "empleo",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "sanidad",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "inmigracion",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "pensiones",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "coste-vida",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "impuestos",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "educacion",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "instituciones",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "energia-clima",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "cuidados",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "seguridad-justicia",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "territorial",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "igualdad",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "campo-agua",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "transporte",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "defensa",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "europa-exterior",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "ref-canarias",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "migracion-atlantica",
-          "state": "proposes",
-          "rewrites": 0
+          "question": "vivienda-asequible",
+          "state": "proposes"
         }
       ],
       "entries": [
@@ -5325,1084 +5510,34 @@
           "detail": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V2",
           "result": "pass",
           "detail": "páginas declaradas correctas"
         },
         {
-          "topic": "vivienda",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V13",
           "result": "pass",
           "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "empleo",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "empleo",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "empleo",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "empleo",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "empleo",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "empleo",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "empleo",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viable"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V13",
-          "result": "pass",
-          "detail": "sin consenso: viableWithCaveats / difficult"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: difficult"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V13",
-          "result": "pass",
-          "detail": "sin consenso: difficult / veryDifficult"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "educacion",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "educacion",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "educacion",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "educacion",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "educacion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "educacion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "educacion",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V13",
-          "result": "pass",
-          "detail": "sin consenso: veryDifficult / notConcrete"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: difficult"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: seguridad, policía, Guardia Civil, delito, delincuen, justicia, judicial, juzgado, Código Penal, reincidencia, prisión, víctima; ninguna página los menciona"
-        },
-        {
-          "topic": "territorial",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: comunidades autónomas, autonómic, financiación autonómica, competencias, descentraliza, federal, concierto, autogobierno, Estatuto, cupo, Constitución, referéndum, ordinalidad; ninguna página los menciona"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: agricultur, agrari, ganader, agricultor, rural, campo, regadío, agua, hídric, trasvase, sequía, PAC, pesca; ninguna página los menciona"
-        },
-        {
-          "topic": "transporte",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "transporte",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "transporte",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "transporte",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "transporte",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "transporte",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "transporte",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viable"
-        },
-        {
-          "topic": "defensa",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: defensa, OTAN, militar, Fuerzas Armadas, ejército, gasto en defensa, armamento, servicio militar, Ministerio de Defensa, seguridad nacional; ninguna página los menciona"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viable"
         },
         {
           "suggestedQuestion": "iva-luz",
@@ -6602,110 +5737,14 @@
       "party": "prueba-b",
       "hashPdf": "78d502092448fa6e16b8f31b8c7470b77d37edd7b592699423bad1b3b4ea3865",
       "url": "https://29n.jorgemasta.com/programas/prueba-b.pdf",
-      "promptVersion": "v2",
-      "extracted": 17,
+      "promptVersion": "v3",
+      "extracted": 1,
       "discarded": 0,
       "publishable": true,
       "positions": [
         {
-          "topic": "vivienda",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "empleo",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "sanidad",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "inmigracion",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "pensiones",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "coste-vida",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "impuestos",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "educacion",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "instituciones",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "energia-clima",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "cuidados",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "seguridad-justicia",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "territorial",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "igualdad",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "campo-agua",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "transporte",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "defensa",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "europa-exterior",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "ref-canarias",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "migracion-atlantica",
-          "state": "proposes",
-          "rewrites": 0
+          "question": "vivienda-asequible",
+          "state": "proposes"
         }
       ],
       "entries": [
@@ -6715,1144 +5754,34 @@
           "detail": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V2",
           "result": "pass",
           "detail": "páginas declaradas correctas"
         },
         {
-          "topic": "vivienda",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V13",
           "result": "pass",
           "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "empleo",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "empleo",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "empleo",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "empleo",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "empleo",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "empleo",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "empleo",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V13",
-          "result": "pass",
-          "detail": "sin consenso: viable / viableWithCaveats"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V13",
-          "result": "pass",
-          "detail": "sin consenso: viable / viableWithCaveats"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
-        },
-        {
-          "topic": "educacion",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "educacion",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "educacion",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "educacion",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "educacion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "educacion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "educacion",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: difficult"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: difficult"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viable"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "territorial",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "territorial",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "territorial",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "territorial",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "territorial",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "territorial",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "territorial",
-          "check": "V13",
-          "result": "pass",
-          "detail": "sin consenso: viable / viableWithCaveats"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: igualdad, mujer, violencia de género, violencia machista, violencia contra las mujeres, brecha salarial, feminis, paridad, LGTBI, machis, acoso; ninguna página los menciona"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "transporte",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: transporte, tren, ferrocarril, ferroviari, Cercanías, carretera, autovía, autobús, movilidad, aeropuerto, abono, peaje, infraestructura; revisadas las páginas 15 sin propuesta"
-        },
-        {
-          "topic": "defensa",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "defensa",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "defensa",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "defensa",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "defensa",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "defensa",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "defensa",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: Unión Europea, europe, exterior, internacional, diplomac, cooperación al desarrollo, Palestina, Israel, Ucrania, Marruecos, Gibraltar, Latinoamérica, Naciones Unidas; revisadas las páginas 18 sin propuesta"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
         },
         {
           "suggestedQuestion": "iva-luz",
@@ -8022,110 +5951,14 @@
       "party": "prueba-c",
       "hashPdf": "167e321a0fd5e138cf6e1cbe9e50ed5363dc098a9563d240491fa2c2d4c2c9e3",
       "url": "https://29n.jorgemasta.com/programas/prueba-c.pdf",
-      "promptVersion": "v2",
-      "extracted": 17,
+      "promptVersion": "v3",
+      "extracted": 1,
       "discarded": 0,
       "publishable": true,
       "positions": [
         {
-          "topic": "vivienda",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "empleo",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "sanidad",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "inmigracion",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "pensiones",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "coste-vida",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "impuestos",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "educacion",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "instituciones",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "energia-clima",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "cuidados",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "seguridad-justicia",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "territorial",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "igualdad",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "campo-agua",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "transporte",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "defensa",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "europa-exterior",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "ref-canarias",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "migracion-atlantica",
-          "state": "noProposal",
-          "rewrites": 0
+          "question": "vivienda-asequible",
+          "state": "proposes"
         }
       ],
       "entries": [
@@ -8135,1144 +5968,34 @@
           "detail": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V2",
           "result": "pass",
           "detail": "páginas declaradas correctas"
         },
         {
-          "topic": "vivienda",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V13",
           "result": "pass",
           "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "empleo",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "empleo",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "empleo",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "empleo",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "empleo",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "empleo",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "empleo",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: inmigra, migrante, migratori, extranjer, regulariza, frontera, asilo, refugiad, arraigo, irregular, integración; ninguna página los menciona"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viable"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "educacion",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "educacion",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "educacion",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "educacion",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "educacion",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "educacion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "educacion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "educacion",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viable"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: dependencia, cuidad, cuidados, crianza, permiso de, natalidad, conciliación, residencia, mayores, discapacidad, familia, infancia; revisadas las páginas 19 sin propuesta"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "territorial",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "territorial",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "territorial",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "territorial",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "territorial",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "territorial",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "territorial",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V13",
-          "result": "pass",
-          "detail": "sin consenso: viableWithCaveats / difficult"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V13",
-          "result": "pass",
-          "detail": "sin consenso: veryDifficult / notConcrete"
-        },
-        {
-          "topic": "transporte",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "transporte",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "transporte",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "transporte",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "transporte",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "transporte",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "transporte",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
-        },
-        {
-          "topic": "defensa",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "defensa",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "defensa",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "defensa",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "defensa",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "defensa",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "defensa",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: Canarias, canari, cayuco, patera, ruta atlántica, Atlántico, menores migrantes, menores no acompañados, acogida, Salvamento Marítimo, llegadas, Mauritania, Senegal; revisadas las páginas 18 sin propuesta"
         },
         {
           "suggestedQuestion": "iva-luz",
@@ -9382,110 +6105,14 @@
       "party": "prueba-d",
       "hashPdf": "090e776986a1fb71781528e59412603973a394f6b1858ac184a3606109f62dc0",
       "url": "https://29n.jorgemasta.com/programas/prueba-d.pdf",
-      "promptVersion": "v2",
-      "extracted": 12,
+      "promptVersion": "v3",
+      "extracted": 1,
       "discarded": 0,
       "publishable": true,
       "positions": [
         {
-          "topic": "vivienda",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "empleo",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "sanidad",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "inmigracion",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "pensiones",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "coste-vida",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "impuestos",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "educacion",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "instituciones",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "energia-clima",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "cuidados",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "seguridad-justicia",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "territorial",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "igualdad",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "campo-agua",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "transporte",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "defensa",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "europa-exterior",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "ref-canarias",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "migracion-atlantica",
-          "state": "noProposal",
-          "rewrites": 0
+          "question": "vivienda-asequible",
+          "state": "proposes"
         }
       ],
       "entries": [
@@ -9495,844 +6122,34 @@
           "detail": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V2",
           "result": "pass",
           "detail": "páginas declaradas correctas"
         },
         {
-          "topic": "vivienda",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V13",
           "result": "pass",
           "detail": "sin consenso: notConcrete / viable"
-        },
-        {
-          "topic": "empleo",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "empleo",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "empleo",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "empleo",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "empleo",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "empleo",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "empleo",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "empleo",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: sanidad, sanitari, salud, hospital, médic, atención primaria, lista de espera, listas de espera, enfermer, medicamento, farmac, salud mental; ninguna página los menciona"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: precio, inflación, IPC, coste de la vida, cesta de la compra, alimento, factura, luz, electricidad, carburante, poder adquisitivo, IVA; revisadas las páginas 14 sin propuesta"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: impuesto, fiscal, tributa, IRPF, IVA, Sociedades, patrimonio, sucesiones, deducción, fraude fiscal, recaudación, tasa; revisadas las páginas 14 sin propuesta"
-        },
-        {
-          "topic": "educacion",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: educación, educativ, escuela, colegio, docente, profesor, alumn, universidad, formación profesional, FP, beca, matrícula, infantil; ninguna página los menciona"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: corrupción, transparencia, institucion, Poder Judicial, CGPJ, Tribunal Constitucional, aforamiento, indulto, ley electoral, puertas giratorias, financiación de partidos, regeneración; ninguna página los menciona"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: energía, energétic, renovable, clima, climático, emisiones, nuclear, solar, eólic, descarboniza, transición ecológica, autoconsumo, gas; revisadas las páginas 12 sin propuesta"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V13",
-          "result": "pass",
-          "detail": "sin consenso: notConcrete / viable"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "territorial",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "territorial",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "territorial",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "territorial",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "territorial",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "territorial",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "territorial",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "territorial",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: difficult"
-        },
-        {
-          "topic": "transporte",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "transporte",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "transporte",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "transporte",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "transporte",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "transporte",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "transporte",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: difficult"
-        },
-        {
-          "topic": "defensa",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "defensa",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "defensa",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "defensa",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "defensa",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "defensa",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "defensa",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "defensa",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: veryDifficult"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: REF, Régimen Económico y Fiscal, ZEC, Zona Especial Canaria, AIEM, IGIC, Canarias, canari, ultraperiféric, RUP, insular, archipiélago; revisadas las páginas 13 sin propuesta"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: Canarias, canari, cayuco, patera, ruta atlántica, Atlántico, menores migrantes, menores no acompañados, acogida, Salvamento Marítimo, llegadas, Mauritania, Senegal; revisadas las páginas 11 sin propuesta"
         },
         {
           "suggestedQuestion": "iva-luz",
@@ -10472,110 +6289,14 @@
       "party": "prueba-e",
       "hashPdf": "2163bf30964600665772c99ec2002efea2a8b94d6ff08d8daa8094aeda2197b1",
       "url": "https://29n.jorgemasta.com/programas/prueba-e.pdf",
-      "promptVersion": "v2",
-      "extracted": 4,
+      "promptVersion": "v3",
+      "extracted": 1,
       "discarded": 0,
       "publishable": true,
       "positions": [
         {
-          "topic": "vivienda",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "empleo",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "sanidad",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "inmigracion",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "pensiones",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "coste-vida",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "impuestos",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "educacion",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "instituciones",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "energia-clima",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "cuidados",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "seguridad-justicia",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "territorial",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "igualdad",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "campo-agua",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "transporte",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "defensa",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "europa-exterior",
-          "state": "noProposal",
-          "rewrites": 0
-        },
-        {
-          "topic": "ref-canarias",
-          "state": "proposes",
-          "rewrites": 0
-        },
-        {
-          "topic": "migracion-atlantica",
-          "state": "proposes",
-          "rewrites": 0
+          "question": "vivienda-asequible",
+          "state": "proposes"
         }
       ],
       "entries": [
@@ -10585,364 +6306,34 @@
           "detail": "29n.jorgemasta.com pertenece al dominio oficial 29n.jorgemasta.com"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V2",
           "result": "pass",
           "detail": "páginas declaradas correctas"
         },
         {
-          "topic": "vivienda",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "vivienda",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V8",
           "result": "pass",
           "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
         },
         {
-          "topic": "vivienda",
+          "question": "vivienda-asequible",
           "check": "V13",
           "result": "pass",
           "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "empleo",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: empleo, salario, sueldo, jornada, trabajador, paro, desemple, contrato, despido, convenio, reforma laboral, autónomo, SMI; ninguna página los menciona"
-        },
-        {
-          "topic": "sanidad",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: sanidad, sanitari, salud, hospital, médic, atención primaria, lista de espera, listas de espera, enfermer, medicamento, farmac, salud mental; ninguna página los menciona"
-        },
-        {
-          "topic": "inmigracion",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: inmigra, migrante, migratori, extranjer, regulariza, frontera, asilo, refugiad, arraigo, irregular, integración; revisadas las páginas 5 sin propuesta"
-        },
-        {
-          "topic": "pensiones",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: pensión, pensiones, pensionista, jubilación, jubilad, Seguridad Social, cotiza, revaloriza, Pacto de Toledo; ninguna página los menciona"
-        },
-        {
-          "topic": "coste-vida",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: precio, inflación, IPC, coste de la vida, cesta de la compra, alimento, factura, luz, electricidad, carburante, poder adquisitivo, IVA; revisadas las páginas 6 sin propuesta"
-        },
-        {
-          "topic": "impuestos",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: impuesto, fiscal, tributa, IRPF, IVA, Sociedades, patrimonio, sucesiones, deducción, fraude fiscal, recaudación, tasa; revisadas las páginas 4, 6 sin propuesta"
-        },
-        {
-          "topic": "educacion",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: educación, educativ, escuela, colegio, docente, profesor, alumn, universidad, formación profesional, FP, beca, matrícula, infantil; ninguna página los menciona"
-        },
-        {
-          "topic": "instituciones",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: corrupción, transparencia, institucion, Poder Judicial, CGPJ, Tribunal Constitucional, aforamiento, indulto, ley electoral, puertas giratorias, financiación de partidos, regeneración; ninguna página los menciona"
-        },
-        {
-          "topic": "energia-clima",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: energía, energétic, renovable, clima, climático, emisiones, nuclear, solar, eólic, descarboniza, transición ecológica, autoconsumo, gas; ninguna página los menciona"
-        },
-        {
-          "topic": "cuidados",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: dependencia, cuidad, cuidados, crianza, permiso de, natalidad, conciliación, residencia, mayores, discapacidad, familia, infancia; ninguna página los menciona"
-        },
-        {
-          "topic": "seguridad-justicia",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: seguridad, policía, Guardia Civil, delito, delincuen, justicia, judicial, juzgado, Código Penal, reincidencia, prisión, víctima; ninguna página los menciona"
-        },
-        {
-          "topic": "territorial",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: comunidades autónomas, autonómic, financiación autonómica, competencias, descentraliza, federal, concierto, autogobierno, Estatuto, cupo, Constitución, referéndum, ordinalidad; ninguna página los menciona"
-        },
-        {
-          "topic": "igualdad",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: igualdad, mujer, violencia de género, violencia machista, violencia contra las mujeres, brecha salarial, feminis, paridad, LGTBI, machis, acoso; ninguna página los menciona"
-        },
-        {
-          "topic": "campo-agua",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: agricultur, agrari, ganader, agricultor, rural, campo, regadío, agua, hídric, trasvase, sequía, PAC, pesca; ninguna página los menciona"
-        },
-        {
-          "topic": "transporte",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "transporte",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "transporte",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "transporte",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "transporte",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "transporte",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "transporte",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "transporte",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: viableWithCaveats"
-        },
-        {
-          "topic": "defensa",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: defensa, OTAN, militar, Fuerzas Armadas, ejército, gasto en defensa, armamento, servicio militar, Ministerio de Defensa, seguridad nacional; ninguna página los menciona"
-        },
-        {
-          "topic": "europa-exterior",
-          "check": "V12",
-          "result": "pass",
-          "detail": "términos buscados: Unión Europea, europe, exterior, internacional, diplomac, cooperación al desarrollo, Palestina, Israel, Ucrania, Marruecos, Gibraltar, Latinoamérica, Naciones Unidas; ninguna página los menciona"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 0 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "ref-canarias",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: notConcrete"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V1",
-          "result": "pass",
-          "detail": "1 cita(s) localizadas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V2",
-          "result": "pass",
-          "detail": "páginas declaradas correctas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V3",
-          "result": "pass",
-          "detail": "sin marcas identificativas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V4",
-          "result": "pass",
-          "detail": "cifras trazables a las citas"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V5",
-          "result": "pass",
-          "detail": "longitud dentro del rango"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V6",
-          "result": "pass",
-          "detail": "plantilla completa"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V10",
-          "result": "pass",
-          "detail": "fiel a la cita según un verificador independiente"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V11",
-          "result": "pass",
-          "detail": "acertada 0 de 3 veces, confianza media 0.00"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 1: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V8",
-          "result": "pass",
-          "detail": "evaluación 2: 2 fuente(s) institucional(es) verificada(s)"
-        },
-        {
-          "topic": "migracion-atlantica",
-          "check": "V13",
-          "result": "pass",
-          "detail": "consenso: difficult"
         },
         {
           "suggestedQuestion": "iva-luz",
@@ -11619,6 +7010,13 @@
       "id": "vivienda-asequible",
       "theme": "vivienda",
       "text": "¿Qué harían para que la vivienda sea asequible?",
+      "keywords": [
+        "vivienda",
+        "alquiler",
+        "hipoteca",
+        "inquilin",
+        "suelo"
+      ],
       "followUp": false,
       "order": 1,
       "origin": {

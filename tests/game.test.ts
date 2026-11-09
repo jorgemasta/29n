@@ -632,7 +632,7 @@ describe('returning visit: news', () => {
     parties: topicsDataset.parties.map((p) =>
       p.id === 'dos' && state === 'pending' ? { ...p, manifesto: { state: 'pending' } } : p,
     ),
-    positions: state === 'pending' ? topicsDataset.positions.filter((p) => p.party !== 'dos') : topicsDataset.positions,
+    topicPositions: state === 'pending' ? topicsDataset.topicPositions.filter((p) => p.party !== 'dos') : topicsDataset.topicPositions,
   });
 
   // Private mode: with 'dos' pending, the public sources alone would leave every topic too thin to play.
@@ -685,7 +685,7 @@ describe('topics with too few proposals', () => {
   // vivienda: only aaa proposes in play (bbb/ccc unverified or proposing nothing).
   const sparse: Dataset = {
     ...sampleDataset,
-    positions: sampleDataset.positions.map((p) =>
+    topicPositions: sampleDataset.topicPositions.map((p) =>
       p.topic === 'vivienda' && p.party !== 'aaa' && p.state === 'proposes'
         ? { party: p.party, topic: p.topic, state: 'noProposal', versions: p.versions }
         : p,
@@ -705,7 +705,7 @@ describe('topics with too few proposals', () => {
   it('counts only the parties in play: a topic can be thin in one province and not in another', () => {
     const onlyIsland: Dataset = {
       ...sparse,
-      positions: sparse.positions.map((p) =>
+      topicPositions: sparse.topicPositions.map((p) =>
         p.topic === 'vivienda' && p.party === 'aaa' ? { party: 'aaa', topic: 'vivienda', state: 'unverified', versions: p.versions } : p,
       ),
     };
@@ -719,7 +719,7 @@ describe('revealed feasibility without verifiable sources', () => {
   it('marks a note whose evaluation was published without sources (V8 gave up)', () => {
     const withNote = (note: typeof sampleNote): Dataset => ({
       ...sampleDataset,
-      positions: sampleDataset.positions.map((p) => (p.party === 'aaa' && p.topic === 'vivienda' ? { ...p, feasibility: note } : p)),
+      topicPositions: sampleDataset.topicPositions.map((p) => (p.party === 'aaa' && p.topic === 'vivienda' ? { ...p, feasibility: note } : p)),
     });
     const revealed = (ds: Dataset) =>
       createGame(ds, null, 's').choose('vivienda', NONE).reveal('vivienda')!.cards.find((t) => t.party.id === 'aaa')!;

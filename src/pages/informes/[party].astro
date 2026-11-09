@@ -8,7 +8,7 @@ import { CHECKS } from '../../registry/checks';
 export function getStaticPaths() {
   return dataset.reports.map((report) => ({ params: { party: report.party }, props: { report } }));
 }
-const r = reportSummary(Astro.props.report, dataset.topics, dataset.suggestedQuestions);
+const r = reportSummary(Astro.props.report, dataset.questions, dataset.suggestedQuestions);
 const i = r.report;
 const party = dataset.parties.find((p) => p.id === i.party);
 const manifesto = party?.manifesto.state === 'published' ? party.manifesto : null;
@@ -19,8 +19,8 @@ const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite
 <InfoPage title={`Informe de verificación: ${name}`} description={`Qué comprobaciones pasó el programa de ${name} y qué se descartó.`} back={{ href: '/partidos/', text: '← Partidos y programas' }}>
   <h1>Informe de verificación: {name}</h1>
   <p>
-    Todo lo que hizo el proceso automático con este programa: qué propuestas se publicaron, cuáles se
-    reescribieron y qué se descartó y por qué. <a href="/metodologia/#barreras">Qué es cada comprobación</a>.
+    Todo lo que hizo el proceso automático con este programa: qué propuestas se publicaron y qué se
+    descartó y por qué. <a href="/metodologia/#barreras">Qué es cada comprobación</a>.
   </p>
   <ul>
     {manifesto && <li>Documento: <a href={manifesto.url} target="_blank" rel="noopener">{manifesto.title} (PDF ↗)</a></li>}
@@ -40,10 +40,10 @@ const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite
     </>
   )}
 
-  <h2>Por tema</h2>
-  {r.topics.map((t) => (
+  <h2>Por pregunta</h2>
+  {r.positions.map((t) => (
     <details class="report-topic">
-      <summary>{t.topic.title} · {STATE[t.state]}{t.rewrites > 0 && ` · ${t.rewrites} ${t.rewrites === 1 ? 'reescritura' : 'reescrituras'}`}</summary>
+      <summary>{t.question.text} · {STATE[t.state]}</summary>
       {t.reason && <p><strong>Motivo:</strong> {t.reason}</p>}
       <ul class="entries">
         {t.entries.map((e) => <li title={CHECKS[e.check].description}><strong>{e.check} · {e.name}</strong>: {RESULT[e.result]}. <span class="grey">{e.detail}</span></li>)}

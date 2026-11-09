@@ -11,9 +11,8 @@ import { Dataset, SourceType, type Party } from '../src/dataset';
 import { createDiskCache } from '../src/ai/disk-cache';
 import { createClaudeAI } from '../src/ai/claude';
 import { processManifesto } from '../src/pipeline';
-import { publishedContext, mergeManifesto } from '../src/pipeline/publish';
+import { mergeManifesto } from '../src/pipeline/publish';
 import { PARTIES } from '../src/registry/parties';
-import { TOPICS } from '../src/registry/topics';
 
 const { values } = parseArgs({
   options: {
@@ -40,11 +39,10 @@ const party: Party = { ...base, manifesto: { state: 'published', source, url: va
 const previous = Dataset.parse(JSON.parse(await readFile(values.dataset, 'utf8')));
 
 const result = await processManifesto(pdf, party, createClaudeAI(), {
-  topics: TOPICS,
+  // One position per published question (the pulse's frozen list, #23).
+  questions: previous.questions ?? [],
   cache: createDiskCache('data/cache/ai'),
   date: values.date,
-  // V5 lengths and V11's mix come from the parties already published.
-  ...publishedContext(previous),
 });
 
 if (!result.publishable) {
@@ -56,7 +54,6 @@ if (!result.publishable) {
 }
 
 const merge = mergeManifesto(previous, party, result, {
-  topics: TOPICS,
   generated: new Date().toISOString(),
   date: values.date,
   // Every registered party is listed; without a processed programme it is "⏳ programa pendiente".

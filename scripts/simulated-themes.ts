@@ -1,13 +1,26 @@
 // FICTIONAL v2 themes for the private prototype (#19): one theme with one question and its 3
 // approaches, written by hand over the fictional "vivienda" proposals. Each stance quotes the
-// party's literal text, taken from its processed v1 position (so the quote is in its fictional PDF).
-// #20/#21 replace this with processManifesto per question + settleApproaches on the fake AI.
+// party's literal text, taken from its position on the question (processManifesto, so the quote is
+// in its fictional PDF). #20 replaces the hand-written approaches with settleApproaches on the fake AI.
 import type { Approach, PartyStance, Position, Question, Theme } from '../src/dataset/schema';
+import type { QuestionToProcess } from '../src/pipeline';
+
+/** Questions the fictional programmes are processed for, with the v1 topic whose fictional proposals answer them. */
+export const SIMULATED_QUESTIONS: (QuestionToProcess & { theme: string; topic: string })[] = [
+  {
+    id: 'vivienda-asequible',
+    theme: 'vivienda',
+    text: '¿Qué harían para que la vivienda sea asequible?',
+    keywords: ['vivienda', 'alquiler', 'hipoteca', 'inquilin', 'suelo'],
+    topic: 'vivienda',
+  },
+];
 
 export function simulatedThemes(positions: Position[]): { themes: Theme[]; questions: Question[] } {
+  const [question] = SIMULATED_QUESTIONS;
   const stance = (party: string, level: 'full' | 'partial'): PartyStance => {
-    const p = positions.find((x) => x.party === party && x.topic === 'vivienda');
-    if (p?.state !== 'proposes') throw new Error(`${party} no tiene propuesta de vivienda`);
+    const p = positions.find((x) => x.party === party && x.question === question!.id);
+    if (p?.state !== 'proposes') throw new Error(`${party} no tiene propuesta en ${question!.id}`);
     return { party, stance: level, quote: p.quotes[0]! };
   };
   const approaches: Approach[] = [
@@ -40,9 +53,10 @@ export function simulatedThemes(positions: Position[]): { themes: Theme[]; quest
     themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
     questions: [
       {
-        id: 'vivienda-asequible',
-        theme: 'vivienda',
-        text: '¿Qué harían para que la vivienda sea asequible?',
+        id: question!.id,
+        theme: question!.theme,
+        text: question!.text,
+        keywords: question!.keywords,
         followUp: false,
         order: 1,
         origin: { cis: 'La vivienda es el primer problema para una parte importante de la población (dato simulado).', manifestos: 5 },

@@ -1,4 +1,4 @@
-import type { Dataset, Party, Position, Topic, SourceType } from '../../src/dataset/schema';
+import type { Dataset, Party, TopicPosition, Topic, SourceType } from '../../src/dataset/schema';
 
 const party = (id: string, source?: SourceType): Party => ({
   id,
@@ -20,7 +20,7 @@ const titles: [string, string][] = [
 const topics: Topic[] = titles.map(([id, title], i) => ({ id, title, question: `¿Qué harían con ${title.toLowerCase()}?`, scope: 'national', order: i + 1 }));
 
 const NEUTRAL: Record<string, string> = { uno: 'uno', dos: 'dos', viejo: 'tres', dichos: 'cuatro' };
-const proposes = (party: string, topic: string): Position => ({
+const proposes = (party: string, topic: string): TopicPosition => ({
   party,
   topic,
   state: 'proposes',
@@ -40,6 +40,7 @@ export const topicsDataset: Dataset = {
   origin: 'test',
   parties: [party('uno'), party('dos', 'manifesto-29n'), party('viejo', 'manifesto-2023'), party('dichos', 'statements')],
   topics,
-  positions: topics.flatMap((t) => ['uno', 'dos', 'viejo', 'dichos'].map((p) => proposes(p, t.id))),
+  topicPositions: topics.flatMap((t) => ['uno', 'dos', 'viejo', 'dichos'].map((p) => proposes(p, t.id))),
+  positions: [],
   reports: [],
 };

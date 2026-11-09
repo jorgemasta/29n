@@ -1,7 +1,7 @@
 // Game engine (test point B). Pure functions over the dataset, no I/O: runs in the browser.
 //   createGame(dataset, province, seed, state?, options?) → Game (immutable; actions return a new one)
 import { applyMode, isPrivateOnly, sourceOf } from '../dataset';
-import type { Dataset, Mode, FeasibilityNote, Party, Position, SuggestedQuestion, SuggestedAnswer, Topic, SourceType } from '../dataset/schema';
+import type { Dataset, Mode, FeasibilityNote, Party, TopicPosition, SuggestedQuestion, SuggestedAnswer, Topic, SourceType } from '../dataset/schema';
 import { shuffle } from './random';
 import { themeGame, type ThemeGame, type ThemeState } from './themes';
 import { byName, linkQuote, revealParty, type RevealedParty } from './party';
@@ -269,7 +269,7 @@ export interface Game extends ThemeGame<Game> {
   revealSuggestedQuestion(question: string | SuggestedQuestionSummary, answers?: SuggestedAnswer[]): SuggestedQuestionReveal;
 }
 
-type ProposingPosition = Extract<Position, { state: 'proposes' }>;
+type ProposingPosition = Extract<TopicPosition, { state: 'proposes' }>;
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 export function createGame(
@@ -287,7 +287,7 @@ export function createGame(
   const byId = new Map(published.map((p) => [p.id, p]));
   const isCanaryIslands = province !== null && CANARY_PROVINCES.includes(province);
   const proposalsIn = (topicId: string) =>
-    dataset.positions.filter((p) => p.topic === topicId && p.state === 'proposes' && byId.has(p.party)).length;
+    dataset.topicPositions.filter((p) => p.topic === topicId && p.state === 'proposes' && byId.has(p.party)).length;
   const inZone = dataset.topics.filter((t) => t.scope === 'national' || isCanaryIslands).sort((a, b) => a.order - b.order);
   const topics = inZone.filter((t) => proposalsIn(t.id) >= MIN_PROPOSALS);
   const hidden = inZone.filter((t) => !topics.includes(t));
@@ -297,7 +297,7 @@ export function createGame(
     if (!topic) throw new Error(`Tema no disponible: ${topicId}`);
     return topic;
   };
-  const positionsOf = (topicId: string) => dataset.positions.filter((p) => p.topic === topicId && byId.has(p.party));
+  const positionsOf = (topicId: string) => dataset.topicPositions.filter((p) => p.topic === topicId && byId.has(p.party));
 
   /** "4F2A", then "4F2A-1", "4F2A-2"… after each re-shuffle of the topic. */
   const shuffleId = (topicId: string) => {
@@ -437,7 +437,7 @@ export function createGame(
       const choice = state.choices[topicId];
       if (choice === undefined) return null;
       const list = shuffledCards(topicId);
-      const withState = (e: Position['state']) =>
+      const withState = (e: TopicPosition['state']) =>
         positionsOf(topicId).filter((p) => p.state === e).map((p) => revealParty(byId.get(p.party)!));
       const guessed = state.guesses?.[topicId];
       return {

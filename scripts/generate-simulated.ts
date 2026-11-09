@@ -1,5 +1,6 @@
 // Builds data/dataset.json from FICTIONAL test programmes, through the real pipeline with the
-// fake AI adapter. Used while no real programme can be processed (no credentials / PDF on this
+// fake AI adapter (one position per simulated question). The v1 topic cards (`topicPositions`, legacy
+// until #24/#29) are built straight from the fictional proposals. Used while no real programme can be processed (no credentials / PDF on this
 // machine). The dataset is marked origin: "simulated" and every party test: true. Content lives in
 // scripts/simulated-data.ts; party D is a provisional source (private prototype only), E is a
 // regional (Canary) party and F a regional party with its programme pending. Each fictional PDF
@@ -8,13 +9,15 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { textPath } from '../src/questions/texts';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
-import { buildDataset, validateDataset, type Party } from '../src/dataset';
+import { buildDataset, validateDataset, type Assessment, type FeasibilityNote, type Party, type TopicPosition } from '../src/dataset';
 import { createFakeAI } from '../src/ai/fake';
 import { processManifesto } from '../src/pipeline';
 import { TOPICS } from '../src/registry/topics';
 import { SUGGESTED_QUESTIONS } from '../src/registry/questions';
 import { FICTIONAL, FICTIONAL_PENDING, SIMULATED_ANSWERS } from './simulated-data';
-import { simulatedThemes } from './simulated-themes';
+import { SIMULATED_QUESTIONS, simulatedThemes } from './simulated-themes';
+import { FEASIBILITY_PROMPT_VERSION } from '../src/pipeline/prompts-feasibility';
+import { RUBRIC_VERSION } from '../src/registry/rubric';
 
 // Simulated feasibility (V13): fictional, generic answers that vary by party and topic so the
 // reveal shows every kind of note (agreement, "sin concreción", "sin consenso").
@@ -30,7 +33,7 @@ const SIMULATED_REASONS = {
   precedents: '[Simulado] Texto de ejemplo sobre precedentes.',
   majority: '[Simulado] Texto de ejemplo sobre los votos necesarios.',
 };
-function simulatedFeasibility(party: string, topic: string, assessment: number) {
+function simulatedFeasibility(party: string, topic: string, assessment: number): Assessment {
   const n = [...`${party}:${topic}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   // About one pair in 7 disagrees: the second evaluation moves one level.
   const i = (n % 7 === 0 && assessment === 2 ? n + 1 : n) % SIMULATED_LEVELS.length;
@@ -41,6 +44,14 @@ function simulatedFeasibility(party: string, topic: string, assessment: number) 
     why: `[Simulado] Nota de ejemplo generada sin IA para el prototipo. No evalúa la propuesta real.`,
     sources: level === 'notConcrete' ? [] : SIMULATED_SOURCES,
   };
+}
+
+/** The same note the pipeline publishes from two evaluations (V13), for the v1 topic cards. */
+function simulatedNote(party: string, topic: string): FeasibilityNote {
+  const [e1, e2] = [simulatedFeasibility(party, topic, 1), simulatedFeasibility(party, topic, 2)];
+  const versions = { prompt: FEASIBILITY_PROMPT_VERSION, rubric: RUBRIC_VERSION };
+  if (e1.level !== e2.level) return { result: 'noConsensus', why: null, sources: [], assessments: [e1, e2], versions };
+  return { result: e1.level, why: e1.why, sources: e1.sources, assessments: [e1, e2], versions };
 }
 
 /** Wraps a paragraph into lines that fit an A4 page in 10pt Helvetica. */
@@ -72,6 +83,7 @@ async function fictionalPdf(pages: string[][]): Promise<Uint8Array> {
 
 const parties: Party[] = [];
 const results = [];
+const topicPositions: TopicPosition[] = [];
 await mkdir('public/programas', { recursive: true });
 await mkdir('public/texts', { recursive: true });
 for (const f of FICTIONAL) {
@@ -98,14 +110,20 @@ for (const f of FICTIONAL) {
     manifesto: { state: 'published', source: f.source, url: `https://29n.jorgemasta.com/programas/${f.id}.pdf`, title: f.title },
     test: true,
   };
-  const proposalOf = (e: { topic: { id: string } }) => f.proposals[e.topic.id];
+  const topicOf = (e: { question: { id: string } }) => SIMULATED_QUESTIONS.find((q) => q.id === e.question.id)!.topic;
   const ai = createFakeAI({
-    'extract-position': (e) => (proposalOf(e) ? { proposes: true, quotes: [{ text: proposalOf(e)![0], page: page[e.topic.id]! }] } : { proposes: false, quotes: [] }),
-    neutralize: (e) => ({ what: proposalOf(e)![1], how: proposalOf(e)![2], figure: proposalOf(e)![3] }),
+    'extract-position': (e) => {
+      const p = f.proposals[topicOf(e)];
+      if (!p) return { proposes: false, quotes: [], proposal: null };
+      return { proposes: true, quotes: [{ text: p[0], page: page[topicOf(e)]! }], proposal: { what: p[1], how: p[2], figure: p[3] } };
+    },
+    neutralize: () => {
+      throw new Error('processManifesto no neutraliza');
+    },
     'verify-fidelity': () => ({ adds: false, omits: false, changesMeaning: false, explanation: 'Fiel a la cita.' }),
     'guess-party': () => ({ assignments: [] }),
-    'confirm-absence': () => ({ proposes: false, quotes: [] }),
-    'assess-feasibility': (e) => simulatedFeasibility(f.id, e.topic.id, e.assessment),
+    'confirm-absence': () => ({ proposes: false, quotes: [], proposal: null }),
+    'assess-feasibility': (e) => simulatedFeasibility(f.id, topicOf(e), e.assessment),
     'answer-question': (e) => {
       const r = fictionalAnswers[e.question.id];
       if (!r) return { mentions: false, what: '', how: '', figure: null, quotes: [] };
@@ -115,23 +133,29 @@ for (const f of FICTIONAL) {
     },
   });
   const r = await processManifesto(pdf, party, ai, {
-    topics: TOPICS,
+    questions: SIMULATED_QUESTIONS,
     domains: { [f.id]: ['29n.jorgemasta.com'] },
-    // V5 and V11 compare each programme with the ones already processed.
-    published: { parties, positions: results.flatMap((x) => x.positions) },
     // Simulated: the feasibility sources are institutional home pages; skip the network check.
     checkUrl: async () => true,
   });
-  if (r.revisions.length) throw new Error(`${f.id}: deja fuera de rango a otros partidos: ${JSON.stringify(r.revisions)}`);
   if (!r.publishable) throw new Error(`${f.id} no publicable: ${r.report.reason}`);
   const failed = r.positions.filter((p) => p.state === 'unverified');
   const unverified = r.answers.filter((x) => x.state === 'unverified');
   if (unverified.length) throw new Error(`${f.id}: respuestas sin verificar ${unverified.map((x) => x.question).join(', ')}: ${JSON.stringify(r.report.entries.filter((e) => e.suggestedQuestion && e.result !== 'pass'))}`);
-  if (failed.length) throw new Error(`${f.id}: sin verificar ${failed.map((p) => p.topic).join(', ')}: ${JSON.stringify(r.report.entries.filter((e) => e.result === 'discard'))}`);
+  if (failed.length) throw new Error(`${f.id}: sin verificar ${failed.map((p) => p.question).join(', ')}: ${JSON.stringify(r.report.entries.filter((e) => e.result === 'discard'))}`);
   parties.push({ ...party, manifesto: { ...party.manifesto, hashPdf: r.report.hashPdf } } as Party);
   // Page text for the live free question (read by the Cloudflare function).
   await writeFile(`public/${textPath(f.id)}`, JSON.stringify(r.text) + '\n');
   results.push(r);
+  for (const topic of TOPICS) {
+    const p = f.proposals[topic.id];
+    const base = { party: f.id, topic: topic.id, versions: { prompt: 'v2' } };
+    topicPositions.push(
+      p
+        ? { ...base, state: 'proposes', text: { what: p[1], how: p[2], figure: p[3] }, quotes: [{ text: p[0], page: page[topic.id]! }], feasibility: simulatedNote(f.id, topic.id) }
+        : { ...base, state: 'noProposal' },
+    );
+  }
 }
 
 for (const f of FICTIONAL_PENDING)
@@ -140,6 +164,7 @@ for (const f of FICTIONAL_PENDING)
 const dataset = buildDataset({
   parties,
   topics: TOPICS,
+  topicPositions,
   suggestedQuestions: SUGGESTED_QUESTIONS,
   ...simulatedThemes(results.flatMap((r) => r.positions)),
   results,

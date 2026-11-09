@@ -14,7 +14,6 @@ import { Dataset } from '../src/dataset';
 import { createDiskCache } from '../src/ai/disk-cache';
 import { createClaudeAI } from '../src/ai/claude';
 import { PARTIES } from '../src/registry/parties';
-import { TOPICS } from '../src/registry/topics';
 import { DATASET_PATH, STATE_PATH, watch, type Alert, type Change, type Download, type WatcherState } from '../src/watcher';
 import { MANIFESTO_SOURCES } from '../src/watcher/sources';
 import { createIssueAlert } from '../src/watcher/issue';
@@ -113,7 +112,8 @@ const r = await watch(
     },
     now: () => new Date(),
   },
-  { party: values.party, force: values.force, processResult: { topics: TOPICS } },
+  // Questions: the published ones of the current dataset (the pulse's frozen list, #23).
+  { party: values.party, force: values.force },
 );
 
 // AI answers paid for in runs that published nothing (blocked or crashed) are kept too.
