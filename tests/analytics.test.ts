@@ -129,6 +129,22 @@ describe('guess events (v2, #26)', () => {
     expect(guessEvents(blind, ['alquiler'])).toEqual([]);
   });
 
+  it('the browser sends each question\'s guess outcome once, even if asked again (#18 review)', async () => {
+    const tracked: unknown[] = [];
+    const g = globalThis as { window?: unknown };
+    const before = g.window;
+    g.window = { umami: { track: (...args: unknown[]) => tracked.push(args) } };
+    try {
+      const { trackGuesses } = await import('../src/web/analytics');
+      const game = reveal('bbb');
+      trackGuesses(game, ['alquiler', 'compra']);
+      trackGuesses(game, ['alquiler']);
+      expect(tracked).toEqual([['guess-hit', { question: 'alquiler' }]]);
+    } finally {
+      g.window = before;
+    }
+  });
+
   it('a question id that is also a party id cannot be sent', () => {
     expect(isValidEvent({ name: 'guess-hit', data: { question: 'alquiler' } }, { parties: ['aaa'] })).toBe(true);
     expect(isValidEvent({ name: 'guess-hit', data: { question: 'aaa' } }, { parties: ['aaa'] })).toBe(false);

@@ -7,6 +7,7 @@ Cerradas en la sesión de *grilling* del 8-nov-2026. El detalle de la UX está e
 - **Núcleo: elegir a ciegas.** Para cada tema se muestran de 4 a 8 posturas anónimas (letras y orden aleatorio por usuario). El usuario elige una o "Ninguna me convence". Después se revela el partido de cada postura, con la cita literal, el enlace al PDF y la nota de viabilidad.
 - **Afinidad**: conteo simple de elecciones, con la opción de marcar 3 temas prioritarios (que valen el doble). Se enseña el ranking completo con porcentajes y aparece a partir de 5 temas.
 - **Apuesta opcional** ("¿de quién crees que es?"). Se mide la tasa de acierto agregada por tema; si pasa del 60 %, hay que reescribir la neutralización de ese tema. Solo cuenta a partir de 30 apuestas en el tema (`MIN_GUESSES`): con menos, unas pocas pruebas de amigos dispararían el aviso. Explicado en la metodología.
+- **Sin apuesta tras «Repetir»** (#18): quien repite una temática ya vio de quién era cada enfoque, así que en esa temática ya no se ofrece ni se acepta la apuesta (lo impone el motor, `repeatedThemes`). Una pregunta ya destapada, también una «para afinar» contestada, no se puede cambiar, y su acierto se envía como mucho una vez: así la tasa de acierto solo cuenta apuestas a ciegas.
 - **Pregunta libre**: pestaña aparte con preguntas sugeridas como chips. Responde solo desde los programas y siempre con cita; si no hay base, lo dice claramente.
   - 13-nov: solo 7 preguntas sugeridas, con la respuesta generada de antemano.
   - Hacia el 18-nov: se abre la caja de texto libre.

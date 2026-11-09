@@ -51,8 +51,18 @@ export const trackViewTopic = (game: Game) => {
 };
 export const trackConfirm = (before: Game, after: Game, topic: string) =>
   confirmEvents(before, after, topic).forEach(send);
-/** Hit or miss of the guesses on these questions, once revealed (never the party). */
-export const trackGuesses = (game: Game, questionIds: string[]) => guessEvents(game, questionIds).forEach(send);
+/** Questions whose guess outcome was already sent in this page load. */
+const sentGuesses = new Set<string>();
+/**
+ * Hit or miss of the guesses on these questions, once revealed (never the party). At most once per
+ * question: the engine makes a revealed choice final and offers no guess after "Repetir", so a
+ * question's outcome can only be sent again within a page load, and that is filtered here.
+ */
+export const trackGuesses = (game: Game, questionIds: string[]) =>
+  guessEvents(game, questionIds.filter((q) => !sentGuesses.has(q))).forEach((e) => {
+    sentGuesses.add(e.data!.question!);
+    send(e);
+  });
 /** "Mi resultado" is on screen with at least one revealed theme in it. */
 export const trackResult = (game: Game) => {
   if (game.affinity().themes.length) once(sawResultEvent());

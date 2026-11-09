@@ -27,6 +27,11 @@ export interface ThemeState {
   selectedThemes?: string[] | typeof ALL;
   /** Optional guess per question id: the party the voter thinks defends the chosen approach. */
   questionGuesses?: Record<string, string>;
+  /**
+   * Themes the voter repeated ("Repetir") after seeing their reveal: no guess is offered or accepted
+   * there any more (it would not measure anonymity, and would skew the guess analytics).
+   */
+  repeatedThemes?: string[];
 }
 
 /** The voter's guess on a question, judged once its theme is revealed. */
@@ -69,6 +74,8 @@ export interface QuestionView {
 export interface QuestionItem {
   question: QuestionSummary;
   choice: string | None | null;
+  /** Its choice is final: the theme is revealed and it is a base question or an answered follow-up one. */
+  locked: boolean;
 }
 
 export interface ThemeView {
@@ -182,17 +189,18 @@ export interface ThemeGame<G> {
   nextTheme(themeId?: string): Theme | null;
   /** Picked themes revealed out of the picked ones ("Temáticas · 1/3"). */
   themesProgress(): { revealed: number; total: number };
-  /** "Repetir": forget every choice of the theme (follow-up ones too) and make it blind again. */
+  /** "Repetir": forget every choice of the theme (follow-up ones too) and make it blind again; no guess is offered there any more. */
   repeatTheme(themeId: string): G;
   theme(themeId: string): ThemeView;
   /** Blind view of a question: its 3 approaches, shuffled. */
   question(questionId: string): QuestionView;
   /**
-   * Choose an approach by letter, or "none" ("Ninguna me convence"). Changeable until the reveal.
-   * Playing a theme that was not picked adds it to the pick.
+   * Choose an approach by letter, or "none" ("Ninguna me convence"). Changeable until the reveal;
+   * after it, only a follow-up question not answered yet can be answered (once: it is revealed at
+   * once). Playing a theme that was not picked adds it to the pick.
    */
   chooseApproach(questionId: string, letter: string | None, options?: ApproachChoiceOptions): G;
-  /** Guess chips in the sheet: every party in play here with a published manifesto, by name. Empty with the guess off. */
+  /** Guess chips in the sheet: every party in play here with a published manifesto, by name. Empty with the guess off or in a repeated theme. */
   questionGuessOptions(questionId: string): RevealedParty[];
   /** Hit (true) or miss per revealed question with a guess. Never the party: this is what analytics may send. */
   guessOutcomes(): Record<string, boolean>;
@@ -237,6 +245,7 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
   const choices = state.questionChoices ?? {};
   const revealed = new Set(state.revealedThemes ?? []);
   const guesses = state.questionGuesses ?? {};
+  const repeated = new Set(state.repeatedThemes ?? []);
 
   const findTheme = (themeId: string): Theme => {
     const t = themes.find((x) => x.id === themeId);
@@ -263,7 +272,11 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
     if (id === NONE) return NONE;
     return shuffled(q).find((x) => x.approach.id === id)?.letter ?? null;
   };
-  const item = (q: Question): QuestionItem => ({ question: summary(q), choice: choiceOf(q) });
+  /** Final choice: in a revealed theme, every base question and every answered follow-up one. */
+  const isLocked = (q: Question) => revealed.has(q.theme) && (!q.followUp || choices[q.id] !== undefined);
+  /** A guess can be offered here: the guess is on and the voter has not seen this theme's reveal before. */
+  const canGuess = (q: Question) => ctx.guess && !repeated.has(q.theme);
+  const item = (q: Question): QuestionItem => ({ question: summary(q), choice: choiceOf(q), locked: isLocked(q) });
   const isDone = (themeId: string) => questionsOf(themeId).every((q) => q.followUp || choices[q.id] !== undefined);
   const selection = state.selectedThemes ?? [];
   const selected = selection === ALL ? themes : themes.filter((t) => selection.includes(t.id));
@@ -379,6 +392,8 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
         questionChoices: others(choices),
         questionGuesses: others(guesses),
         revealedThemes: [...revealed].filter((t) => t !== themeId),
+        // Repeating a theme never revealed has seen nothing: the guess stays.
+        ...(revealed.has(themeId) && !repeated.has(themeId) ? { repeatedThemes: [...repeated, themeId] } : {}),
       });
     },
     theme(themeId) {
@@ -400,10 +415,11 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
     },
     chooseApproach(questionId, letter, { guess } = {}) {
       const q = findQuestion(questionId);
-      if (revealed.has(q.theme) && !q.followUp) throw new Error(`La temática ${q.theme} ya está destapada`);
+      if (isLocked(q)) throw new Error(`La temática ${q.theme} ya está destapada: ${questionId} no se puede cambiar`);
       if (guess !== undefined) {
         if (letter === NONE) throw new Error('No se puede apostar con «Ninguna me convence»');
         if (!ctx.guess) throw new Error('La apuesta está desactivada');
+        if (repeated.has(q.theme)) throw new Error(`No se puede apostar en ${q.theme}: ya viste su revelación`);
         if (!ctx.published.has(guess)) throw new Error(`No se puede apostar por ${guess}: no está en juego aquí`);
       }
       let choice: string;
@@ -422,8 +438,7 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
       });
     },
     questionGuessOptions(questionId) {
-      findQuestion(questionId);
-      return ctx.guess ? offered() : [];
+      return canGuess(findQuestion(questionId)) ? offered() : [];
     },
     guessOutcomes: outcomes,
     guessScore() {

@@ -86,8 +86,8 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
     if (!game.themes().some((t) => t.id === themeId)) return null;
     const v = game.theme(themeId);
     const asked = questionId === null ? null : [...v.questions, ...v.followUps].find((q) => q.question.id === questionId);
-    // After the reveal only follow-up questions can still be answered.
-    const playable = asked && !(v.revealed && !asked.question.followUp) ? asked.question.id : null;
+    // After the reveal only follow-up questions not answered yet can still be answered.
+    const playable = asked && !asked.locked ? asked.question.id : null;
     const id = playable ?? v.next;
     if (id) {
       trackStarted(game);

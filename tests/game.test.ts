@@ -1101,6 +1101,37 @@ describe('createGame: the guess with approaches (#26)', () => {
     expect(later.guessScore()).toEqual({ hits: 1, total: 1 });
   });
 
+  it('a follow-up question answered after the reveal is final: its choice and guess cannot change (#18 review)', () => {
+    const revealed = play('aaa');
+    const answered = revealed.chooseApproach('okupacion', letterOf(revealed, 'okupacion', 'Enfoque siete'), { guess: 'bbb' });
+    expect(answered.guessOutcomes()).toEqual({ alquiler: true, okupacion: false });
+    expect(answered.theme('vivienda').followUps.map((q) => q.locked)).toEqual([true]);
+    expect(revealed.theme('vivienda').followUps.map((q) => q.locked)).toEqual([false]);
+    expect(answered.theme('vivienda').questions.every((q) => q.locked)).toBe(true);
+    expect(() => answered.chooseApproach('okupacion', letterOf(revealed, 'okupacion', 'Enfoque siete'), { guess: 'aaa' })).toThrow();
+    expect(() => answered.chooseApproach('okupacion', NONE)).toThrow();
+  });
+
+  it('a follow-up question answered before the reveal is final once the theme is revealed', () => {
+    const game = fresh().chooseApproach('okupacion', 'A');
+    expect(game.theme('vivienda').followUps[0]!.locked).toBe(false);
+    const revealed = play(undefined, game);
+    expect(revealed.theme('vivienda').followUps[0]!.locked).toBe(true);
+    expect(() => revealed.chooseApproach('okupacion', 'B')).toThrow();
+  });
+
+  it('after "Repetir" no guess is offered or accepted in that theme (the voter has seen the reveal); other themes keep it', () => {
+    const again = play('aaa').repeatTheme('vivienda');
+    expect(again.questionGuessOptions('alquiler')).toEqual([]);
+    expect(again.questionGuessOptions('okupacion')).toEqual([]);
+    expect(() => again.chooseApproach('alquiler', 'A', { guess: 'aaa' })).toThrow();
+    expect(again.questionGuessOptions('listas').length).toBeGreaterThan(0);
+    // It survives a JSON round trip, and a new reveal counts no guess there.
+    const restored = createGame(themesDataset, null, 's', JSON.parse(JSON.stringify(again.state)));
+    expect(restored.questionGuessOptions('alquiler')).toEqual([]);
+    expect(play(undefined, restored).guessOutcomes()).toEqual({});
+  });
+
   it('repeating a theme forgets its guesses too', () => {
     const again = play('aaa').repeatTheme('vivienda');
     expect(again.guessScore()).toEqual({ hits: 0, total: 0 });
