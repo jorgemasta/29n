@@ -57,7 +57,7 @@ Nada de esto lo hace el código ni un agente. Detalle de cada paso en las seccio
    *Workflow permissions* «Read and write» (push a `main`).
 4. **Etiquetas del repo**: crear `reporte` y `falta-partido` (avisos); `reneutralizar` la crea el job de apuestas (`guesses.yml`).
 5. **Umami** (opcional): sitio `29n.jorgemasta.com` en la instancia propia `stats.padelful.com`; variable del repo
-   `UMAMI_WEBSITE_ID` y secretos `UMAMI_USERNAME` / `UMAMI_PASSWORD` (comprobación de apuestas).
+   `UMAMI_WEBSITE_ID` y secreto `UMAMI_API_KEY` (comprobación de apuestas).
 6. **Fuentes del watcher**: revisar las URLs y `pattern` de `src/watcher/sources.ts` con la página real del
    programa de cada partido (ERC: esquerra.cat bloquea a los bots → URL directa del PDF o proceso a mano).
 7. **PP, «Contrato con España»**: decidir el tipo de fuente. Si es su programa para el 29N, `--source manifesto-29n`
@@ -194,9 +194,8 @@ ranking. El script no registra la query (`?provincia=`, `?r=`) ni el hash, y res
 3. Comprobación periódica de apuestas (`.github/workflows/guesses.yml`, lunes 06:41 UTC):
    - Variable del repo (Settings → Secrets and variables → Actions → *Variables*): `UMAMI_WEBSITE_ID`;
      opcional `UMAMI_API_URL` (por defecto `https://stats.padelful.com/api`).
-   - Secretos: `UMAMI_USERNAME` y `UMAMI_PASSWORD` de un usuario «View only» (una instancia propia no tiene API
-     keys; el job hace login y usa el token). Con Umami Cloud, en su lugar `UMAMI_API_KEY`.
+   - Secreto: `UMAMI_API_KEY` (stats.padelful.com → Settings → API keys).
    - El job usa `github.token` (permiso `issues: write`) y crea la etiqueta `reneutralizar` si no existe.
    - Abre un issue por cada tema con más del 60 % de acierto y al menos 30 apuestas en los últimos 30 días,
-     salvo que ya haya uno abierto para ese tema. Sin `UMAMI_WEBSITE_ID` y el login, el job termina sin hacer nada.
-   - En local: `UMAMI_USERNAME=… UMAMI_PASSWORD=… UMAMI_WEBSITE_ID=… npx tsx scripts/guesses.ts --no-publish`.
+     salvo que ya haya uno abierto para ese tema. Sin las dos variables, el job termina sin hacer nada.
+   - En local: `UMAMI_API_KEY=… UMAMI_WEBSITE_ID=… npx tsx scripts/guesses.ts --no-publish`.

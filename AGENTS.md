@@ -31,4 +31,4 @@ Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/d
 - `npm run og`: regenerates `public/og.png` (link preview). Share card texts: `src/share/` (tests `tests/share.test.ts`); `src/worker/index.ts` swaps og:title for `/?r=reto`.
 - `npm run process`: processes a real manifesto with Claude. Deploy: `docs/deploy.md`.
 - `npx tsx scripts/watch.ts [--party id] [--force] [--no-publish]`: manifesto watcher (cron in `.github/workflows/watcher.yml`). Tests: `tests/watcher.test.ts`.
-- `npx tsx scripts/guesses.ts [--no-publish]`: bet hit-rate check (cron `.github/workflows/guesses.yml`, needs UMAMI_WEBSITE_ID + Umami login; off when unset). Analytics events: `src/analytics/events.ts`, tests `tests/analytics.test.ts`.
+- `npx tsx scripts/guesses.ts [--no-publish]`: bet hit-rate check (cron `.github/workflows/guesses.yml`, needs Umami vars; off when unset). Analytics events: `src/analytics/events.ts`, tests `tests/analytics.test.ts`.

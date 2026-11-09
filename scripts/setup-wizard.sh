@@ -296,23 +296,17 @@ if confirm "¿Configuramos Umami ahora?"; then
   write_env UMAMI_WEBSITE_ID "$UMAMI_WEBSITE_ID"
   set_var UMAMI_WEBSITE_ID "$UMAMI_WEBSITE_ID"
   say ""
-  say "La comprobación semanal de apuestas (guesses.yml) lee la API. Self-hosted no tiene API keys: usa un login."
-  step "Recomendado: Settings → Users → Add user, rol «View only», con acceso al sitio 29N."
-  ask UMAMI_USERNAME "Usuario de Umami:"
-  ask_secret UMAMI_PASSWORD "Contraseña de ese usuario:"
-  if curl -fsS -m 15 -H 'content-type: application/json' \
-      -d "$(jq -n --arg u "$UMAMI_USERNAME" --arg p "$UMAMI_PASSWORD" '{username:$u,password:$p}')" \
-      https://stats.padelful.com/api/auth/login | jq -e '.token' >/dev/null 2>&1; then
-    printf '  %s✓%s login correcto\n' "$GREEN" "$RESET"
+  step "Settings → API keys → Create key → cópiala (la usa la comprobación semanal de apuestas, guesses.yml)."
+  ask_secret UMAMI_API_KEY "Umami API key:"
+  if curl -fsS -m 15 -H "x-umami-api-key: $UMAMI_API_KEY" "https://stats.padelful.com/api/websites/$UMAMI_WEBSITE_ID" >/dev/null 2>&1; then
+    printf '  %s✓%s la API key funciona\n' "$GREEN" "$RESET"
   else
-    warn "el login falló: revisa usuario y contraseña (los guardo igualmente)"
+    warn "la API no respondió con esa key (la guardo igualmente)"
   fi
-  write_env UMAMI_USERNAME "$UMAMI_USERNAME"
-  write_env UMAMI_PASSWORD "$UMAMI_PASSWORD"
-  set_secret UMAMI_USERNAME "$UMAMI_USERNAME"
-  set_secret UMAMI_PASSWORD "$UMAMI_PASSWORD"
+  write_env UMAMI_API_KEY "$UMAMI_API_KEY"
+  set_secret UMAMI_API_KEY "$UMAMI_API_KEY"
 else
-  SKIPPED+=("Umami: UMAMI_WEBSITE_ID (variable) y UMAMI_USERNAME / UMAMI_PASSWORD (secretos)")
+  SKIPPED+=("Umami: UMAMI_WEBSITE_ID (variable) y UMAMI_API_KEY (secreto)")
 fi
 pause
 fi

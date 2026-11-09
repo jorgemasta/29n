@@ -2,8 +2,8 @@
 //   npx tsx scripts/guesses.ts [--days 30] [--no-publish]
 // Reads aggregated 'guess-hit' / 'guess-miss' counts per topic from Umami and opens a GitHub
 // issue (label 'reneutralizar') for each topic above 60 % with enough bets. --no-publish: print only.
-// Env: UMAMI_WEBSITE_ID + UMAMI_USERNAME/UMAMI_PASSWORD (self-hosted) or UMAMI_API_KEY (Umami Cloud);
-// unset ⇒ analytics disabled, exits 0. UMAMI_API_URL (default https://stats.padelful.com/api); GH_TOKEN for `gh` (the workflow passes github.token).
+// Env: UMAMI_API_KEY, UMAMI_WEBSITE_ID (unset ⇒ analytics disabled, exits 0), UMAMI_API_URL
+// (default https://stats.padelful.com/api, the self-hosted instance); GH_TOKEN for `gh` (the workflow passes github.token).
 import { execFileSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { checkGuesses, type GuessPorts } from '../src/guesses';
@@ -13,10 +13,9 @@ import { TOPICS } from '../src/registry/topics';
 const { values } = parseArgs({
   options: { days: { type: 'string', default: '30' }, 'no-publish': { type: 'boolean', default: false } },
 });
-const { UMAMI_API_KEY: apiKey, UMAMI_USERNAME: username, UMAMI_PASSWORD: password, UMAMI_WEBSITE_ID: websiteId } = process.env;
-const auth = apiKey ? { apiKey } : username && password ? { username, password } : null;
-if (!auth || !websiteId) {
-  console.log('Analítica desactivada (faltan UMAMI_WEBSITE_ID y UMAMI_USERNAME/UMAMI_PASSWORD o UMAMI_API_KEY): nada que comprobar.');
+const { UMAMI_API_KEY: apiKey, UMAMI_WEBSITE_ID: websiteId } = process.env;
+if (!apiKey || !websiteId) {
+  console.log('Analítica desactivada (faltan UMAMI_API_KEY / UMAMI_WEBSITE_ID): nada que comprobar.');
   process.exit(0);
 }
 const days = Number(values.days);
@@ -24,7 +23,7 @@ const gh = createGitHubPorts((args) => execFileSync('gh', args, { encoding: 'utf
 const ports: GuessPorts = {
   countGuesses: createUmamiCounter({
     base: process.env.UMAMI_API_URL || 'https://stats.padelful.com/api',
-    auth,
+    apiKey,
     websiteId,
     days,
     now: () => Date.now(),
