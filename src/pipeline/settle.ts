@@ -6,8 +6,10 @@
 // first pass's wording is kept. On disagreement (or an invalid pass) both passes are retried once;
 // if they still disagree the question is not published and the report says why.
 //
-// Seams for later tickets: `options.checks` runs per approach on the agreed result (V3, V4, V5, V6,
-// V10, V11, #22); `input.frozen` keeps already-published approaches and only classifies (#28).
+// Then every approach check (V3, V4, V5, V6, V10, V11 by default, approach-checks.ts) runs on each
+// approach; a `discard` finding gets the approach rewritten (at most MAX_REWRITES times, never a
+// frozen one), a `block` or a failure that outlives the rewrites makes the question unpublishable.
+// `input.frozen` keeps already-published approaches and only classifies (#28).
 import { z } from 'zod';
 import type { AIAdapter } from '../ai/adapter';
 import {
@@ -20,6 +22,7 @@ import {
   type Quote,
   ReportEntry,
 } from '../dataset/schema';
+import { defaultApproachChecks, MAX_REWRITES, rewriteApproach } from './approach-checks';
 import { QUOTE_LENGTH } from './checks';
 import { normalizeQuote } from './normalize';
 import { SETTLE_INSTRUCTIONS, SETTLE_PROMPT_VERSION, SettleResponse } from './prompts-settle';
@@ -45,15 +48,21 @@ export interface ApproachFinding {
   check: z.infer<typeof Check>;
   result: ReportEntry['result'];
   detail: string;
+  /** `discard` only: what to tell the AI when rewriting the approach. */
+  fix?: string;
 }
 
-/** A check on one settled approach (#22). A `discard` or `block` finding makes the question unpublishable. */
+/**
+ * A check on one settled approach (#22). `discard`: the approach is rewritten (limited attempts);
+ * `block`: the question is unpublishable straight away.
+ */
 export type ApproachCheck = (
   approach: Approach,
   context: { question: QuestionSpec; approaches: readonly Approach[]; positions: readonly SettlePosition[]; ai: AIAdapter },
 ) => Promise<ApproachFinding[]>;
 
 export interface SettleOptions {
+  /** Defaults to `defaultApproachChecks()` (V3, V4, V5, V6, V10, V11 with the registry terms and parties). */
   checks?: readonly ApproachCheck[];
 }
 
@@ -123,15 +132,10 @@ export async function settleApproaches(input: SettleInput, ai: AIAdapter, option
   }
   if (!settled) return result(false, rounds, null, `las dos pasadas no coinciden tras ${MAX_ROUNDS} rondas`);
 
-  const full: Question = { ...question, ...settled };
-  for (const approach of full.approaches) {
-    for (const check of options.checks ?? []) {
-      const findings = await check(approach, { question, approaches: full.approaches, positions: input.positions, ai });
-      entries.push(...findings.map((f) => ({ ...f, approach: approach.id })));
-    }
-  }
-  const blocked = entries.find((e) => e.check !== 'agreement' && (e.result === 'discard' || e.result === 'block'));
-  if (blocked) return result(false, rounds, null, `${blocked.check} en ${blocked.approach}: ${blocked.detail}`);
+  const approaches = await checkApproaches(input, settled.approaches, ai, options.checks ?? defaultApproachChecks(), entries);
+  const blocked = entries.find((e) => e.check !== 'agreement' && e.result === 'block');
+  if (blocked || !approaches) return result(false, rounds, null, blocked ? `${blocked.check} en ${blocked.approach}: ${blocked.detail}` : 'no pasa las comprobaciones');
+  const full: Question = { ...question, ...settled, approaches };
 
   // V9: what is returned always fits the published schema.
   const parsed = Question.safeParse(full);
@@ -141,6 +145,38 @@ export async function settleApproaches(input: SettleInput, ai: AIAdapter, option
     return result(false, rounds, null, `esquema no válido: ${detail}`);
   }
   return result(true, rounds, parsed.data);
+}
+
+/**
+ * Runs every check on every approach; rewrites the approaches with a `discard` finding and checks
+ * them all again (lengths depend on each other), up to MAX_REWRITES times. Returns the approaches
+ * that pass, or null after logging the failures as `block`.
+ */
+async function checkApproaches(input: SettleInput, settled: Approach[], ai: AIAdapter, checks: readonly ApproachCheck[], entries: SettleEntry[]): Promise<Approach[] | null> {
+  let approaches = settled;
+  for (let attempt = 0; ; attempt++) {
+    const findings: { approach: Approach; finding: ApproachFinding }[] = [];
+    for (const approach of approaches) {
+      for (const check of checks) {
+        const found = await check(approach, { question: input.question, approaches, positions: input.positions, ai });
+        findings.push(...found.map((finding) => ({ approach, finding })));
+      }
+    }
+    const entry = ({ approach, finding }: (typeof findings)[number], result: SettleEntry['result']): SettleEntry => ({ check: finding.check, approach: approach.id, result, detail: finding.detail });
+    const failing = findings.filter((f) => f.finding.result === 'discard' || f.finding.result === 'block');
+    const rewritable = failing.length > 0 && failing.every((f) => f.finding.result === 'discard') && attempt < MAX_REWRITES && !input.frozen;
+    if (!rewritable) {
+      entries.push(...findings.map((f) => entry(f, f.finding.result === 'discard' ? 'block' : f.finding.result)));
+      return failing.length ? null : approaches;
+    }
+    entries.push(...failing.map((f) => entry(f, 'rewrite')));
+    const next: Approach[] = [];
+    for (const approach of approaches) {
+      const fixes = failing.filter((f) => f.approach === approach).map((f) => f.finding.fix ?? f.finding.detail);
+      next.push(fixes.length ? await rewriteApproach(ai, input.question, approach, fixes) : approach);
+    }
+    approaches = next;
+  }
 }
 
 async function runPass(ai: AIAdapter, input: SettleInput, proposing: readonly SettlePosition[], pass: 1 | 2, round: number): Promise<PassResult> {

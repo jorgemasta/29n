@@ -17,7 +17,9 @@ export type Task =
   /** Answer a voter's question from one programme, with literal quotes (Preguntar). */
   | 'answer-question'
   /** Group every party's position on a question into 3 approaches (run twice, independently). */
-  | 'settle-approaches';
+  | 'settle-approaches'
+  /** Rewrite an approach that failed a check (V3, V4, V5, V6, V10, V11), with what to fix. */
+  | 'rewrite-approach';
 
 export interface AIRequest<T> {
   task: Task;
