@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { processManifesto, type ProcessOptions, type QuestionToProcess } from '../src/pipeline';
 import { mergeManifesto } from '../src/pipeline/publish';
+import { settleApproaches } from '../src/pipeline/settle';
 import { createFakeAI, type FakeResponses } from '../src/ai/fake';
 import { createMemoryCache } from '../src/ai/cache';
 import { buildDataset, validateDataset } from '../src/dataset';
@@ -573,6 +574,44 @@ describe('processManifesto', () => {
 
     it('rejects malformed data', () => {
       expect(validateDataset({ parties: 'nope' }).valid).toBe(false);
+    });
+  });
+
+  describe('feeding settleApproaches', () => {
+    it("every party's positions go into settleApproaches as they come out, and settle a publishable question", async () => {
+      const PENSIONS = 'Revalorizaremos las pensiones con el IPC cada año.';
+      const pej = await runPipeline(answers());
+      const otp = await processManifesto(
+        await createTestPdf(pages),
+        otherParty,
+        createFakeAI(answers({ 'extract-position': () => found([{ text: PENSIONS, page: 3 }]) })),
+        options({ domains: { otp: ['ejemplo.org'] } }),
+      );
+      const silent = await processManifesto(
+        await createTestPdf(pages),
+        { ...otherParty, id: 'ter' },
+        createFakeAI(answers({ 'extract-position': () => nothing })),
+        options({ domains: { ter: ['ejemplo.org'] } }),
+      );
+      const approach = (what: string, stances: { party: string; stance: 'full'; quote: string }[]) => ({ what, how: `Cómo: ${what}`, figure: null, filler: stances.length === 0, stances });
+      const ai = createFakeAI({
+        'settle-approaches': () => ({
+          approaches: [
+            approach('Limitar el alquiler', [{ party: 'pej', stance: 'full', quote: QUOTE }]),
+            approach('Otra cosa', [{ party: 'otp', stance: 'full', quote: PENSIONS }]),
+            approach('Inventado', []),
+          ],
+        }),
+      });
+      const question = { ...housingQuestion, theme: 'vivienda', followUp: false, order: 1, origin: { cis: null, manifestos: 2 } };
+      const settled = await settleApproaches({ question, positions: [...pej.positions, ...otp.positions, ...silent.positions] }, ai);
+
+      expect(settled.publishable).toBe(true);
+      expect(settled.question!.approaches[0]!.stances).toContainEqual({ party: 'pej', stance: 'full', quote: { text: QUOTE, page: 2 } });
+      expect(settled.question!.approaches[1]!.stances).toContainEqual({ party: 'otp', stance: 'full', quote: { text: PENSIONS, page: 3 } });
+      // Only proposing parties are grouped.
+      const input = ai.calls[0]!.input as { positions: { party: string }[] };
+      expect(input.positions.map((p) => p.party).sort()).toEqual(['otp', 'pej']);
     });
   });
 

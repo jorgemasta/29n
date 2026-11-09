@@ -15,7 +15,11 @@ export type Task =
   /** V13: blind feasibility evaluation with the public rubric (run twice, independently). */
   | 'assess-feasibility'
   /** Answer a voter's question from one programme, with literal quotes (Preguntar). */
-  | 'answer-question';
+  | 'answer-question'
+  /** Pulse (#23): propose the themes and questions from the CIS, manifestos and open networks. */
+  | 'take-pulse'
+  /** Group every party's position on a question into 3 approaches (run twice, independently). */
+  | 'settle-approaches';
 
 export interface AIRequest<T> {
   task: Task;

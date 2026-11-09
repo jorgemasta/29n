@@ -219,7 +219,7 @@ describe('watch', () => {
       const badAnswers = inventedAnswers();
       const m = await mount({
         web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() },
-        answers: { ...goodAnswers, 'extract-position': (e, i) => (invents ? badAnswers : goodAnswers)['extract-position'](e, i) },
+        answers: { ...goodAnswers, 'extract-position': (e, i) => (invents ? badAnswers : goodAnswers)['extract-position']!(e, i) },
       });
       await m.run();
       const published = m.dataset;
@@ -250,7 +250,7 @@ describe('watch', () => {
         ...base,
         'extract-position': (e, i) => {
           if (down) throw new Error('API de Anthropic: 529 overloaded');
-          return base['extract-position'](e, i);
+          return base['extract-position']!(e, i);
         },
       },
     });

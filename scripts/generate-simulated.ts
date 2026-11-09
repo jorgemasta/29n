@@ -110,11 +110,12 @@ for (const f of FICTIONAL) {
     manifesto: { state: 'published', source: f.source, url: `https://29n.jorgemasta.com/programas/${f.id}.pdf`, title: f.title },
     test: true,
   };
-  const topicOf = (e: { question: { id: string } }) => SIMULATED_QUESTIONS.find((q) => q.id === e.question.id)!.topic;
+  const questionOf = (e: { question: { id: string } }) => SIMULATED_QUESTIONS.find((q) => q.id === e.question.id)!;
+  const topicOf = (e: { question: { id: string } }) => questionOf(e).topic;
   const ai = createFakeAI({
     'extract-position': (e) => {
       const p = f.proposals[topicOf(e)];
-      if (!p) return { proposes: false, quotes: [], proposal: null };
+      if (!p || !questionOf(e).parties.includes(f.id)) return { proposes: false, quotes: [], proposal: null };
       return { proposes: true, quotes: [{ text: p[0], page: page[topicOf(e)]! }], proposal: { what: p[1], how: p[2], figure: p[3] } };
     },
     neutralize: () => {

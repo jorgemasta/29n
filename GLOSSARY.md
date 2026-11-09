@@ -66,8 +66,12 @@ Preguntar tab's one is `suggestedQuestion` and the voter-typed one `freeQuestion
 | propuesta concreta | `proposal` | The party's own what / how / figure on a question, exact figures, not neutralised: shown only at the reveal. |
 | palabras clave | `keywords` | A question's public V12 search terms (`question.keywords`, from the pulse). |
 | pulso | `pulse` | The AI survey (CIS, manifestos, Reddit/web) that produces the frozen theme/question list. |
+| fecha de congelación | `frozenAt` | The date the pulse list was frozen (`Pulse.frozenAt`, `data/pulse.json`); published in the methodology. |
+| pregunta descartada | `RejectedQuestion` | A pulse candidate that did not enter, with its `reason` (`passesDisagree`, `networksOnly`, `notEnoughSources`, `notNeutral`, `noRegionalParties`, `themeIncomplete`, `surplus`) and a Spanish `detail`. |
 | elección | `questionChoices` | `GameState.questionChoices`: approach id (or `none`) per question id. |
 | destapar (temática) | `revealTheme` / `themeReveal` | Reveal every answered question of a theme at once (`GameState.revealedThemes`); after it only follow-up questions can still be answered. |
+| elegir temáticas / "Todas" | `selectThemes` / `selectedThemes` | `GameState.selectedThemes`: theme ids or `all` (also the themes of a later province). Playing a theme not picked adds it. Route `#elegir`. |
+| repetir (temática) | `repeatTheme` | Forget every choice of a theme (follow-up ones too) and make it blind again. |
 | propuesta a ciegas | `BlindApproach` | What the voter sees before the reveal: letter, what, how, figure. No id, party or stance. |
 | apuesta | `guess` | Optional: which party the voter thinks defends the chosen approach. Right if that party is `full` or `partial` there (#26). |
 | afinidad | `affinity` | Sum of the stances (1 / 0.5) of the approaches the voter chose; `none`, `filler` and out-of-province approaches add nothing (#25). |
