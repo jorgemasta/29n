@@ -4,11 +4,13 @@ import { applyMode, isPrivateOnly, sourceOf } from '../dataset';
 import type { Dataset, Mode, FeasibilityNote, Party, Position, SuggestedQuestion, SuggestedAnswer, Topic, SourceType } from '../dataset/schema';
 import { shuffle } from './random';
 import { themeGame, type ThemeGame, type ThemeState } from './themes';
+export { MINUTES_PER_QUESTION } from './themes';
 import { byName, linkQuote, revealParty, type RevealedParty } from './party';
 
 export type {
   BlindApproach,
   QuestionItem,
+  QuestionProgress,
   QuestionReveal,
   QuestionSummary,
   QuestionView,

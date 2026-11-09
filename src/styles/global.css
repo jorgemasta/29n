@@ -443,3 +443,15 @@ dialog.sheet.open::backdrop { background: rgb(4 49 62 / 0.38); }
 }
 /* The fixed action bar must not cover the end of the page. */
 body:has(.action-bar) .footer { padding-bottom: calc(6rem + var(--safe-bottom)); }
+
+/* #elegir: theme picker (#24). */
+.pick-themes > .secondary { margin: 0.5rem 0 1rem; }
+.pick-row {
+  min-height: 3.5rem; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.75rem;
+  padding: 0.5rem 1rem; border-radius: 0.75rem; background: var(--surface); cursor: pointer;
+}
+.pick-row input { width: 1.5rem; height: 1.5rem; margin: 0; accent-color: var(--petrol); }
+.pick-row .name { font-weight: 600; }
+.pick-row .state { font-size: 0.85rem; color: var(--ink-soft); text-align: right; }
+.pick-row:has(input:checked) { outline: 3px solid var(--petrol); outline-offset: -3px; }
+.primary:disabled { opacity: 0.45; cursor: default; transform: none; }

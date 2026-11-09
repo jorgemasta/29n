@@ -1,8 +1,8 @@
-// v2 screens (#19): the theme list, a question with its 3 approaches (tap → confirmation sheet), the
-// summary before revealing a theme, and the reveal. All the logic lives in the engine
-// (src/game/themes.ts); these functions only render and call back. Routes (Spanish: the voter sees
-// them): #tematicas, #tematica/<theme>, #tematica/<theme>/<question>.
-import { NONE, type Game, type QuestionItem, type QuestionReveal, type RevealedApproach, type RevealedParty, type ThemeView } from '../game';
+// v2 screens (#19, #24): picking themes, the theme list, a question with its 3 approaches (tap →
+// confirmation sheet), the summary before revealing a theme, and the reveal. All the logic lives in
+// the engine (src/game/themes.ts); these functions only render and call back. Routes (Spanish: the
+// voter sees them): #elegir, #tematicas, #tematica/<theme>, #tematica/<theme>/<question>.
+import { NONE, type Game, type QuestionItem, type QuestionReveal, type RevealedApproach, type RevealedParty, type ThemeReveal, type ThemeView } from '../game';
 import type { Theme } from '../dataset/schema';
 import { aiLabel } from './ai';
 import { button, h, type Child } from './dom';
@@ -21,18 +21,54 @@ export interface QuestionActions {
 const choiceText = (choice: string | null) =>
   choice === null ? 'Sin contestar' : choice === NONE ? 'Ninguna me convence' : `Elegiste la ${choice}`;
 
-/** First theme not revealed yet, in order; null when every theme is revealed. */
-export function nextTheme(game: Game, after?: string): Theme | null {
-  const themes = game.themes();
-  const start = after === undefined ? 0 : themes.findIndex((t) => t.id === after) + 1;
-  const pending = (t: Theme) => !game.theme(t.id).revealed;
-  return themes.slice(start).find(pending) ?? themes.slice(0, start).find(pending) ?? null;
+/** "Temáticas · 1/3": picked themes revealed out of the picked ones ("Temáticas" before picking). */
+export function themesProgress(game: Game): string {
+  const { revealed, total } = game.themesProgress();
+  return total ? `Temáticas · ${revealed}/${total}` : 'Temáticas';
 }
 
-/** "Temáticas · 1/8": themes revealed out of themes available here. */
-export function themesProgress(game: Game): string {
-  const themes = game.themes();
-  return `Temáticas · ${themes.filter((t) => game.theme(t.id).revealed).length}/${themes.length}`;
+const questionsAndTime = (v: ThemeView) =>
+  `${v.questions.length} ${v.questions.length === 1 ? 'pregunta' : 'preguntas'} · unos ${v.minutes} min`;
+
+export interface PickActions {
+  /** Theme ids, or "all" ("Todas"). */
+  pick(themes: string[] | 'all'): void;
+}
+
+/** #elegir: mark one or several themes, or "Todas". The current pick comes checked. */
+export function pickThemesView(game: Game, actions: PickActions): HTMLElement {
+  const picked = new Set(game.selectedThemes().map((t) => t.id));
+  const boxes: HTMLInputElement[] = [];
+  const start = button('Empezar con las marcadas', 'primary', () => {
+    const ids = boxes.filter((b) => b.checked).map((b) => b.value);
+    if (ids.length) actions.pick(ids);
+  });
+  const refresh = () => {
+    const n = boxes.filter((b) => b.checked).length;
+    (start as HTMLButtonElement).disabled = n === 0;
+    start.textContent = n ? `Empezar con ${n === 1 ? '1 temática' : `${n} temáticas`}` : 'Marca al menos una';
+  };
+  const row = (t: Theme) => {
+    const v = game.theme(t.id);
+    const box = h('input', { type: 'checkbox', name: 'theme', value: t.id }) as HTMLInputElement;
+    box.checked = picked.has(t.id);
+    box.addEventListener('change', refresh);
+    boxes.push(box);
+    return h('li', {}, h('label', { class: 'pick-row' },
+      box,
+      h('span', { class: 'name' }, t.title),
+      h('span', { class: 'state' }, v.revealed ? 'Destapada' : questionsAndTime(v))));
+  };
+  const total = game.themes().reduce((sum, t) => sum + game.theme(t.id).minutes, 0);
+  const section = h('section', { class: 'pick-themes' },
+    h('h1', { tabindex: '-1' }, '¿Qué temáticas quieres jugar?'),
+    h('p', {}, 'Marca las que te importen. Al terminar cada una verás qué partidos defienden cada propuesta.'),
+    button(`Todas (unos ${total} min)`, 'secondary', () => actions.pick('all')),
+    h('ul', { class: 'rows', role: 'list' }, ...game.themes().map(row)),
+    h('div', { class: 'action-bar' }, h('div', {}, start)),
+  );
+  refresh();
+  return section;
 }
 
 export function themesListView(game: Game, extra: Child[] = []): HTMLElement {
@@ -40,11 +76,12 @@ export function themesListView(game: Game, extra: Child[] = []): HTMLElement {
     if (v.revealed) return 'Destapada';
     if (v.done) return 'Lista para destapar';
     const answered = v.questions.filter((q) => q.choice !== null).length;
-    return answered ? `${answered} de ${v.questions.length}` : `${v.questions.length} ${v.questions.length === 1 ? 'pregunta' : 'preguntas'}`;
+    return answered ? `${answered} de ${v.questions.length}` : questionsAndTime(v);
   };
   return h('section', { class: 'themes' },
     h('h1', { tabindex: '-1' }, 'Temáticas'),
-    h('p', { class: 'grey' }, 'Elige una. Al terminarla verás qué partidos defienden cada propuesta.'),
+    h('p', { class: 'grey' }, 'Entra en cualquiera. Al terminarla verás qué partidos defienden cada propuesta.'),
+    h('p', {}, h('a', { href: '#elegir' }, 'Elegir qué temáticas jugar')),
     h('ul', { class: 'rows', role: 'list' },
       ...game.themes().map((t) => {
         const v = game.theme(t.id);
@@ -57,21 +94,18 @@ export function themesListView(game: Game, extra: Child[] = []): HTMLElement {
   );
 }
 
-/** Progress inside a theme: one bar per base question ("Pregunta 2 de 3"). */
-function progress(v: ThemeView, current: string): HTMLElement {
-  const i = v.questions.findIndex((q) => q.question.id === current);
+/** Progress inside a theme: one bar per question of the same kind (base or follow-up). */
+function progress(items: QuestionItem[], current: string): HTMLElement {
   return h('ol', { class: 'progress-bars', 'aria-hidden': 'true' },
-    ...v.questions.map((q, k) => h('li', { class: k === i ? 'current' : q.choice !== null ? 'done' : '' })));
+    ...items.map((q) => h('li', { class: q.question.id === current ? 'current' : q.choice !== null ? 'done' : '' })));
 }
 
 /** A question: its 3 approaches as cards; a tap opens the confirmation sheet. */
 export function questionView(game: Game, questionId: string, actions: QuestionActions): HTMLElement {
   const view = game.question(questionId);
   const theme = game.theme(view.question.theme);
-  const position = theme.questions.findIndex((q) => q.question.id === questionId);
-  const category = view.question.followUp
-    ? `${theme.theme.title} · Para afinar`
-    : `${theme.theme.title} · Pregunta ${position + 1} de ${theme.questions.length}`;
+  const { number, total, followUp } = view.progress;
+  const category = `${theme.theme.title} · ${followUp ? 'Para afinar' : 'Pregunta'} ${number} de ${total}`;
   const reader = createReader((id) => {
     for (const c of section.querySelectorAll<HTMLElement>('.option[data-value]')) c.classList.toggle('playing', c.dataset.value === id);
     listen?.replaceChildren(...listenLabel(id !== null));
@@ -128,7 +162,7 @@ export function questionView(game: Game, questionId: string, actions: QuestionAc
   listen?.replaceChildren(...listenLabel(false));
 
   const section = h('section', { class: 'question' },
-    view.question.followUp ? null : progress(theme, questionId),
+    progress(followUp ? theme.followUps : theme.questions, questionId),
     h('p', { class: 'category' }, category),
     h('h1', { tabindex: '-1' }, view.question.text),
     listen ? h('div', { class: 'utilities' }, listen) : null,
@@ -158,23 +192,58 @@ export function summaryView(game: Game, themeId: string, onReveal: () => void): 
   );
 }
 
-/** The revealed theme: every answered question with who defends each approach, fully or in part. */
-export function revealView(game: Game, themeId: string, onContinue: () => void): HTMLElement {
-  const r = game.themeReveal(themeId)!;
-  const followUps = game.theme(themeId).followUps.filter((q) => q.choice === null);
+export interface RevealActions {
+  /** Go on with the next picked theme (or pick more when none is left). */
+  next(): void;
+  /** "Repetir": confirmed in a sheet. */
+  repeat(): void;
+}
+
+/** The revealed theme: the reveal itself, then the follow-up questions, "Repetir" and the next theme. */
+export function revealView(game: Game, themeId: string, actions: RevealActions): HTMLElement {
+  const v = game.theme(themeId);
+  const left = v.followUps.filter((q) => q.choice === null).length;
+  const next = game.nextTheme(themeId);
+  const repeat = button('Repetir esta temática', 'text-link', () => {
+    const sheet = openSheet({
+      title: `¿Repetir ${v.theme.title}?`,
+      content: [
+        h('p', {}, 'Se borrarán tus respuestas de esta temática y volverás a elegir a ciegas.'),
+        button('Repetir', 'primary', () => {
+          sheet.close();
+          actions.repeat();
+        }),
+        button('Cancelar', 'text-link', () => sheet.close()),
+      ],
+      onClose: () => repeat.isConnected && repeat.focus(),
+    });
+  });
   return h('section', { class: 'reveal' },
-    h('p', { class: 'category' }, `${r.theme.title} · Destapada`),
+    h('p', { class: 'category' }, `${v.theme.title} · Destapada`),
     h('h1', { tabindex: '-1' }, 'Quién defiende cada propuesta'),
-    ...r.questions.map(questionReveal),
-    followUps.length
+    themeRevealContent(game.themeReveal(themeId)!),
+    v.nextFollowUp
       ? h('div', { class: 'follow-ups' },
           h('h2', {}, 'Para afinar'),
-          h('p', {}, `${followUps.length === 1 ? 'Una pregunta más' : `${followUps.length} preguntas más`} sobre ${r.theme.title}, si quieres dar más fondo a tu resultado.`),
-          h('a', { href: themeHref(themeId, followUps[0]!.question.id), class: 'secondary link-button' }, 'Contestar'))
+          h('p', {}, `${left === 1 ? 'Una pregunta más' : `${left} preguntas más`} sobre ${v.theme.title}, opcionales, si quieres dar más fondo a tu resultado.`),
+          h('a', { href: themeHref(themeId, v.nextFollowUp), class: 'secondary link-button' }, left === 1 ? 'Contestarla' : 'Contestarlas'))
       : null,
-    h('p', { class: 'note' }, aiLabel(), ' Las propuestas y su agrupación están hechas con IA. Cada partido va con la cita literal de su programa.'),
-    h('div', { class: 'action-bar' }, h('div', {}, button('Seguir con otra temática', 'primary', onContinue))),
+    h('div', { class: 'list-links' }, repeat),
+    h('div', { class: 'action-bar' }, h('div', {},
+      next
+        ? button(`Seguir con ${next.title}`, 'primary', actions.next)
+        : h('a', { href: '#elegir', class: 'primary link-button' }, 'Elegir otra temática'))),
   );
+}
+
+/** The reveal proper (#27 replaces it with the detailed one): every answered question, then the AI note. */
+function themeRevealContent(r: ThemeReveal): DocumentFragment {
+  const f = document.createDocumentFragment();
+  f.append(
+    ...r.questions.map(questionReveal),
+    h('p', { class: 'note' }, aiLabel(), ' Las propuestas y su agrupación están hechas con IA. Cada partido va con la cita literal de su programa.'),
+  );
+  return f;
 }
 
 function questionReveal(q: QuestionReveal): HTMLElement {

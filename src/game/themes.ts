@@ -8,6 +8,10 @@ import { shuffle } from './random';
 const NONE = 'none' as const;
 type None = typeof NONE;
 const LETTERS = 'ABC';
+const ALL = 'all' as const;
+
+/** Rough reading-and-choosing time of one question, for "3 preguntas · unos 3 min". */
+export const MINUTES_PER_QUESTION = 1;
 
 /** The v2 part of the serializable game state (never leaves the browser). */
 export interface ThemeState {
@@ -15,6 +19,8 @@ export interface ThemeState {
   questionChoices?: Record<string, string | None>;
   /** Themes the voter revealed ("Destapar"): their choices are final. */
   revealedThemes?: string[];
+  /** Themes the voter picked to play ("all" = "Todas", also those of another province later). */
+  selectedThemes?: string[] | typeof ALL;
 }
 
 /** What the voter sees before the reveal: no id, no party, no stance. */
@@ -27,8 +33,16 @@ export interface BlindApproach {
 
 export type QuestionSummary = Pick<Question, 'id' | 'theme' | 'text' | 'followUp'>;
 
+/** Place of a question in its theme: "Pregunta 2 de 3", or among the follow-up ones. */
+export interface QuestionProgress {
+  number: number;
+  total: number;
+  followUp: boolean;
+}
+
 export interface QuestionView {
   question: QuestionSummary;
+  progress: QuestionProgress;
   /** Exactly 3, shuffled stably per seed and question. */
   approaches: BlindApproach[];
 }
@@ -48,6 +62,12 @@ export interface ThemeView {
   /** Every base question answered: the theme can be revealed. */
   done: boolean;
   revealed: boolean;
+  /** Rough minutes to play the base questions. */
+  minutes: number;
+  /** First base question not answered yet; null once all are (or the theme is revealed). */
+  next: string | null;
+  /** After the reveal, the first follow-up question not answered yet; null before the reveal or when none is left. */
+  nextFollowUp: string | null;
 }
 
 /** A party in play that defends an approach, fully (1) or in part (0.5), with its quote. */
@@ -84,10 +104,23 @@ export interface ThemeReveal {
 export interface ThemeGame<G> {
   /** Themes playable in this province, in their order: national ones plus its regionalTheme. */
   themes(): Theme[];
+  /** Pick the themes to play, or "all" ("Todas"). Replaces the previous pick. */
+  selectThemes(themeIds: string[] | typeof ALL): G;
+  /** Picked themes available here, in their order; empty until the voter picks. */
+  selectedThemes(): Theme[];
+  /** Next picked theme not revealed yet, after `themeId` (wrapping); null when none is left. */
+  nextTheme(themeId?: string): Theme | null;
+  /** Picked themes revealed out of the picked ones ("Temáticas · 1/3"). */
+  themesProgress(): { revealed: number; total: number };
+  /** "Repetir": forget every choice of the theme (follow-up ones too) and make it blind again. */
+  repeatTheme(themeId: string): G;
   theme(themeId: string): ThemeView;
   /** Blind view of a question: its 3 approaches, shuffled. */
   question(questionId: string): QuestionView;
-  /** Choose an approach by letter, or "none" ("Ninguna me convence"). Changeable until the reveal. */
+  /**
+   * Choose an approach by letter, or "none" ("Ninguna me convence"). Changeable until the reveal.
+   * Playing a theme that was not picked adds it to the pick.
+   */
   chooseApproach(questionId: string, letter: string | None): G;
   /** "Destapar": once every base question is answered. Choices become final. */
   revealTheme(themeId: string): G;
@@ -146,6 +179,11 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
   };
   const item = (q: Question): QuestionItem => ({ question: summary(q), choice: choiceOf(q) });
   const isDone = (themeId: string) => questionsOf(themeId).every((q) => q.followUp || choices[q.id] !== undefined);
+  const selection = state.selectedThemes ?? [];
+  const selected = selection === ALL ? themes : themes.filter((t) => selection.includes(t.id));
+  /** The pick with this theme added (unchanged with "all" or if already there). */
+  const selecting = (themeId: string): ThemeState =>
+    selection === ALL || selection.includes(themeId) ? {} : { selectedThemes: [...selection, themeId] };
 
   const revealQuestion = (q: Question): QuestionReveal => {
     const inPlay = <T extends { party: string }>(list: T[]) => list.filter((x) => ctx.published.has(x.party));
@@ -172,16 +210,43 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
 
   return {
     themes: () => themes,
+    selectThemes(themeIds) {
+      if (themeIds !== ALL) {
+        if (!themeIds.length) throw new Error('Elige al menos una temática');
+        themeIds.forEach(findTheme);
+      }
+      return ctx.withChanges({ selectedThemes: themeIds === ALL ? ALL : [...new Set(themeIds)] });
+    },
+    selectedThemes: () => selected,
+    nextTheme(themeId) {
+      const start = themeId === undefined ? 0 : selected.findIndex((t) => t.id === themeId) + 1;
+      const pending = (t: Theme) => !revealed.has(t.id);
+      return selected.slice(start).find(pending) ?? selected.slice(0, start).find(pending) ?? null;
+    },
+    themesProgress: () => ({ revealed: selected.filter((t) => revealed.has(t.id)).length, total: selected.length }),
+    repeatTheme(themeId) {
+      findTheme(themeId);
+      const ofTheme = new Set(questionsOf(themeId).map((q) => q.id));
+      return ctx.withChanges({
+        questionChoices: Object.fromEntries(Object.entries(choices).filter(([q]) => !ofTheme.has(q))),
+        revealedThemes: [...revealed].filter((t) => t !== themeId),
+      });
+    },
     theme(themeId) {
       const theme = findTheme(themeId);
       const all = questionsOf(themeId);
       const base = all.filter((q) => !q.followUp);
+      const isRevealed = revealed.has(themeId);
+      const unanswered = (list: Question[]) => list.find((q) => choices[q.id] === undefined)?.id ?? null;
       return {
         theme,
         questions: base.map(item),
         followUps: all.filter((q) => q.followUp).map(item),
         done: isDone(themeId),
-        revealed: revealed.has(themeId),
+        revealed: isRevealed,
+        minutes: base.length * MINUTES_PER_QUESTION,
+        next: isRevealed ? null : unanswered(base),
+        nextFollowUp: isRevealed ? unanswered(all.filter((q) => q.followUp)) : null,
       };
     },
     chooseApproach(questionId, letter) {
@@ -195,7 +260,7 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
         choice = x.approach.id;
       }
       const { [questionId]: _, ...others } = choices;
-      return ctx.withChanges({ questionChoices: { ...others, [questionId]: choice } });
+      return ctx.withChanges({ questionChoices: { ...others, [questionId]: choice }, ...selecting(q.theme) });
     },
     revealTheme(themeId) {
       findTheme(themeId);
@@ -210,8 +275,10 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
     },
     question(questionId) {
       const q = findQuestion(questionId);
+      const siblings = questionsOf(q.theme).filter((x) => x.followUp === q.followUp);
       return {
         question: summary(q),
+        progress: { number: siblings.indexOf(q) + 1, total: siblings.length, followUp: q.followUp },
         approaches: shuffled(q).map(({ approach: a, letter }) => ({ letter, what: a.what, how: a.how, figure: a.figure })),
       };
     },
