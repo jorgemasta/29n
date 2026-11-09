@@ -2,6 +2,10 @@
 
 Lee lo que proponen los partidos para las elecciones generales del 29-nov-2026 sin saber de quién es. Design decisions: `docs/decisions.md`. UX spec: `docs/ux-spec.md`.
 
+## Language
+
+All code is in English: identifiers, files and folders, endpoints and internal URL params, dataset/JSON keys, storage keys, CSS classes, analytics events, comments, test names and commit messages. Spanish only for what the voter sees (UI copy, published methodology and reports, the AI prompt text, since the manifestos are Spanish) and for product docs (`docs/`, issues). Existing public routes stay as they are: `/metodologia/`, `/privacidad/`, `?r=reto`. Domain terms map Spanish → English in `GLOSSARY.md`; use those names.
+
 ## Agent skills
 
 ### Issue tracker
