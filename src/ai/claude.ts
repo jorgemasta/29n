@@ -20,6 +20,7 @@ export const MODELS: Record<Task, string> = {
   'assess-feasibility': 'claude-opus-5-5',
   // Precomputed suggested questions. The live free question uses FREE_QUESTION_MODELS (Haiku 5.5).
   'answer-question': 'claude-sonnet-5-5',
+  'take-pulse': 'claude-opus-5-5',
   'settle-approaches': 'claude-opus-5-5',
 };
 
