@@ -115,6 +115,19 @@ describe("settleApproaches (test point A')", () => {
     expect(JSON.stringify(ai.calls.map((c) => c.input))).not.toMatch(/"qui"|"sex"/);
   });
 
+  it('sends the AI each party\'s own proposal (what / how / figure) with its quotes (#18 review)', async () => {
+    const ai = fakeAi(() => threeApproaches);
+    const proposal = { what: 'Limitar el alquiler', how: 'Por ley en zonas tensionadas', figure: '5 años' };
+    await settleApproaches({ question, positions: [{ ...proposes('pej'), proposal }, ...positions.slice(1)] }, ai);
+
+    for (const call of settleCalls(ai)) {
+      const input = call.input as { positions: { party: string; quotes: string[]; proposal?: unknown }[] };
+      expect(input.positions.find((p) => p.party === 'pej')).toEqual({ party: 'pej', quotes: [QUOTES.pej], proposal });
+      expect(input.positions.find((p) => p.party === 'otp')).toEqual({ party: 'otp', quotes: [QUOTES.otp] });
+    }
+    expect(ai.calls.find((c) => c.task === 'settle-approaches')!.instructions).toMatch(/proposal/);
+  });
+
   it('is not publishable, without calling the AI, when no party proposes anything', async () => {
     const ai = fakeAi(() => threeApproaches);
     const result = await settleApproaches({ question, positions: [{ party: 'pej', state: 'noProposal' }] }, ai);

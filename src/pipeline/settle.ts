@@ -26,6 +26,7 @@ import {
   type OtherProposal,
   type PartyStance,
   type Position,
+  type Proposal,
   type Quote,
   ReportEntry,
 } from '../dataset/schema';
@@ -42,6 +43,8 @@ export interface SettlePosition {
   party: string;
   state: Position['state'];
   quotes?: readonly Quote[];
+  /** Its own concrete proposal (what / how / figure, #21): sent to the AI with the quotes. */
+  proposal?: Proposal;
 }
 
 /** A published question whose approaches are frozen, and the parties to (re)classify into them (#28). */
@@ -218,7 +221,7 @@ async function runPass(ai: AIAdapter, input: SettleInput, proposing: readonly Se
       question: { id: input.question.id, text: input.question.text },
       pass,
       round,
-      positions: ordered.map((p) => ({ party: p.party, quotes: (p.quotes ?? []).map((q) => q.text) })),
+      positions: ordered.map((p) => ({ party: p.party, quotes: (p.quotes ?? []).map((q) => q.text), ...(p.proposal ? { proposal: p.proposal } : {}) })),
       ...(input.frozen ? { frozenApproaches: input.frozen.approaches.map(({ what, how, figure, filler }) => ({ what, how, figure, filler })) } : {}),
     },
     schema: SettleResponse,
