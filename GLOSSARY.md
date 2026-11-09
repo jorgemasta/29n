@@ -31,6 +31,8 @@ modules, endpoints, data fields, storage keys and analytics events.
 | elección | `choice` | The card (or "Ninguna") a voter picked in a topic. |
 | Ninguna me convence | `none` | Choosing no card. Adds to no party. |
 | apuesta / adivinar | `guess` | Optional: which party the voter thinks a card is. Measures anonymity. |
+| recorrido | `journey` | The voter's path so far: topics done, parties chosen. |
+| novedades | `news` | What changed since the last visit (e.g. a party published its manifesto). |
 | revelación / destapar | `reveal` | Showing which party each card was, with quote and PDF link. |
 | afinidad | `affinity` | The voter's ranking of parties by choices. Computed only in the browser. |
 | semilla / barajar | `seed` / `shuffle` | Per-voter stable random order of cards and letters. |
