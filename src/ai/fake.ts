@@ -3,7 +3,9 @@ import type { AIAdapter, AIRequest, Task } from './adapter';
 
 /** `attempt` counts previous calls for the same task with the same topic or question (0 = first). */
 export type FakeResponse = (input: any, attempt: number) => unknown;
-export type FakeResponses = Record<Task, FakeResponse>;
+/** Tasks outside the per-manifesto pipeline (the pulse) are optional; calling a missing one throws. */
+type OptionalTask = 'take-pulse';
+export type FakeResponses = Record<Exclude<Task, OptionalTask>, FakeResponse> & Partial<Record<OptionalTask, FakeResponse>>;
 
 export interface AICall {
   task: Task;
@@ -22,7 +24,9 @@ export function createFakeAI(answers: FakeResponses): AIAdapter & { calls: AICal
       const attempt = calls.filter((l) => l.task === p.task && key(l.input) === topic).length;
       calls.push({ task: p.task, instructions: p.instructions, input: structuredClone(p.input) });
       // Validate like the real adapter, so canned answers can't drift from the schema.
-      return p.schema.parse(answers[p.task](p.input, attempt));
+      const answer = answers[p.task];
+      if (!answer) throw new Error(`fake AI: no canned answer for task ${p.task}`);
+      return p.schema.parse(answer(p.input, attempt));
     },
   };
 }

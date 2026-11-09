@@ -29,6 +29,7 @@ Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/d
 - `npx tsx scripts/generate-simulated.ts`: rebuilds the simulated (fictional) `data/dataset.json`.
 - `npm run municipalities`: rebuilds `data/municipalities.json` from the INE's official municipality list.
 - `npm run og`: regenerates `public/og.png` (link preview). Share card texts: `src/share/` (tests `tests/share.test.ts`); `src/worker/index.ts` swaps og:title for `/?r=reto`.
+- `npm run pulse -- --sources <file.json>`: takes the pulse (`takePulse`, `src/pulse/`; sources follow `PulseSources`: CIS, manifesto topics, open networks, never X) and freezes the theme/question list with its date in `data/pulse.json` (never overwritten without `--force`). `npm run pulse -- --dry-run`: fake AI over fictional example sources, no cost, writes nothing. Tests: `tests/pulse.test.ts`.
 - `npm run process`: processes a real manifesto with Claude. Deploy: `docs/deploy.md`.
 - `npx tsx scripts/watch.ts [--party id] [--force] [--no-publish]`: manifesto watcher (cron in `.github/workflows/watcher.yml`). Tests: `tests/watcher.test.ts`.
 - `npx tsx scripts/guesses.ts [--no-publish]`: bet hit-rate check (cron `.github/workflows/guesses.yml`, needs Umami vars; off when unset). Analytics events: `src/analytics/events.ts`, tests `tests/analytics.test.ts`.

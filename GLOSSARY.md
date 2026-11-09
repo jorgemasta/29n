@@ -65,6 +65,8 @@ Preguntar tab's one is `suggestedQuestion` and the voter-typed one `freeQuestion
 | propone otra cosa | `otherProposal` | A party that fits no approach (`question.otherProposals`, with its quote): out of the blind choice, shown at reveal. |
 | postura (en una pregunta) | `position` | What one party says about one question (`proposes` / `noProposal` / `unverified`). Still keyed by `topic` until #21. |
 | pulso | `pulse` | The AI survey (CIS, manifestos, Reddit/web) that produces the frozen theme/question list. |
+| fecha de congelación | `frozenAt` | The date the pulse list was frozen (`Pulse.frozenAt`, `data/pulse.json`); published in the methodology. |
+| pregunta descartada | `RejectedQuestion` | A pulse candidate that did not enter, with its `reason` (`passesDisagree`, `networksOnly`, `notEnoughSources`, `notNeutral`, `noRegionalParties`, `themeIncomplete`, `surplus`) and a Spanish `detail`. |
 | elección | `questionChoices` | `GameState.questionChoices`: approach id (or `none`) per question id. |
 | destapar (temática) | `revealTheme` / `themeReveal` | Reveal every answered question of a theme at once (`GameState.revealedThemes`); after it only follow-up questions can still be answered. |
 | propuesta a ciegas | `BlindApproach` | What the voter sees before the reveal: letter, what, how, figure. No id, party or stance. |
