@@ -654,6 +654,7 @@ describe('processManifesto', () => {
 
     it('with the registry, a party no longer registered leaves the settled questions too (#18 review)', async () => {
       const first = await runPipeline(answers());
+      const none = (party: string, question: string): Position => ({ party, question, state: 'noProposal', versions: { prompt: 'v3' } });
       const QUOTE_OLD = { text: 'Cita literal del programa de un partido que ya no está en el registro.', page: 4 };
       const withOld = {
         ...settled,
@@ -666,15 +667,15 @@ describe('processManifesto', () => {
         themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
         questions: [withOld, other],
         results: [
-          { positions: [], report: { ...first.report, party: 'otp' } },
-          { positions: [], report: { ...first.report, party: 'old' } },
-          { positions: first.positions, report: first.report },
+          { positions: [none('otp', settled.id), none('otp', 'otra')], report: { ...first.report, party: 'otp' } },
+          { positions: [none('old', settled.id), none('old', 'otra')], report: { ...first.report, party: 'old' } },
+          { positions: [...first.positions, none('pej', 'otra')], report: first.report },
         ],
         generated: '2026-11-08T00:00:00.000Z',
         origin: 'real',
       });
       const registry = { pej: sampleParty, otp: otherParty };
-      const merge = mergeManifesto(real, sampleParty, first, { generated: '2026-11-09T00:00:00.000Z', suggestedQuestions: [], registry });
+      const merge = mergeManifesto(real, sampleParty, { ...first, positions: [...first.positions, none('pej', 'otra')] }, { generated: '2026-11-09T00:00:00.000Z', suggestedQuestions: [], registry });
       if (!merge.ok) throw new Error(merge.reason);
       expect(merge.dataset.parties.map((p) => p.id)).toEqual(['pej', 'otp']);
       expect(JSON.stringify(merge.dataset.questions)).not.toMatch(/"old"/);

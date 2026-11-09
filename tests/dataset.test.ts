@@ -128,3 +128,26 @@ describe('applyMode: provisional sources in v2 questions', () => {
     expect(applyMode(provisional, 'private')).toBe(provisional);
   });
 });
+
+describe('V9: positions behind the published questions', () => {
+  const real = (d: Dataset): Dataset => ({ ...d, origin: 'real' });
+  const position = (party: string, question: string) => ({ party, question, state: 'noProposal' as const, versions: { prompt: 'v1' } });
+  const published = themesDataset.parties.filter((p) => p.manifesto.state === 'published').map((p) => p.id);
+  const complete: Dataset = {
+    ...themesDataset,
+    positions: themesDataset.questions!.flatMap((q) => published.map((p) => position(p, q.id))),
+  };
+
+  it('a real dataset has a position of every published party on every published question', () => {
+    expect(validateDataset(real(complete))).toEqual({ valid: true, errors: [] });
+    const missing = { ...complete, positions: complete.positions.filter((p) => !(p.party === 'bbb' && p.question === 'listas')) };
+    const r = validateDataset(real(missing));
+    expect(r.valid).toBe(false);
+    expect(r.errors.join()).toMatch(/bbb.*listas/);
+  });
+
+  it('a pending party needs none; simulated and test datasets are not held to it', () => {
+    expect(published).not.toContain('pend');
+    expect(validateDataset(themesDataset).valid).toBe(true);
+  });
+});

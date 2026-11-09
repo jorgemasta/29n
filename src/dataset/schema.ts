@@ -365,8 +365,16 @@ export const Dataset = z
     checkQuestions(d, parties, ctx);
   });
 
-/** V9 for v2: known theme and parties, unique ids, one stance per party × approach, no defended filler. */
-function checkQuestions(d: { themes?: Theme[]; questions?: Question[] }, parties: Set<string>, ctx: z.RefinementCtx) {
+/**
+ * V9 for v2: known theme and parties, unique ids, one stance per party × approach, no defended
+ * filler. In a real dataset, also a position of every published party on every published question
+ * (settleApproaches classified all of them; a missing one would show as "no propone nada").
+ */
+function checkQuestions(
+  d: { origin: string; themes?: Theme[]; questions?: Question[]; parties: Party[]; positions: Position[] },
+  parties: Set<string>,
+  ctx: z.RefinementCtx,
+) {
   const issue = (path: (string | number)[], message: string) => ctx.addIssue({ code: 'custom', path, message });
   const themes = new Set<string>();
   (d.themes ?? []).forEach((t, i) => {
@@ -400,6 +408,10 @@ function checkQuestions(d: { themes?: Theme[]; questions?: Question[] }, parties
       if (!parties.has(o.party)) issue(path, `partido desconocido: ${o.party}`);
       if (defenders.has(o.party)) issue(path, `${o.party} defiende un enfoque de ${q.id} y a la vez propone otra cosa`);
     });
+    if (d.origin !== 'real') return;
+    for (const p of d.parties)
+      if (p.manifesto.state === 'published' && !d.positions.some((x) => x.party === p.id && x.question === q.id))
+        issue(at, `falta la postura de ${p.id} en la pregunta publicada ${q.id}`);
   });
 }
 
