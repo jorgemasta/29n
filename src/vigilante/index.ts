@@ -4,12 +4,12 @@
 // programme PDF on an official domain → compare its hash with the last one seen → run the data
 // pipeline → publish (commit + deploy) if publishable, or keep the previous state if blocked →
 // notify the maintainer's phone. Every side effect goes through `puertos`, so tests use fakes.
-import { createHash } from 'node:crypto';
 import type { Dataset, Partido, TipoFuente } from '../dataset/esquema';
 import type { AdaptadorIA } from '../ia/adaptador';
 import type { AlmacenCache } from '../ia/cache';
 import { procesarPrograma, type OpcionesProceso } from '../pipeline';
 import { verificarFuente } from '../pipeline/fuente';
+import { hashPdf } from '../pipeline/pdf';
 import { contextoPublicado, fusionarPrograma } from '../pipeline/publicar';
 import { DOMINIOS_OFICIALES } from '../registro/dominios';
 import { TEMAS } from '../registro/temas';
@@ -139,9 +139,9 @@ export async function vigilar(
       continue;
     }
 
-    // 2. New or changed? (hash of the bytes)
+    // 2. New or changed? Same hash the pipeline stores as programa.hashPdf, or nothing would match.
     const { fuente, url, bytes } = encontrado;
-    const hash = createHash('sha256').update(bytes).digest('hex');
+    const hash = hashPdf(bytes);
     const actual = dataset.partidos.find((p) => p.id === id)?.programa;
     const visto = estado[id]?.hash === hash || (actual?.estado === 'publicado' && actual.hashPdf === hash);
     if (visto && !opciones.forzar) {

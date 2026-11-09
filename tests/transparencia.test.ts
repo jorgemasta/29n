@@ -9,7 +9,7 @@ import {
   urlReportarError,
 } from '../src/transparencia';
 import { BARRERAS } from '../src/registro/barreras';
-import { crearAvisos, LIMITE_AVISOS } from '../src/transparencia/avisos';
+import { crearAvisos, LIMITE_AVISOS, LIMITE_AVISOS_DIA } from '../src/transparencia/avisos';
 import { crearAlmacenEnMemoria } from '../src/pregunta/libre';
 import { Barrera, type Dataset, type Informe, type NotaViabilidad, type Postura } from '../src/dataset/esquema';
 import { datasetEjemplo, notaEjemplo } from './fixtures/dataset-ejemplo';
@@ -254,6 +254,13 @@ describe('avisos sin cuenta de GitHub (Cloudflare function, POST /api/avisar)', 
     expect(creados).toHaveLength(0);
     await avisos.enviar({ ...reporte, comentario: 'Avisad a @alguien' }, 's1');
     expect(creados[0]!.cuerpo).not.toMatch(/@alguien/);
+  });
+
+  it('caps notices per day across all sessions, so a fresh session id per request cannot flood the repo', async () => {
+    const { avisos, creados } = montar();
+    for (let i = 0; i < LIMITE_AVISOS_DIA; i++) expect(await avisos.enviar(reporte, `sesion-${i}`)).toMatchObject({ estado: 'creado' });
+    expect(await avisos.enviar(reporte, 'sesion-nueva')).toMatchObject({ estado: 'limite', alternativa: expect.stringContaining('github.com') });
+    expect(creados).toHaveLength(LIMITE_AVISOS_DIA);
   });
 
   it('limits notices per session and falls back to the link when GitHub fails', async () => {
