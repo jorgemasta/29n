@@ -19,8 +19,8 @@
     "FREE_QUESTION": "0",
     "MONTHLY_CAP": "150"
   },
-  // Needed for the free question and the per-session limits (docs/deploy.md). Uncomment with the
-  // id printed by `npx wrangler kv namespace create QUESTIONS`:
+  // Free question and per-session limits (docs/deploy.md). Created with
+  // `npx wrangler kv namespace create QUESTIONS`.
   "kv_namespaces": [{ "binding": "QUESTIONS", "id": "6ecb4b30682b4022a029f9ba330bea56" }],
   "routes": [{ "pattern": "29n.jorgemasta.com", "custom_domain": true }],
   "env": {
