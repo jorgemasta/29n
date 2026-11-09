@@ -74,6 +74,6 @@ Preguntar tab's one is `suggestedQuestion` and the voter-typed one `freeQuestion
 | repetir (temática) | `repeatTheme` | Forget every choice of a theme (follow-up ones too) and make it blind again. |
 | propuesta a ciegas | `BlindApproach` | What the voter sees before the reveal: letter, what, how, figure. No id, party or stance. |
 | apuesta | `guess` | Optional: which party the voter thinks defends the chosen approach. Right if that party is `full` or `partial` there (#26). |
-| afinidad | `affinity` | Sum of the stances (1 / 0.5) of the approaches the voter chose; `none`, `filler` and out-of-province approaches add nothing (#25). |
+| afinidad | `affinity` | Sum of the stances (1 / 0.5) of the approaches the voter chose; `none`, `filler` and out-of-province approaches add nothing (#25). `Game.affinity()`: per revealed theme (`ThemeAffinity`) and, from `MIN_THEMES_FOR_RANKING` (2) revealed themes, `ranking` over every party in play (also 0 %), plus `missingManifestos`. Only revealed themes count. Route `#resultado`. |
 
 Test seams named in #18: `createGame`, `processManifesto`, `settleApproaches`, `takePulse`.
