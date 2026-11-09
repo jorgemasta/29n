@@ -77,8 +77,8 @@ export const isPrivateOnly = (t: SourceType) => !PUBLIC_SOURCES.includes(t);
 
 /**
  * Mode switch. In 'public', parties whose only document is a provisional source (2023
- * programme, party document, public statements) count as "programme pending": their positions
- * and reports are dropped. 'privado' (private prototype) keeps everything.
+ * programme, party document, public statements) count as "programme pending": their positions,
+ * reports, answers, stances and "propone otra cosa" are dropped. 'privado' (private prototype) keeps everything.
  */
 export function applyMode(d: Dataset, mode: Mode): Dataset {
   if (mode === 'private') return d;
@@ -91,5 +91,26 @@ export function applyMode(d: Dataset, mode: Mode): Dataset {
     topicPositions: d.topicPositions.filter((p) => !provisionalIds.has(p.party)),
     reports: d.reports.filter((i) => !provisionalIds.has(i.party)),
     ...(d.answers ? { answers: d.answers.filter((r) => !provisionalIds.has(r.party)) } : {}),
+    // v2: their stances and "propone otra cosa" go too. An approach only they defended is then
+    // defended by nobody: it plays (and reveals) as a filler.
+    ...(d.questions
+      ? {
+          questions: d.questions.map((q) => ({
+            ...q,
+            approaches: q.approaches.map((a) => {
+              const stances = a.stances.filter((s) => !provisionalIds.has(s.party));
+              return { ...a, stances, filler: a.filler || stances.every((s) => s.stance === 'none') };
+            }),
+            otherProposals: q.otherProposals.filter((o) => !provisionalIds.has(o.party)),
+          })),
+        }
+      : {}),
+    // Settle report entries that name them (the passes' classifications) are not published.
+    ...(d.approachReports
+      ? { approachReports: d.approachReports.map((r) => ({ ...r, entries: r.entries.filter((e) => ![...provisionalIds].some((id) => namesParty(e.detail, id))) })) }
+      : {}),
   };
 }
+
+/** The text names this party id as a word (ids are lowercase slugs with hyphens). */
+const namesParty = (text: string, id: string) => new RegExp(`(^|[^a-z0-9-])${id}($|[^a-z0-9-])`).test(text);

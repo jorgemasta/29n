@@ -1,6 +1,6 @@
 // V9: the dataset schema (validateDataset), v2 themes, questions and approaches.
 import { describe, expect, it } from 'vitest';
-import { validateDataset } from '../src/dataset';
+import { applyMode, validateDataset } from '../src/dataset';
 import type { Dataset } from '../src/dataset/schema';
 import { themesDataset } from './fixtures/themes-dataset';
 import publishedDataset from '../data/dataset.json';
@@ -81,5 +81,50 @@ describe('V9: v2 dataset schema', () => {
   it('rejects a party that both defends an approach and proposes something else', () => {
     const r = validateDataset(withFirstQuestion((q) => ({ ...q, otherProposals: [{ party: 'aaa', quote: q.otherProposals[0]!.quote }] })));
     expect(r.valid).toBe(false);
+  });
+});
+
+describe('applyMode: provisional sources in v2 questions', () => {
+  // aaa's only document becomes a provisional source (2023 programme).
+  const provisional: Dataset = {
+    ...themesDataset,
+    parties: themesDataset.parties.map((p) =>
+      p.id === 'aaa' && p.manifesto.state === 'published' ? { ...p, manifesto: { ...p.manifesto, source: 'manifesto-2023' } } : p,
+    ),
+    questions: themesDataset.questions!.map((q) =>
+      q.id === 'listas' ? { ...q, otherProposals: [{ party: 'aaa', quote: q.approaches[0]!.stances[0]!.quote! }], approaches: q.approaches.map((a, i) => (i === 0 ? { ...a, stances: [{ party: 'ccc', stance: 'full' as const, quote: { text: 'Cita literal del programa de ccc con más de cuarenta caracteres.', page: 2 } }] } : a)) } : q,
+    ),
+    approachReports: [
+      { question: 'alquiler', promptVersion: 'enfoques-v1', rounds: 1, publishable: true, entries: [
+        { check: 'agreement', result: 'retry', detail: 'ronda 1: las pasadas clasifican distinto: [aaa:full, bbb:partial] frente a [bbb:full]' },
+        { check: 'agreement', result: 'pass', detail: 'las dos pasadas coinciden (ronda 2)' },
+      ] },
+    ],
+  };
+  const stancesOf = (d: Dataset) => (d.questions ?? []).flatMap((q) => [...q.approaches.flatMap((a) => a.stances.map((s) => s.party)), ...q.otherProposals.map((o) => o.party)]);
+
+  it('public mode drops their stances and "propone otra cosa" from every question', () => {
+    expect(validateDataset(provisional)).toEqual({ valid: true, errors: [] });
+    expect(stancesOf(provisional)).toContain('aaa');
+    const pub = applyMode(provisional, 'public');
+    expect(stancesOf(pub)).not.toContain('aaa');
+    expect(validateDataset(pub)).toEqual({ valid: true, errors: [] });
+  });
+
+  it('an approach only they defended becomes filler (defended by nobody in play)', () => {
+    const pub = applyMode(provisional, 'public');
+    const compra = pub.questions!.find((q) => q.id === 'compra')!;
+    expect(compra.approaches.find((a) => a.id === 'avales')!.filler).toBe(true);
+    expect(compra.approaches.find((a) => a.id === 'suelo')!.filler).toBe(false);
+  });
+
+  it('settle report entries that name them are not published', () => {
+    const pub = applyMode(provisional, 'public');
+    expect(JSON.stringify(pub.approachReports)).not.toMatch(/\baaa\b/);
+    expect(pub.approachReports![0]!.entries).toHaveLength(1);
+  });
+
+  it('private mode keeps everything', () => {
+    expect(applyMode(provisional, 'private')).toBe(provisional);
   });
 });
