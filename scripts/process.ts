@@ -5,6 +5,9 @@
 // AI answers are cached in data/cache/ai (commit it: re-runs are then free and identical).
 // Writes the dataset only if the programme is publishable and the dataset passes V9. If the
 // approaches are already frozen (published questions), the party is classified into them (#28).
+// Questions and themes come from the frozen pulse (data/pulse.json, --pulse); `npm run settle`
+// settles the questions not published yet.
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { textPath } from '../src/questions/texts';
 import { parseArgs } from 'node:util';
@@ -14,6 +17,8 @@ import { createClaudeAI } from '../src/ai/claude';
 import { processManifesto } from '../src/pipeline';
 import { mergeManifesto } from '../src/pipeline/publish';
 import { classifyLateParty } from '../src/pipeline/late';
+import { pulseQuestions } from '../src/pipeline/settle-all';
+import { Pulse } from '../src/pulse';
 import { SETTLE_PROMPT_VERSION } from '../src/pipeline/prompts-settle';
 import { withCache } from '../src/ai/cache';
 import { PARTIES } from '../src/registry/parties';
@@ -26,6 +31,7 @@ const { values } = parseArgs({
     title: { type: 'string', default: 'Programa electoral 2026' },
     source: { type: 'string', default: 'manifesto-29n' },
     dataset: { type: 'string', default: 'data/dataset.json' },
+    pulse: { type: 'string', default: 'data/pulse.json' },
     /** Capture date of the PDF (V7 records it with the hash). Defaults to today. */
     date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
   },
@@ -41,12 +47,15 @@ const pdf = new Uint8Array(await readFile(values.pdf));
 const source = SourceType.parse(values.source);
 const party: Party = { ...base, manifesto: { state: 'published', source, url: values.url, title: values.title } };
 const previous = Dataset.parse(JSON.parse(await readFile(values.dataset, 'utf8')));
+// The frozen pulse (#23): its questions are processed (published or not) and its themes published.
+const pulse = existsSync(values.pulse) ? Pulse.parse(JSON.parse(await readFile(values.pulse, 'utf8'))) : undefined;
+if (!pulse) console.warn(`Sin ${values.pulse}: solo se procesan las preguntas ya publicadas.`);
 
 const ai = createClaudeAI();
 const cache = createDiskCache('data/cache/ai');
 const result = await processManifesto(pdf, party, ai, {
-  // One position per published question (the pulse's frozen list, #23).
-  questions: previous.questions ?? [],
+  // One position per pulse question, published or not (npm run settle settles the rest later).
+  questions: pulseQuestions(pulse, previous),
   cache,
   date: values.date,
 });
@@ -74,6 +83,7 @@ const merge = mergeManifesto(previous, party, result, {
   date: values.date,
   // Every registered party is listed; without a processed programme it is "⏳ programa pendiente".
   registry: PARTIES,
+  ...(pulse ? { themes: pulse.themes } : {}),
 });
 if (!merge.ok) {
   console.error(merge.reason);

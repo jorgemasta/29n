@@ -9,6 +9,9 @@ import { watch, type Alert, type Change, type Download, type WatcherState, type 
 import { createIssueAlert, WATCHER_LABEL } from '../src/watcher/issue';
 import { createTestPdf } from './fixtures/pdf';
 import { testDomains, sampleParty, housingQuestion, otherParty, testTerms } from './fixtures/registry';
+import { samplePulse } from './fixtures/pulse';
+import type { Pulse } from '../src/pulse';
+import { estimateSettle, settleAll } from '../src/pipeline/settle-all';
 
 const QUOTE =
   'Limitaremos el precio del alquiler en las zonas tensionadas y ampliaremos el parque público de vivienda.';
@@ -76,6 +79,7 @@ async function mount(o: {
   dataset?: Dataset;
   parties?: Record<string, Omit<Party, 'manifesto'>>;
   questions?: QuestionToProcess[];
+  pulse?: Pulse;
 }) {
   const web = createWeb(o.web);
   const saved: Change[] = [];
@@ -86,7 +90,7 @@ async function mount(o: {
   let state: WatcherState = {};
   const run = async (opts: { party?: string; force?: boolean } = {}) => {
     const r = await watch(
-      { dataset, state, sources: o.sources ?? [{ party: 'pej', url: PEJ_PAGE }], parties: o.parties ?? { pej: pejRegistry } },
+      { dataset, state, sources: o.sources ?? [{ party: 'pej', url: PEJ_PAGE }], parties: o.parties ?? { pej: pejRegistry }, ...(o.pulse ? { pulse: o.pulse } : {}) },
       {
         download: web.download,
         ai,
@@ -103,7 +107,8 @@ async function mount(o: {
       },
       {
         ...opts,
-        processResult: { questions: o.questions ?? [housingQuestion], terms: testTerms, domains: testDomains, checkUrl: async () => true },
+        // With a pulse, the question list comes from it (unless given).
+        processResult: { ...(o.pulse && !o.questions ? {} : { questions: o.questions ?? [housingQuestion] }), terms: testTerms, domains: testDomains, checkUrl: async () => true },
       },
     );
     dataset = r.dataset;
@@ -115,6 +120,21 @@ async function mount(o: {
 
 const pdf = () => createTestPdf(pages);
 const json = (c: Change | undefined, path: string) => JSON.parse(c?.files[path] ?? 'null');
+
+/** A frozen pulse with these questions: the first in "vivienda", the rest in "economia". */
+const pulseOf = (questions: QuestionToProcess[]): Pulse => ({
+  ...samplePulse,
+  themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }, { id: 'economia', title: 'Economía', order: 2 }],
+  questions: questions.map((q, i) => ({ id: q.id, theme: i === 0 ? 'vivienda' : 'economia', text: q.text, followUp: false, order: 1, origin: { cis: null, manifestos: 2 } })),
+});
+/** A settle pass: 3 approaches, the first defended in full by these parties with their first quote. */
+const threeOn = (...parties: string[]) => (input: { positions: { party: string; quotes: string[] }[] }) => ({
+  approaches: [
+    { what: 'Primer enfoque de la pregunta.', how: 'Con una ley en todo el país.', figure: null, filler: false, stances: parties.map((party) => ({ party, stance: 'full', quote: input.positions.find((p) => p.party === party)!.quotes[0]! })) },
+    { what: 'Segundo enfoque de la pregunta.', how: 'Con ayudas directas a las familias.', figure: null, filler: true, stances: [] },
+    { what: 'Tercer enfoque de la pregunta.', how: 'Con un acuerdo con las comunidades.', figure: null, filler: true, stances: [] },
+  ],
+});
 
 describe('watch', () => {
   it('detects a new programme linked from the official page, publishes it and notifies', async () => {
@@ -357,7 +377,7 @@ describe('watch', () => {
     const placing = (at?: number) => (input: { frozenApproaches: { what: string; how: string; figure: string | null; filler: boolean }[] }) => ({
       approaches: input.frozenApproaches.map((a, i) => ({ ...a, stances: i === at ? [{ party: 'pej', stance: 'partial', quote: QUOTE }] : [] })),
     });
-    const lateMount = async (settle: NonNullable<FakeResponses['settle-approaches']>, o: { questions?: QuestionToProcess[] } = {}) =>
+    const lateMount = async (settle: NonNullable<FakeResponses['settle-approaches']>, o: { questions?: QuestionToProcess[]; pulse?: Pulse } = {}) =>
       mount({
         web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() },
         answers: answers({ 'settle-approaches': settle }),
@@ -435,6 +455,23 @@ describe('watch', () => {
       expect(new Set(settled)).toEqual(new Set([housingQuestion.id]));
     });
 
+    it('with the frozen pulse, every pulse question is processed by default: the position on an unpublished one is kept for the operator', async () => {
+      const m = await lateMount(placing(0), { pulse: pulseOf([housingQuestion, unpublished]) });
+      await m.run();
+
+      expect(m.dataset.questions!.map((q) => q.id)).toEqual([housingQuestion.id]);
+      expect(m.dataset.positions).toContainEqual(expect.objectContaining({ party: 'pej', question: 'pensiones' }));
+      // The operator settles it later from every party's position (npm run settle): the frozen one is left alone.
+      const ai = createFakeAI(answers({ 'settle-approaches': threeOn('pej', 'otp') }));
+      const settled = await settleAll(m.dataset, pulseOf([housingQuestion, unpublished]), ai);
+      if (!settled.ok) throw new Error(settled.reason);
+      const asked = ai.calls.filter((c) => c.task === 'settle-approaches').map((c) => (c.input as { question: { id: string } }).question.id);
+      expect(new Set(asked)).toEqual(new Set(['pensiones']));
+      expect(settled.dataset.questions!.map((q) => q.id).sort()).toEqual([housingQuestion.id, 'pensiones'].sort());
+      expect(published(settled.dataset)).toEqual(published(m.dataset));
+      expect(settled.dataset.approachReports!.find((r) => r.question === 'pensiones')).toMatchObject({ publishable: true });
+    });
+
     it('a changed manifesto moves only that party, and a forced re-run gives the same result', async () => {
       const m = await lateMount(placing(1));
       await m.run();
@@ -443,6 +480,58 @@ describe('watch', () => {
 
       expect(m.dataset.questions).toEqual(first.questions);
       expect(published(m.dataset).approaches.flatMap((a) => a.stances.filter((s) => s.party === 'pej' && s.stance !== 'none'))).toHaveLength(1);
+    });
+  });
+
+  describe('the frozen pulse: themes and questions of the first real dataset (#18 review)', () => {
+    const pensions: QuestionToProcess = { id: 'pensiones', text: '¿Qué harían con las pensiones?', keywords: ['pensiones'] };
+
+    it('the first manifesto over the simulated dataset brings the pulse themes and a position on every pulse question; nothing is settled yet', async () => {
+      const pulse = pulseOf([housingQuestion, pensions]);
+      const m = await mount({ web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() }, pulse });
+      await m.run();
+
+      expect(m.dataset.origin).toBe('real');
+      expect(m.dataset.themes).toEqual(pulse.themes);
+      expect(m.dataset.questions ?? []).toEqual([]);
+      expect(m.dataset.positions.map((p) => p.question).sort()).toEqual(['pensiones', housingQuestion.id].sort());
+      expect(m.ai.calls.some((c) => c.task === 'settle-approaches')).toBe(false);
+    });
+
+    it('npm run settle: settles every pulse question from all parties\' positions and publishes them (V9 checked)', async () => {
+      const pulse = pulseOf([housingQuestion, pensions]);
+      const m = await mount({ web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() }, pulse });
+      await m.run();
+      const ai = createFakeAI(answers({ 'settle-approaches': threeOn('pej') }));
+      const r = await settleAll(m.dataset, pulse, ai);
+      if (!r.ok) throw new Error(r.reason);
+
+      expect(r.dataset.questions!.map((q) => q.id).sort()).toEqual(['pensiones', housingQuestion.id].sort());
+      const q = r.dataset.questions!.find((x) => x.id === housingQuestion.id)!;
+      // The pulse fields come along: theme, order, origin, follow-up flag.
+      expect(q).toMatchObject({ theme: 'vivienda', followUp: false, order: 1, origin: { cis: null, manifestos: 2 } });
+      expect(q.approaches[0]!.stances).toContainEqual(expect.objectContaining({ party: 'pej', stance: 'full' }));
+      expect(r.reports.map((x) => x.question).sort()).toEqual(['pensiones', housingQuestion.id].sort());
+      expect(Dataset.safeParse(r.dataset).success).toBe(true);
+      // Only the questions given with `only`.
+      const one = await settleAll(m.dataset, pulse, createFakeAI(answers({ 'settle-approaches': threeOn('pej') })), { only: ['pensiones'] });
+      expect(one.ok && one.dataset.questions!.map((x) => x.id)).toEqual(['pensiones']);
+    });
+
+    it('npm run settle refuses a simulated dataset (nothing real to settle)', async () => {
+      const r = await settleAll(initialDataset(), pulseOf([housingQuestion]), createFakeAI({}));
+      expect(r).toMatchObject({ ok: false, reason: expect.stringMatching(/simulad/) });
+    });
+
+    it('npm run settle -- --dry-run: the estimate counts the AI calls per question, without calling it', async () => {
+      const pulse = pulseOf([housingQuestion, pensions]);
+      const m = await mount({ web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() }, pulse });
+      await m.run();
+      const estimate = estimateSettle(m.dataset, pulse);
+      expect(estimate.questions.map((x) => [x.id, x.proposing])).toEqual([[housingQuestion.id, 1], ['pensiones', 1]]);
+      expect(estimate.calls.min).toBeGreaterThan(0);
+      expect(estimate.calls.max).toBeGreaterThan(estimate.calls.min);
+      expect(estimate.frozen).toEqual([]);
     });
   });
 

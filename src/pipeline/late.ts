@@ -4,8 +4,9 @@
 // "Frozen" = the questions of the published dataset (`origin: 'real'`, `questions`): their 3
 // approaches were settled and people have played them, so their ids and texts never change. A
 // question that is not published (settleApproaches gave up, or it was never settled) is left as it
-// is: the party's position on it is still stored with the other positions, so the operator can
-// settle it from scratch (`settleApproaches` without `frozen`) once there is enough to publish it.
+// is: the party's position on it is still processed (`npm run process` and the watcher process every
+// question of the frozen pulse, `pulseQuestions`) and stored with the other positions, so the
+// operator can settle it from scratch later (`npm run settle`: `settleAll`, src/pipeline/settle-all.ts).
 import type { AIAdapter } from '../ai/adapter';
 import type { Dataset, Position } from '../dataset/schema';
 import { publishSettled, settleApproaches, type SettleOptions, type SettleReport } from './settle';

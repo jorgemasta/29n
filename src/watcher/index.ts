@@ -13,6 +13,8 @@ import { verifySource } from '../pipeline/source';
 import { hashPdf } from '../pipeline/pdf';
 import { mergeManifesto } from '../pipeline/publish';
 import { classifyLateParty } from '../pipeline/late';
+import { pulseQuestions } from '../pipeline/settle-all';
+import type { Pulse } from '../pulse';
 import { SETTLE_PROMPT_VERSION } from '../pipeline/prompts-settle';
 import type { SettleOptions } from '../pipeline/settle';
 import { withCache } from '../ai/cache';
@@ -65,7 +67,7 @@ export interface WatchOptions {
   party?: string;
   /** Process even if the PDF has not changed. */
   force?: boolean;
-  /** Pipeline options; `questions` defaults to the dataset's published questions (the pulse's list, #23). */
+  /** Pipeline options; `questions` defaults to the frozen pulse's list plus the published questions (`pulseQuestions`). */
   processResult?: Partial<ProcessOptions>;
   /** Options of the late classification into frozen approaches (default checks otherwise). */
   settle?: SettleOptions;
@@ -103,6 +105,8 @@ export async function watch(
     state: WatcherState;
     sources: WatchedSource[];
     parties: Record<string, Omit<Party, 'manifesto'>>;
+    /** The frozen pulse (data/pulse.json): its questions are processed, its themes published. */
+    pulse?: Pulse;
   },
   ports: Ports,
   options: WatchOptions = {},
@@ -110,7 +114,9 @@ export async function watch(
   if (options.party && !input.parties[options.party])
     throw new Error(`Partido desconocido: ${options.party}`);
   const domains = options.processResult?.domains ?? OFFICIAL_DOMAINS;
-  const questions = options.processResult?.questions ?? input.dataset.questions ?? [];
+  // Every pulse question, published or not: the positions on unpublished ones are kept so the
+  // operator can settle them later (`npm run settle`).
+  const questions = options.processResult?.questions ?? pulseQuestions(input.pulse, input.dataset);
 
   let dataset = input.dataset;
   let state = input.state;
@@ -181,6 +187,7 @@ export async function watch(
             generated: now.toISOString(),
             date,
             registry: input.parties,
+            ...(input.pulse ? { themes: input.pulse.themes } : {}),
             ...(late?.ok ? { settled: late.settled } : {}),
           });
 

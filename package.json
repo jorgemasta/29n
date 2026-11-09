@@ -18,7 +18,8 @@
     "deploy": "npm run build:production && wrangler deploy",
     "deploy:private": "npm run build:private && wrangler deploy --env private",
     "e2e": "npm run build && tsx tests/e2e/smoke.e2e.ts",
-    "pulse": "tsx scripts/pulse.ts"
+    "pulse": "tsx scripts/pulse.ts",
+    "settle": "tsx scripts/settle.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",

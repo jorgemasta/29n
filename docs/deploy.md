@@ -36,9 +36,20 @@ partidos sin programa oficial publicado, y lo dice en la consola.
 
 ### Pasar de los datos simulados a los reales
 
+0. Tomar el pulso y congelar la lista (`npm run pulse -- --sources <fuentes.json>` → `data/pulse.json`, commit). Sin
+   ella, `npm run process` y el watcher solo procesan las preguntas ya publicadas.
 1. Procesar cada programa oficial del 29N cuando se publique: `npm run process -- --party <id> --pdf <pdf> --url
    <URL oficial>` (o dejar que lo haga el watcher). El **primer** programa real sustituye todo el dataset simulado
-   (`origin: "real"`, los partidos `prueba-*` desaparecen y el resto del registro queda como «pendiente»).
+   (`origin: "real"`, los partidos `prueba-*` desaparecen y el resto del registro queda como «pendiente»). Cada programa
+   saca una postura en **cada** pregunta del pulso y el dataset toma las temáticas del pulso, pero aún sin preguntas
+   publicadas: hasta el paso siguiente no hay nada que jugar.
+1b. **Asentar los enfoques** cuando estén los programas que se esperan: `npm run settle -- --dry-run` (qué preguntas y
+   cuántas llamadas a la IA, sin coste) y luego `npm run settle`. Agrupa en 3 enfoques cada pregunta del pulso aún no
+   publicada con las posturas de todos los partidos, publica las que pasan y deja el informe de todas en
+   `approachReports` (las que no, salen en la metodología con su motivo). Commit de `data/dataset.json` y
+   `data/cache/ai/`. Las preguntas publicadas quedan congeladas: los programas que lleguen después los clasifica el
+   watcher en esos enfoques (#28); para publicar una que no salió, volver a ejecutar `npm run settle` (solo toca las no
+   publicadas, o `--question <id>`).
 2. Borrar los ficheros simulados: `git rm public/programas/prueba-*.pdf public/texts/prueba-*.json` (el build de
    producción ya los excluye, pero así no avisa).
 3. **No** volver a ejecutar `scripts/generate-simulated.ts`: sobrescribe el dataset real.
@@ -67,7 +78,8 @@ Nada de esto lo hace el código ni un agente. Detalle de cada paso en las seccio
    quitar `contrato` del `pattern` y procesarlo a mano con `--source party-document`).
 8. **PDF reales**: descargar a mano los programas que el watcher no alcance y procesarlos (`npm run process`);
    commit de `data/dataset.json`, `data/reports/`, `data/cache/ai/` y `public/texts/`.
-9. **Pasar a datos reales** («Pasar de los datos simulados a los reales», arriba) y `npm run build:production` sin errores.
+9. **Pasar a datos reales** («Pasar de los datos simulados a los reales», arriba): pulso congelado, programas procesados,
+   `npm run settle` (#32) y `npm run build:production` sin errores.
 10. **Candidaturas**: las listas de `src/registry/parties.ts` son estimaciones provisionales. Cuando el BOE publique
     las candidaturas proclamadas, corregir las provincias de cada partido, añadir los que entren por representación
     autonómica y poner `state: 'proclaimed'` con la fuente.

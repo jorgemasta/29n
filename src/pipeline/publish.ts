@@ -2,7 +2,7 @@
 // the watcher). Real data replaces simulated data entirely; the party's previous positions and
 // report are replaced by the new ones, the other parties are kept as they were.
 import { buildDataset, validateDataset, withoutParties } from '../dataset';
-import type { Dataset, Party, SuggestedQuestion } from '../dataset/schema';
+import type { Dataset, Party, SuggestedQuestion, Theme } from '../dataset/schema';
 import { SUGGESTED_QUESTIONS } from '../registry/questions';
 import type { ProcessResult } from './index';
 
@@ -25,6 +25,9 @@ export function mergeManifesto(
     /** The published questions (and their settle reports) with this party classified into their
      * frozen approaches (`classifyLateParty`, #28). Default: the previous ones, as they were. */
     settled?: Pick<Dataset, 'questions' | 'approachReports'>;
+    /** Themes of the frozen pulse (data/pulse.json). Default: the previous ones. The first real
+     * manifesto replaces the simulated dataset, so this is where a real dataset gets its themes. */
+    themes?: Theme[];
   },
 ): Merge {
   if (!result.publishable) return { ok: false, reason: result.report.reason ?? 'no publicable' };
@@ -49,7 +52,7 @@ export function mergeManifesto(
   const questions = args.settled?.questions ?? priorData.questions;
   const dataset = buildDataset({
     parties,
-    ...(priorData.themes ? { themes: priorData.themes } : {}),
+    ...((args.themes ?? priorData.themes) ? { themes: args.themes ?? priorData.themes } : {}),
     ...(questions ? { questions: dropped.size ? withoutParties(questions, dropped) : questions } : {}),
     topics: priorData.topics,
     topicPositions: priorData.topicPositions.filter((p) => p.party !== party.id),

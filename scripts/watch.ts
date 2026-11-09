@@ -7,6 +7,7 @@
 // WATCHER_ASSIGNEE = who gets notified); CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID for `npm run deploy`.
 // PUSH=1 pushes each commit (the workflow sets it).
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -14,6 +15,7 @@ import { Dataset } from '../src/dataset';
 import { createDiskCache } from '../src/ai/disk-cache';
 import { createClaudeAI } from '../src/ai/claude';
 import { PARTIES } from '../src/registry/parties';
+import { Pulse } from '../src/pulse';
 import { DATASET_PATH, STATE_PATH, watch, type Alert, type Change, type Download, type WatcherState } from '../src/watcher';
 import { MANIFESTO_SOURCES } from '../src/watcher/sources';
 import { createIssueAlert } from '../src/watcher/issue';
@@ -28,6 +30,7 @@ const { values } = parseArgs({
 const dryRun = values['no-publish'];
 const CACHE_DIR = 'data/cache/ai';
 const MAX_BYTES = 80 * 1024 * 1024;
+const PULSE_PATH = 'data/pulse.json';
 
 const git = (...args: string[]) => execFileSync('git', args, { stdio: 'inherit' });
 const hasChanges = (path: string) => execFileSync('git', ['status', '--porcelain', '--', path], { encoding: 'utf8' }).trim() !== '';
@@ -100,6 +103,8 @@ const r = await watch(
     state: (await readJson(STATE_PATH, {})) as WatcherState,
     sources: MANIFESTO_SOURCES,
     parties: PARTIES,
+    // The frozen pulse (#23): its questions are processed (published or not), its themes published.
+    ...(existsSync(PULSE_PATH) ? { pulse: Pulse.parse(await readJson(PULSE_PATH, null)) } : {}),
   },
   {
     download,
@@ -112,7 +117,7 @@ const r = await watch(
     },
     now: () => new Date(),
   },
-  // Questions: the published ones of the current dataset (the pulse's frozen list, #23).
+  // Questions: the pulse's frozen list plus the published ones (pulseQuestions).
   { party: values.party, force: values.force },
 );
 

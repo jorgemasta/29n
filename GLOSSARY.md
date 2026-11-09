@@ -62,6 +62,7 @@ Preguntar tab's one is `suggestedQuestion` and the voter-typed one `freeQuestion
 | de lleno / en parte / no | `stance: 'full' \| 'partial' \| 'none'` | How a party fits an approach (1 / 0.5 / 0). Stored as `PartyStance` in `approach.stances`; every non-`none` one carries its `quote`. |
 | clasificación | `classification` | Every party's stances on the approaches of a question, plus its `otherProposals`. What `settleApproaches` produces. |
 | enfoques congelados | `frozen` / `FrozenQuestion` | The approaches of a question published in the real dataset's `questions`: never settled again. A late party is classified into them (`settleApproaches` with `frozen`). |
+| asentar enfoques (operador) | `settleAll` / `npm run settle` | The operator step: settles every pulse question not published yet from all parties' positions and publishes it (`src/pipeline/settle-all.ts`). Manifestos are processed against every pulse question (`pulseQuestions`). |
 | programa tardío | `classifyLateParty` | A manifesto processed after the approaches are frozen: only that party is classified, question by question (#28). |
 | propone otra cosa | `otherProposal` | A party that fits no approach (`question.otherProposals`, with its quote): out of the blind choice, shown at reveal. |
 | postura (en una pregunta) | `position` | What one party says about one question (`proposes` / `noProposal` / `unverified`), from `processManifesto`; the input of `settleApproaches`. A `proposes` one carries its `proposal`, `quotes` and `feasibility`. Dataset key `positions`. |
