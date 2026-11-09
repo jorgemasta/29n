@@ -303,7 +303,7 @@ if confirm "¿Configuramos Umami ahora?"; then
   say ""
   step "Settings → API keys → Create key → cópiala (la usa la comprobación semanal de apuestas, guesses.yml)."
   ask_secret UMAMI_API_KEY "Umami API key:"
-  if curl -fsS -m 15 -H "x-umami-api-key: $UMAMI_API_KEY" "https://stats.padelful.com/api/websites/$UMAMI_WEBSITE_ID" >/dev/null 2>&1; then
+  if curl -fsS -m 15 -H "Authorization: Bearer $UMAMI_API_KEY" "https://stats.padelful.com/api/websites/$UMAMI_WEBSITE_ID" >/dev/null 2>&1; then
     printf '  %s✓%s la API key funciona\n' "$GREEN" "$RESET"
   else
     warn "la API no respondió con esa key (la guardo igualmente)"

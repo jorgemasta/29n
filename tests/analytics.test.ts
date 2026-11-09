@@ -190,6 +190,18 @@ describe('bet check adapters', () => {
     expect(urls[0]).toContain('propertyName=topic');
   });
 
+  it('sends the key as a bearer token to a self-hosted instance', async () => {
+    const headers: Record<string, string>[] = [];
+    const count = createUmamiCounter({ base: 'https://stats.example.com/api', apiKey: 'clave', websiteId: 'w', days: 1, now: () => 0,
+      request: async (_url, init) => {
+        headers.push(init.headers);
+        return { ok: true, status: 200, json: async () => [] };
+      } });
+    await count();
+    expect(headers[0]?.authorization).toBe('Bearer clave');
+    expect(headers[0]?.['x-umami-api-key']).toBeUndefined();
+  });
+
   it('fails loudly on an API error instead of reporting zero bets', async () => {
     const count = createUmamiCounter({ base: 'https://x', apiKey: 'k', websiteId: 'w', days: 1, now: () => 0,
       request: async () => ({ ok: false, status: 401, json: async () => ({}) }) });

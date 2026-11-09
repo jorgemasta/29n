@@ -3,7 +3,7 @@
 import { LABEL, type GuessCount, type NewIssue, type GuessPorts } from './index';
 
 export interface UmamiConfig {
-  /** Self-hosted: https://<host>/api (Umami Cloud: https://api.umami.is/v1). Same x-umami-api-key header. */
+  /** Self-hosted: https://<host>/api, key sent as a bearer token. Umami Cloud: https://api.umami.is/v1, x-umami-api-key. */
   base: string;
   apiKey: string;
   websiteId: string;
@@ -21,6 +21,9 @@ const EVENT = { hits: 'guess-hit', failures: 'guess-miss' } as const;
  * also sent for older Umami versions (unknown parameters are ignored).
  */
 export function createUmamiCounter(c: UmamiConfig): GuessPorts['countGuesses'] {
+  const auth: Record<string, string> = /\/\/api\.umami\.is\b/.test(c.base)
+    ? { 'x-umami-api-key': c.apiKey }
+    : { authorization: `Bearer ${c.apiKey}` };
   return async () => {
     const endAt = c.now();
     const startAt = endAt - c.days * 24 * 3600 * 1000;
@@ -28,7 +31,7 @@ export function createUmamiCounter(c: UmamiConfig): GuessPorts['countGuesses'] {
     for (const [field, event] of Object.entries(EVENT) as [keyof GuessCount, string][]) {
       const q = new URLSearchParams({ startAt: String(startAt), endAt: String(endAt), event: event, eventName: event, propertyName: 'topic' });
       const url = `${c.base.replace(/\/$/, '')}/websites/${encodeURIComponent(c.websiteId)}/event-data/values?${q}`;
-      const r = await c.request(url, { headers: { 'x-umami-api-key': c.apiKey, accept: 'application/json' } });
+      const r = await c.request(url, { headers: { ...auth, accept: 'application/json' } });
       if (!r.ok) throw new Error(`Umami API ${r.status} (${event})`);
       const rows = await r.json();
       if (!Array.isArray(rows)) throw new Error(`Umami API: respuesta inesperada (${event})`);
