@@ -440,7 +440,7 @@ describe('Preguntar: suggested questions with precomputed answers', () => {
   });
 });
 
-// ---- #8: the full game (bet, affinity, priorities, re-shuffle, news) ----
+// ---- #8: the full game (bet, affinity, re-shuffle, news) ----
 
 type P = ReturnType<typeof createGame>;
 /** The letter a party's card has in this topic for this game (read through a throwaway reveal). */
@@ -546,27 +546,6 @@ describe('affinity result', () => {
     expect(r.available).toBe(true);
     expect(r.allNone).toBe(true);
     expect(r.ranking).toEqual([]);
-  });
-
-  it('up to 3 priority topics count double', () => {
-    const p = five().markPriority('sanidad', true).markPriority('pensiones', true);
-    expect(p.priorities()).toEqual(['sanidad', 'pensiones']);
-    const r = p.result();
-    // weights: vivienda 1, empleo 1, sanidad 2, pensiones 2, impuestos 1 → 7 points possible
-    expect(r.ranking.map((f) => [f.party.id, f.points, f.percent])).toEqual([
-      ['dos', 2, 29],
-      ['uno', 2, 29],
-      ['viejo', 2, 29],
-      ['dichos', 0, 0],
-    ]);
-    expect(p.markPriority('sanidad', false).priorities()).toEqual(['pensiones']);
-  });
-
-  it('refuses a 4th priority topic and topics not done yet', () => {
-    const p = five().markPriority('vivienda', true).markPriority('empleo', true).markPriority('sanidad', true);
-    expect(() => p.markPriority('pensiones', true)).toThrow(/3/);
-    expect(() => five().markPriority('defensa', true)).toThrow();
-    expect(p.markPriority('vivienda', true).priorities()).toHaveLength(3);
   });
 
   it('warns about parties with a pending programme and about the missing province', () => {
@@ -1121,5 +1100,110 @@ describe('createGame: a full game by themes (#24)', () => {
   it('the game state holds only choices and themes, never a party', () => {
     const game = finish(fresh('35').selectThemes('all'), 'vivienda').chooseApproach('okupacion', 'A');
     expect(JSON.stringify(game.state)).not.toMatch(/aaa|bbb|ccc|isla|bcn/);
+  });
+});
+
+describe('createGame: affinity by theme and overall (#25)', () => {
+  type G = ReturnType<typeof createGame>;
+  const fresh = (province: string | null = null, dataset: Dataset = themesDataset) => createGame(dataset, province, 's');
+  /** Chooses the approach whose text is "Enfoque <word>" (letters are shuffled per seed). */
+  const pick = (game: G, questionId: string, word: string) =>
+    game.chooseApproach(questionId, game.question(questionId).approaches.find((a) => a.what === `Enfoque ${word}`)!.letter);
+  const rows = (list: { party: { id: string }; points: number; percent: number }[]) =>
+    list.map((r) => [r.party.id, r.points, r.percent]);
+
+  it('a chosen approach adds 1 to each party fully behind it, 0.5 to those partly behind it, 0 to the rest', () => {
+    // alquiler "control": aaa full, bbb partial. compra "suelo": bbb full.
+    const game = pick(pick(fresh(), 'alquiler', 'uno'), 'compra', 'cinco').revealTheme('vivienda');
+    const [vivienda] = game.affinity().themes;
+    expect(vivienda!.theme.id).toBe('vivienda');
+    expect(vivienda!.questions).toBe(2);
+    expect(rows(vivienda!.rows)).toEqual([
+      ['bbb', 1.5, 75],
+      ['aaa', 1, 50],
+      ['ccc', 0, 0],
+      ['nada', 0, 0],
+    ]);
+  });
+
+  it('a filler approach and "Ninguna me convence" add to nobody, but the question still counts', () => {
+    // alquiler "ayudas" is a filler; listas "Ninguna".
+    const game = pick(fresh(), 'alquiler', 'tres').chooseApproach('compra', NONE).revealTheme('vivienda');
+    const [vivienda] = game.affinity().themes;
+    expect(vivienda!.questions).toBe(2);
+    expect(vivienda!.none).toBe(1);
+    expect(vivienda!.rows.every((r) => r.points === 0 && r.percent === 0)).toBe(true);
+  });
+
+  it('an approach defended only by parties running in another province adds nothing here', () => {
+    // alquiler "oferta": isla (Canarias) full and, in this variant, nobody else.
+    const onlyIsla: Dataset = {
+      ...themesDataset,
+      questions: themesDataset.questions!.map((q) =>
+        q.id !== 'alquiler' ? q : { ...q, approaches: q.approaches.map((a) => (a.id === 'oferta' ? { ...a, stances: a.stances.filter((s) => s.party === 'isla') } : a)) }),
+    };
+    const play = (province: string) => pick(pick(fresh(province, onlyIsla), 'alquiler', 'dos'), 'compra', 'cinco').revealTheme('vivienda');
+    expect(rows(play('08').affinity().themes[0]!.rows)).toEqual([
+      ['bbb', 1, 50],
+      ['aaa', 0, 0],
+      ['bcn', 0, 0],
+      ['ccc', 0, 0],
+      ['nada', 0, 0],
+    ]);
+    expect(rows(play('35').affinity().themes[0]!.rows).slice(0, 2)).toEqual([
+      ['bbb', 1, 50],
+      ['isla', 1, 50],
+    ]);
+  });
+
+  it('only revealed themes count: choices of a theme not revealed yet stay out of the result', () => {
+    const game = pick(pick(fresh(), 'alquiler', 'uno'), 'compra', 'cuatro');
+    expect(game.affinity().themes).toEqual([]);
+    expect(game.affinity().ranking).toBeNull();
+  });
+
+  it('follow-up questions answered after the reveal count in their theme', () => {
+    const revealed = pick(pick(fresh(), 'alquiler', 'uno'), 'compra', 'cuatro').revealTheme('vivienda');
+    const [vivienda] = pick(revealed, 'okupacion', 'ocho').affinity().themes;
+    expect(vivienda!.questions).toBe(3);
+    expect(rows(vivienda!.rows).slice(0, 2)).toEqual([
+      ['aaa', 2, 67],
+      ['bbb', 1.5, 50],
+    ]);
+  });
+
+  it('there is no overall ranking with one revealed theme; from 2 it sums every counted question', () => {
+    const one = pick(pick(fresh(), 'alquiler', 'uno'), 'compra', 'cinco').revealTheme('vivienda');
+    expect(one.affinity().ranking).toBeNull();
+    // listas "plantillas": bbb full, ccc partial.
+    const two = pick(one, 'listas', 'once').revealTheme('sanidad');
+    expect(two.affinity().themes.map((t) => t.theme.id)).toEqual(['vivienda', 'sanidad']);
+    expect(two.affinity().ranking!.map((r) => [r.party.id, r.points, r.percent, r.rank, r.tie])).toEqual([
+      ['bbb', 2.5, 83, 1, false],
+      ['aaa', 1, 33, 2, false],
+      ['ccc', 0.5, 17, 3, false],
+      ['nada', 0, 0, 4, false],
+    ]);
+  });
+
+  it('the ranking shows every party in play with a manifesto, also at 0 %, with ties sharing a place', () => {
+    const game = [['alquiler', 'tres'], ['compra', 'seis'], ['listas', 'diez']]
+      .reduce((g, [q, w]) => pick(g, q!, w!), fresh('35'))
+      .revealTheme('vivienda')
+      .revealTheme('sanidad');
+    expect(game.affinity().ranking!.map((r) => [r.party.id, r.percent, r.rank, r.tie])).toEqual([
+      ['aaa', 33, 1, true],
+      ['ccc', 33, 1, true],
+      ['bbb', 0, 3, true],
+      ['isla', 0, 3, true],
+      ['nada', 0, 3, true],
+    ]);
+  });
+
+  it('warns about parties in play whose manifesto is missing, and about the missing province', () => {
+    const r = fresh().affinity();
+    expect(r.missingManifestos.map((p) => p.id)).toEqual(['pend']);
+    expect(r.noProvince).toBe(true);
+    expect(fresh('35').affinity().noProvince).toBe(false);
   });
 });
