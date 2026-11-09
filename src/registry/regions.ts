@@ -1,0 +1,22 @@
+// Autonomous communities and cities by INE code (CODAUTO), as in Province.regionCode.
+export const REGION_NAMES: Record<string, string> = {
+  '01': 'Andalucía',
+  '02': 'Aragón',
+  '03': 'Asturias',
+  '04': 'Illes Balears',
+  '05': 'Canarias',
+  '06': 'Cantabria',
+  '07': 'Castilla y León',
+  '08': 'Castilla-La Mancha',
+  '09': 'Cataluña',
+  '10': 'Comunitat Valenciana',
+  '11': 'Extremadura',
+  '12': 'Galicia',
+  '13': 'Comunidad de Madrid',
+  '14': 'Región de Murcia',
+  '15': 'Navarra',
+  '16': 'País Vasco',
+  '17': 'La Rioja',
+  '18': 'Ceuta',
+  '19': 'Melilla',
+};
