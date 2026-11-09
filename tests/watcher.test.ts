@@ -336,8 +336,13 @@ describe('watch', () => {
       { party: 'otp', question: housingQuestion.id, versions: { prompt: 'v2' }, state: 'proposes' as const, proposal: { what: 'Vivienda pública.', how: 'En suelo del Estado.', figure: null }, quotes: [{ text: OTP_QUOTE, page: 4 }] },
       { party: 'otp', question: 'pensiones', versions: { prompt: 'v2' }, state: 'proposes' as const, proposal: { what: 'Subir pensiones.', how: 'Con el IPC.', figure: null }, quotes: [{ text: 'Subiremos todas las pensiones cada año según el IPC real.', page: 6 }] },
     ];
+    // Settle reports (#29): the housing question's original one, and the unpublished pensions question's.
+    const approachReports = [
+      { question: housingQuestion.id, promptVersion: 'enfoques-v1', rounds: 1, publishable: true, entries: [] },
+      { question: 'pensiones', theme: 'economia', text: unpublished.text, promptVersion: 'enfoques-v1', rounds: 2, publishable: false, reason: 'las dos pasadas no coinciden tras 2 rondas', entries: [] },
+    ];
     const publishedDataset = (): Dataset =>
-      Dataset.parse(buildDataset({
+      Dataset.parse({ approachReports, ...buildDataset({
         parties: [{ ...otherParty, manifesto: { ...otherParty.manifesto, state: 'published', hashPdf: 'a'.repeat(64) } } as Party, { ...pejRegistry, manifesto: { state: 'pending' } }],
         themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
         questions: [frozenQuestion],
@@ -347,12 +352,12 @@ describe('watch', () => {
         }],
         generated: '2026-11-01T00:00:00.000Z',
         origin: 'real',
-      }));
+      }) });
     /** A pass that keeps the frozen texts and puts PEJ in approach `at` (or nowhere). */
     const placing = (at?: number) => (input: { frozenApproaches: { what: string; how: string; figure: string | null; filler: boolean }[] }) => ({
       approaches: input.frozenApproaches.map((a, i) => ({ ...a, stances: i === at ? [{ party: 'pej', stance: 'partial', quote: QUOTE }] : [] })),
     });
-    const lateMount = async (settle: FakeResponses[string], o: { questions?: QuestionToProcess[] } = {}) =>
+    const lateMount = async (settle: NonNullable<FakeResponses['settle-approaches']>, o: { questions?: QuestionToProcess[] } = {}) =>
       mount({
         web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() },
         answers: answers({ 'settle-approaches': settle }),
@@ -379,6 +384,11 @@ describe('watch', () => {
       expect(q.approaches.map((a) => a.stances.filter((s) => s.party === 'otp'))).toEqual(frozenQuestion.approaches.map((a) => a.stances));
       expect(ds.positions).toContainEqual(expect.objectContaining({ party: 'otp', question: housingQuestion.id }));
       expect(m.dataset).toEqual(ds);
+      // The question's settle report is replaced by the late classification; the others are kept.
+      expect(ds.approachReports).toEqual([
+        approachReports[1],
+        expect.objectContaining({ question: housingQuestion.id, publishable: true, entries: expect.arrayContaining([expect.objectContaining({ check: 'agreement', result: 'pass' })]) }),
+      ]);
       // The AI only saw PEJ's quotes, with the frozen approaches.
       const settle = m.ai.calls.filter((c) => c.task === 'settle-approaches').map((c) => c.input as { positions: { party: string }[]; frozenApproaches: unknown[] });
       expect(settle.length).toBeGreaterThan(0);
@@ -419,6 +429,7 @@ describe('watch', () => {
       await m.run();
 
       expect(m.dataset.questions!.map((q) => q.id)).toEqual([housingQuestion.id]);
+      expect(m.dataset.approachReports).toContainEqual(approachReports[1]);
       expect(m.dataset.positions).toContainEqual(expect.objectContaining({ party: 'pej', question: 'pensiones' }));
       const settled = m.ai.calls.filter((c) => c.task === 'settle-approaches').map((c) => (c.input as { question: { id: string } }).question.id);
       expect(new Set(settled)).toEqual(new Set([housingQuestion.id]));

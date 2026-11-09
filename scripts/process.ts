@@ -69,7 +69,7 @@ if (!late.ok) {
 }
 
 const merge = mergeManifesto(previous, party, result, {
-  questions: late.questions,
+  settled: late.settled,
   generated: new Date().toISOString(),
   date: values.date,
   // Every registered party is listed; without a processed programme it is "⏳ programa pendiente".

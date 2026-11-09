@@ -181,7 +181,7 @@ export async function watch(
             generated: now.toISOString(),
             date,
             registry: input.parties,
-            ...(late?.ok ? { questions: late.questions } : {}),
+            ...(late?.ok ? { settled: late.settled } : {}),
           });
 
       if (!merge.ok) {
