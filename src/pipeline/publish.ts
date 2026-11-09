@@ -1,7 +1,7 @@
 // Merging one processed programme into the published dataset (shared by `npm run process` and
 // the watcher). Real data replaces simulated data entirely; the party's previous positions and
 // report are replaced by the new ones, the other parties are kept as they were.
-import { buildDataset, validateDataset } from '../dataset';
+import { buildDataset, validateDataset, withoutParties } from '../dataset';
 import type { Dataset, Party, SuggestedQuestion } from '../dataset/schema';
 import { SUGGESTED_QUESTIONS } from '../registry/questions';
 import type { ProcessResult } from './index';
@@ -42,12 +42,15 @@ export function mergeManifesto(
         (base) => ({ ...base, manifesto: processed.find((p) => p.id === base.id)?.manifesto ?? { state: 'pending' } }) as Party,
       )
     : processed;
+  // Themes and settled questions stay as they are; the late-manifesto classification (#28) only
+  // adds this party's stances to their frozen approaches. A party dropped from the registry leaves
+  // them too (V9 would otherwise reject every later merge).
+  const dropped = new Set(registry ? priorData.parties.filter((p) => !registry[p.id]).map((p) => p.id) : []);
+  const questions = args.settled?.questions ?? priorData.questions;
   const dataset = buildDataset({
     parties,
-    // Themes and settled questions stay as they are; the late-manifesto classification (#28) only
-    // adds this party's stances to their frozen approaches.
     ...(priorData.themes ? { themes: priorData.themes } : {}),
-    ...((args.settled?.questions ?? priorData.questions) ? { questions: args.settled?.questions ?? priorData.questions } : {}),
+    ...(questions ? { questions: dropped.size ? withoutParties(questions, dropped) : questions } : {}),
     topics: priorData.topics,
     topicPositions: priorData.topicPositions.filter((p) => p.party !== party.id),
     suggestedQuestions: args.suggestedQuestions ?? SUGGESTED_QUESTIONS,

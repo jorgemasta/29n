@@ -9,7 +9,7 @@ import { buildDataset, validateDataset } from '../src/dataset';
 import { createTestPdf } from './fixtures/pdf';
 import { testDomains, sampleParty, otherParty, housingQuestion, testTerms } from './fixtures/registry';
 import { RUBRIC_VERSION } from '../src/registry/rubric';
-import { Position as PositionSchema, type Position, type Proposal } from '../src/dataset/schema';
+import { Position as PositionSchema, type Party, type Position, type Proposal } from '../src/dataset/schema';
 
 /** Fake AI behaviour: answers `good` only once the request mentions `hint` (the feedback reached it), else `bad`. */
 const fixesWith =
@@ -650,6 +650,36 @@ describe('processManifesto', () => {
         ['otp', 'noProposal'],
         ['pej', 'noProposal'],
       ]);
+    });
+
+    it('with the registry, a party no longer registered leaves the settled questions too (#18 review)', async () => {
+      const first = await runPipeline(answers());
+      const QUOTE_OLD = { text: 'Cita literal del programa de un partido que ya no está en el registro.', page: 4 };
+      const withOld = {
+        ...settled,
+        approaches: settled.approaches.map((a) => (a.id === 'a' ? { ...a, stances: [{ party: 'old', stance: 'full' as const, quote: QUOTE_OLD }] } : a)),
+      };
+      const other = { ...settled, id: 'otra', order: 2, otherProposals: [{ party: 'old', quote: QUOTE_OLD }] };
+      const old: Party = { ...otherParty, id: 'old', name: 'Partido Viejo', acronym: 'PV' };
+      const real = buildDataset({
+        parties: [{ ...otherParty }, sampleParty, old],
+        themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
+        questions: [withOld, other],
+        results: [
+          { positions: [], report: { ...first.report, party: 'otp' } },
+          { positions: [], report: { ...first.report, party: 'old' } },
+          { positions: first.positions, report: first.report },
+        ],
+        generated: '2026-11-08T00:00:00.000Z',
+        origin: 'real',
+      });
+      const registry = { pej: sampleParty, otp: otherParty };
+      const merge = mergeManifesto(real, sampleParty, first, { generated: '2026-11-09T00:00:00.000Z', suggestedQuestions: [], registry });
+      if (!merge.ok) throw new Error(merge.reason);
+      expect(merge.dataset.parties.map((p) => p.id)).toEqual(['pej', 'otp']);
+      expect(JSON.stringify(merge.dataset.questions)).not.toMatch(/"old"/);
+      // Its approach is defended by nobody now: a filler.
+      expect(merge.dataset.questions!.find((q) => q.id === settled.id)!.approaches.find((a) => a.id === 'a')!.filler).toBe(true);
     });
 
     it('a blocked programme is not merged', async () => {
