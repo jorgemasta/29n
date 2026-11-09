@@ -5,7 +5,7 @@
 completo **en móvil (390×844) y en escritorio (1280×800)**: portada → provincia → 5 temas → Mi resultado →
 Compartir → Preguntar → Tus datos → páginas de información.
 
-Antes comprueba el modo producción: `PRODUCCION=1 astro build` con el dataset simulado debe **fallar**, y la vista
+Antes comprueba el modo producción: `PRODUCTION=1 astro build` con el dataset simulado debe **fallar**, y la vista
 previa lleva `Disallow: /` en `robots.txt` y `noindex` en las páginas.
 
 En cada tamaño comprueba también: contraste AA y violaciones graves con axe (claro y oscuro), foco en el titular al
@@ -15,7 +15,7 @@ la ayuda del tema 1, que el aviso de provincia se va solo, 'Escuchar todas' (con
 ninguna petición sale a otro dominio, la página de privacidad y el pie (autoría, MIT, CC BY 4.0, Privacidad) en
 todas las páginas. No forma parte de `npm test`.
 
-Código: `tests/e2e/humo.e2e.ts`. Si falla, deja una captura en `dist-e2e-fallo.png`.
+Código: `tests/e2e/smoke.e2e.ts`. Si falla, deja una captura en `dist-e2e-failure.png`.
 
 ## Preparación (una vez)
 
