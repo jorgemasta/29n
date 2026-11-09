@@ -42,7 +42,7 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content={String(OG.image.width)} />
     <meta property="og:image:height" content={String(OG.image.height)} />
-    <meta property="og:image:alt" content="Tres tarjetas boca abajo con las letras A, B y C. Elecciones generales · 29 de noviembre." />
+    <meta property="og:image:alt" content={OG.image.alt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={OG.title} />
     <meta name="twitter:description" content={OG.description} />

@@ -502,80 +502,6 @@ describe('the factual journey label in the reveal', () => {
   });
 });
 
-describe('affinity result', () => {
-  const five = (): P => {
-    let p = privateOnly();
-    p = chooseParty(p, 'vivienda', 'uno');
-    p = chooseParty(p, 'empleo', 'uno');
-    p = chooseParty(p, 'sanidad', 'dos');
-    p = chooseParty(p, 'pensiones', 'viejo');
-    return p.choose('impuestos', NONE);
-  };
-
-  it('is not offered before 5 topics', () => {
-    let p = privateOnly();
-    for (const t of ['vivienda', 'empleo', 'sanidad', 'pensiones']) {
-      p = chooseParty(p, t, 'uno');
-      expect(p.result().available).toBe(false);
-    }
-    expect(p.result().topics).toBe(4);
-    expect(p.choose('impuestos', NONE).result().available).toBe(true);
-  });
-
-  it('ranks every party in play with a percentage, including 0 %, ties alphabetically with the same place', () => {
-    const r = five().result();
-    expect(r.ranking.map((f) => [f.party.id, f.rank, f.percent, f.topics, f.tie])).toEqual([
-      ['uno', 1, 40, 2, false],
-      ['dos', 2, 20, 1, true],
-      ['viejo', 2, 20, 1, true],
-      ['dichos', 4, 0, 0, false],
-    ]);
-  });
-
-  it('"Ninguna me convence" adds to no party and is counted apart', () => {
-    const r = five().result();
-    expect(r.topics).toBe(5);
-    expect(r.none).toBe(1);
-    expect(r.ranking.reduce((s, f) => s + f.points, 0)).toBe(4);
-    expect(r.distinctParties).toBe(3);
-  });
-
-  it('when every choice is "Ninguna" there is no ranking', () => {
-    const p = ['vivienda', 'empleo', 'sanidad', 'pensiones', 'impuestos'].reduce((acc, t) => acc.choose(t, NONE), privateOnly());
-    const r = p.result();
-    expect(r.available).toBe(true);
-    expect(r.allNone).toBe(true);
-    expect(r.ranking).toEqual([]);
-  });
-
-  it('warns about parties with a pending programme and about the missing province', () => {
-    const publicGame = ['vivienda', 'empleo', 'sanidad', 'pensiones', 'impuestos'].reduce(
-      (acc, t) => chooseParty(acc, t, 'uno'),
-      createGame(topicsDataset, null, 's'),
-    );
-    const r = publicGame.result();
-    expect(r.pending.map((p) => p.id)).toEqual(['dichos', 'viejo']);
-    expect(r.noProvince).toBe(true);
-    expect(r.ranking.map((f) => f.party.id)).toEqual(['uno', 'dos']);
-    expect(createGame(sampleDataset, '28', 's').result().noProvince).toBe(false);
-  });
-
-  it('summarises the bets: how many times the chosen card was not from the party guessed', () => {
-    let p = privateOnly();
-    p = chooseParty(p, 'vivienda', 'uno', 'dos');
-    p = chooseParty(p, 'empleo', 'uno', 'uno');
-    p = chooseParty(p, 'sanidad', 'dos', 'viejo');
-    p = chooseParty(p, 'pensiones', 'dos');
-    const a = p.result().guesses;
-    expect(a.total).toBe(3);
-    expect(a.wrong).toBe(2);
-    expect(a.surprises.map((s) => [s.party.id, s.topics.map((t) => t.id)])).toEqual([
-      ['dos', ['sanidad']],
-      ['uno', ['vivienda']],
-    ]);
-  });
-});
-
 describe('choosing again', () => {
   it('"Volver a elegir" forgets the choice and re-shuffles the cards', () => {
     const p = chooseParty(privateOnly(), 'vivienda', 'uno', 'dos');
@@ -628,7 +554,6 @@ describe('returning visit: news', () => {
     expect(n.topics.map((t) => [t.topic.id, t.newOnes])).toEqual([['vivienda', 1], ['empleo', 1]]);
     expect(returnVisit.list().suggested[0]!.newOnes).toBe(1);
     expect(returnVisit.list().suggested[2]!.newOnes).toBe(0);
-    expect(returnVisit.result().topicsWithNews).toBe(2);
   });
 
   it('news are announced once; topic news last until reviewed or kept', () => {

@@ -1,5 +1,6 @@
-// Screen 11 "Compartir": preview, variant/format selectors, native share, WhatsApp and download.
-// The card's texts come from src/share (pure, tested); this file only draws them on a canvas.
+// "Compartir" (#compartir, from Mi resultado): preview, variant/format selectors, native share,
+// WhatsApp and download. The card's texts come from src/share (pure, tested) over Game.affinity();
+// this file only draws them on a canvas. Default card: no parties; the ranking only if picked.
 // The image is made on the phone and never uploaded; the link is always the clean ?r=reto.
 import type { Game } from '../game';
 import {
@@ -17,16 +18,18 @@ import { trackShare } from './analytics';
 import { button, h } from './dom';
 
 
-// Card colours: cream background, black ink, the app's petrol accent. Never a party colour.
-const CREAM = '#f6f1e6';
-const INK = '#141414';
-const GREY = '#4a4a4a'; // AA on cream
-const ACCENT = '#0f5c66';
+// Card colours: the v2 identity (cream, ink, petrol). Never a party colour.
+const CREAM = '#f7f3ed';
+const INK = '#04313e';
+const GREY = '#4c595d'; // AA on cream
+const ACCENT = '#0e5167';
+const TRACK = '#d7e5ea';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
 const SIZE: Record<Style, { px: number; weight: number; color: string; before: number }> = {
   header: { px: 40, weight: 700, color: ACCENT, before: 0 },
   huge: { px: 170, weight: 800, color: INK, before: 40 },
+  lead: { px: 84, weight: 800, color: INK, before: 40 },
   normal: { px: 50, weight: 400, color: INK, before: 24 },
   label: { px: 66, weight: 800, color: INK, before: 40 },
   highlight: { px: 50, weight: 700, color: INK, before: 48 },
@@ -126,7 +129,7 @@ export function drawCard(canvas: HTMLCanvasElement, c: CardContent, format: Form
             }
             y += 46 * s * 1.3;
             if (draw) {
-              ctx.fillStyle = '#ddd6c8';
+              ctx.fillStyle = TRACK;
               ctx.fillRect(margin, y, usable, 30 * s);
               ctx.fillStyle = ACCENT;
               ctx.fillRect(margin, y, (usable * Math.max(0, Math.min(100, b.percent))) / 100, 30 * s);
@@ -174,11 +177,11 @@ export interface ShareActions {
 }
 
 export function shareView(game: Game, actions: ShareActions = {}): HTMLElement {
-  const r = game.result();
+  const r = game.affinity();
   const title = h('h1', { tabindex: '-1' }, 'Compartir');
   if (!variantAvailable(r, 'no-parties'))
-    return h('section', { class: 'share' }, title, h('p', {}, 'Haz 5 temas para tener algo que compartir.'),
-      h('a', { href: '#temas', class: 'primary link-button' }, 'Ver los temas'));
+    return h('section', { class: 'share' }, title, h('p', {}, 'Termina y destapa una temática para tener algo que compartir.'),
+      h('a', { href: '#tematicas', class: 'primary link-button' }, 'Ver las temáticas'));
 
   let variant: Variant = 'no-parties';
   let format: Format = 'story';
@@ -262,6 +265,7 @@ export function shareView(game: Game, actions: ShareActions = {}): HTMLElement {
     ),
     state,
     h('p', { class: 'grey' }, 'La imagen se crea en tu móvil. No subimos nada.'),
+    h('p', {}, h('a', { href: '#resultado' }, 'Volver a mi resultado')),
     button('Guardar el enlace para seguir luego', 'text-link', () => whatsapp(`Para seguir en este mismo navegador: https://29n.jorgemasta.com`, false)),
   );
   repaint();

@@ -66,7 +66,7 @@ export function resultView(game: Game, actions: ResultActions): HTMLElement {
       link('Más en la metodología', '/metodologia/')),
     h('p', { class: 'note' }, 'Esto no es una recomendación de voto. Es un resumen de lo que elegiste.'),
     keepPlaying,
-    h('div', { class: 'list-links' }, link('Ver las temáticas', '#tematicas'), startOver(actions.clearAll)),
+    h('div', { class: 'list-links' }, link('Compartir', '#compartir'), link('Ver las temáticas', '#tematicas'), startOver(actions.clearAll)),
   );
 }
 

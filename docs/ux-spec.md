@@ -30,9 +30,9 @@
 ### 1. Vista previa del enlace (WhatsApp/X/Telegram)
 - **Propósito:** ganar el primer toque en el grupo familiar.
 - **og:title:** "29N: lee lo que proponen los partidos sin saber de quién es"
-- **og:description:** "Elige la propuesta que más te convence y descubre de qué partido era. Gratis, sin registrarte, sin datos personales."
-- **og:image (1200×630):** tres tarjetas boca abajo con las letras A, B y C, más el texto "Elecciones generales · 29 de noviembre". Fondo crema, sin colores de partido.
-- Con `?r=reto` cambia el og:title: "Te han retado: ¿con quién coincides sin saberlo?"
+- **og:description:** "Cada pregunta, 3 propuestas sin firma. Elige la que más te convence y descubre qué partidos la defienden. Gratis, sin registrarte, sin datos personales."
+- **og:image (1200×630):** tres propuestas sin firma con las letras A, B y C (la B elegida), más el texto "Elecciones generales · 29 de noviembre". Identidad v2 (crema, tinta, petróleo, tarjetas blancas planas), sin colores de partido. Texto alternativo: "Tres propuestas sin firma, A, B y C, y una de ellas elegida. Elecciones generales · 29 de noviembre."
+- Con `?r=reto` cambia el og:title: "Te reto: ¿con cuántos partidos coincides a ciegas?"
 
 ### 2. Portada (primera visita)
 - **Propósito:** explicar la mecánica en 5 segundos, desactivar el miedo a la estafa y al partidismo, y llevar a vivienda en un toque.
@@ -55,7 +55,7 @@
     - "No te decimos a quién votar. Vota a quien quieras."
     - "Proyecto personal e independiente. Sin vínculo con ningún partido, medio ni institución."
   - Pie: "Cómo funciona" · "Partidos y programas" · "Código abierto"
-  - Con `?r=reto`, encima del titular: "Alguien te reta: ¿con quién coincides sin saberlo?"
+  - Con `?r=reto`, encima del titular: "Alguien te reta: elige a ciegas y mira con cuántos partidos coincides."
 - **Interacciones:** "Empezar" lleva a Provincia. Si ya hay provincia guardada, va directo al tema pendiente.
 - **Errores:** sin almacenamiento disponible (modo privado), aparece una sola vez: "En este modo no podemos recordar tu progreso si cierras."
 
@@ -279,25 +279,23 @@
 
 ## 3. Tarjeta para compartir
 
-Se genera en el cliente con canvas, en dos tamaños: 1080×1920 y 1080×1080. Fondo crema, tipografía negra grande, contraste AA y la ilustración de tres tarjetas con las letras A, B y C, una de ellas girada. **No lleva colores ni logos de partido en la variante por defecto.**
+Se abre desde "Mi resultado" (`#compartir`) en cuanto hay una temática destapada. Se genera en el cliente con canvas, en dos tamaños: 1080×1920 y 1080×1080. Fondo crema, tinta y petróleo (identidad v2), contraste AA y la ilustración de tres tarjetas con las letras A, B y C, una de ellas girada. **No lleva colores ni logos de partido en la variante por defecto.**
 
 **Variante "Sin partidos" (por defecto, no revela ideología):**
 - Arriba, pequeño: "29N · Elegido a ciegas"
-- Centro, enorme: **"4 partidos"**
-- Debajo: "distintos en 8 temas, sin saber de quién era cada propuesta."
-- Línea de etiqueta: "Vas por libre." (o "Con matices." / "Lo tengo claro.")
-- Solo con 3 apuestas o más: "3 de 5 veces no era de quien yo pensaba."
+- Frase grande: **"He hecho Vivienda y Sanidad a ciegas: coincidí con 4 partidos distintos."** (hasta 3 temáticas por su nombre; con más, "He hecho 5 temáticas a ciegas…"; "coincidí con 1 partido" / "no coincidí con ningún partido"). Cuenta los partidos que defienden, de lleno o en parte, algún enfoque elegido en las temáticas destapadas.
+- Debajo: "6 preguntas, sin saber qué partidos había detrás de cada propuesta."
 - Abajo: "¿Y tú? Lee las propuestas sin saber de quién son." · **29n.jorgemasta.com**
 - Pie: "Sin registro · Sin datos personales · Con citas de los programas"
 
-**Variante "Con mi ranking":**
+**Variante "Con mi ranking"** (solo si la persona la elige, y solo con ranking global, es decir, desde 2 temáticas):
 - Arriba: "29N · Con quién coincido a ciegas"
 - Las 3 primeras barras en un tono, con logo pequeño: "[Partido] 38 %", más la línea "+5 partidos más"
-- "En 8 temas · 1 vez ninguna me convenció"
-- Si aplica: "⏳ Falta 1 programa."
+- "En 2 temáticas, 6 preguntas · 1 vez ninguna me convenció"
+- Si aplica: "Falta 1 programa."
 - "No es una recomendación de voto." · 29n.jorgemasta.com
 
-**Texto que acompaña (las dos variantes):** "He leído propuestas de los partidos para el 29N sin saber de quién eran. Me he llevado alguna sorpresa. ¿Y tú? 29n.jorgemasta.com/?r=reto"
+**Texto que acompaña (las dos variantes):** "He elegido entre propuestas de los partidos para el 29N sin saber de quién eran. ¿Con cuántos coincides tú? 29n.jorgemasta.com/?r=reto"
 
 **Texto alternativo de la imagen:** se genera con el mismo contenido.
 
