@@ -16,8 +16,8 @@ export interface UmamiConfig {
 const EVENT = { hits: 'guess-hit', failures: 'guess-miss' } as const;
 
 /**
- * Per-topic counts from the event-data "values" endpoint: for one event name, how many times each
- * value of the `topic` property was sent. `event` is the current parameter name; `eventName` is
+ * Per-question counts from the event-data "values" endpoint: for one event name, how many times each
+ * value of the `question` property was sent. `event` is the current parameter name; `eventName` is
  * also sent for older Umami versions (unknown parameters are ignored).
  */
 export function createUmamiCounter(c: UmamiConfig): GuessPorts['countGuesses'] {
@@ -29,7 +29,7 @@ export function createUmamiCounter(c: UmamiConfig): GuessPorts['countGuesses'] {
     const startAt = endAt - c.days * 24 * 3600 * 1000;
     const counts: Record<string, GuessCount> = {};
     for (const [field, event] of Object.entries(EVENT) as [keyof GuessCount, string][]) {
-      const q = new URLSearchParams({ startAt: String(startAt), endAt: String(endAt), event: event, eventName: event, propertyName: 'topic' });
+      const q = new URLSearchParams({ startAt: String(startAt), endAt: String(endAt), event: event, eventName: event, propertyName: 'question' });
       const url = `${c.base.replace(/\/$/, '')}/websites/${encodeURIComponent(c.websiteId)}/event-data/values?${q}`;
       const r = await c.request(url, { headers: { ...auth, accept: 'application/json' } });
       if (!r.ok) throw new Error(`Umami API ${r.status} (${event})`);
@@ -56,7 +56,7 @@ export function createGitHubPorts(run: (args: string[]) => string): Pick<GuessPo
     openIssue: async (i: NewIssue) => {
       if (!listLabel) {
         // `gh issue create --label` fails if the label does not exist; --force makes this idempotent.
-        run(['label', 'create', LABEL, '--color', 'D93F0B', '--description', 'Tema demasiado reconocible: volver a neutralizar', '--force']);
+        run(['label', 'create', LABEL, '--color', 'D93F0B', '--description', 'Pregunta con enfoques demasiado reconocibles: reescribirlos', '--force']);
         listLabel = true;
       }
       run(['issue', 'create', '--title', i.title, '--body', i.body, ...i.labels.flatMap((e) => ['--label', e])]);

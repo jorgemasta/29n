@@ -26,7 +26,7 @@ const SHORT: Record<string, string> = {
 };
 const topicsWithData = distribution.byTopic.filter((t) => t.cells.some((c) => c !== 'noData'));
 import { MAX_FEASIBILITY_REPEATS } from '../pipeline/feasibility';
-import { MIN_GUESSES, HIT_THRESHOLD } from '../guesses';
+import { MIN_GUESSES } from '../guesses';
 
 const pulseInfo = pulseSummary(pulse);
 const themeList = questionList(dataset, pulse);
@@ -190,9 +190,11 @@ const STAGE = { pulse: 'No entró en la lista del pulso', approaches: 'No se pud
     (la valoración sigue siendo útil) y la tarjeta lo dice: «Sin fuentes verificables».
   </p>
   <p id="apuestas">
-    La apuesta opcional («¿de quién crees que es?») se cuenta de forma anónima por tema. Si en un tema se acierta más del
-    {HIT_THRESHOLD * 100} % de las veces, sus textos no son lo bastante neutrales y se abre una incidencia para reescribirlos.
-    Solo se mira a partir de {MIN_GUESSES} apuestas en el tema: con menos, el porcentaje es ruido.
+    La apuesta opcional («¿de qué partido crees que es?») se cuenta de forma anónima por pregunta: solo si acertaste o no,
+    nunca el partido. Aciertas si ese partido defiende, de lleno o en parte, el enfoque que elegiste. Cada pregunta se compara
+    con lo que se acertaría al azar en ella, que depende de cuántos partidos defienden cada enfoque. Si se acierta claramente
+    más que al azar, sus enfoques delatan a los partidos y se abre una incidencia para reescribirlos. Solo se mira a partir
+    de {MIN_GUESSES} apuestas en la pregunta: con menos, el porcentaje es ruido.
   </p>
   <p><a href="/rubrica/">Rúbrica completa, niveles, fuentes permitidas e instrucciones →</a></p>
 

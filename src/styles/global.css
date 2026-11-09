@@ -406,6 +406,19 @@ dialog.sheet.open::backdrop { background: rgb(4 49 62 / 0.38); }
 .sheet-body h2 { margin: 0.25rem 0 0; font-size: 1.25rem; }
 .sheet-choice { display: flex; gap: 0.75rem; align-items: center; background: var(--surface); border-radius: 0.5rem; padding: 0.75rem; }
 .sheet-body .text-link { justify-self: center; }
+/* The optional guess in the sheet (src/web/guess.ts, #26). */
+.optional-pill { display: inline-block; font-size: 0.875rem; font-weight: 700; background: var(--beige); color: var(--amber); padding: 0.1rem 0.6rem; border-radius: 99px; }
+.guess-question { font-weight: 700; margin: 0.4rem 0 0; }
+.guess-options { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; }
+.guess-option {
+  display: flex; justify-content: space-between; align-items: center; width: 100%; min-height: 3.5rem; padding: 0 1rem;
+  font: inherit; font-size: 1.125rem; font-weight: 700; text-align: left; color: var(--ink); background: var(--surface);
+  border: 2px solid var(--aqua-2); border-radius: 0.5rem; cursor: pointer; transition: transform 120ms var(--ease-out), border-color 120ms var(--ease-out);
+}
+.guess-option::after { content: '→'; color: var(--petrol); }
+.guess-option:active { transform: scale(0.97); border-color: var(--petrol); }
+@media (hover: hover) { .guess-option:hover { border-color: var(--petrol); } }
+.your-guess { margin: -0.5rem 0 0.75rem; color: var(--ink-soft); }
 
 .summary-list { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: 0.75rem; }
 .summary-row { display: grid; gap: 0.25rem; padding: 0.8rem 1rem; background: var(--surface); border-radius: 0.5rem; color: var(--ink); text-decoration: none; }

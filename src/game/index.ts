@@ -12,7 +12,9 @@ export type { PartyProposal } from './proposal';
 export type {
   Affinity,
   AffinityRow,
+  ApproachChoiceOptions,
   BlindApproach,
+  GuessReveal,
   OtherProposalReveal,
   QuestionItem,
   QuestionProgress,
@@ -54,6 +56,8 @@ export interface ChoiceOptions {
 export interface GameOptions {
   /** 'public' (default) only uses official programmes; 'private' adds provisional sources. */
   mode?: Mode;
+  /** False after "No volver a preguntarme": the guess is neither offered nor accepted. Default true. */
+  guess?: boolean;
 }
 
 /** Visible goal: the result is offered after this many topics; later ones are "extra". */
@@ -368,7 +372,7 @@ export function createGame(
   };
 
   return {
-    ...themeGame<Game>({ dataset, province, seed, state, published: byId, withChanges }),
+    ...themeGame<Game>({ dataset, province, seed, state, published: byId, guess: options.guess ?? true, withChanges }),
     state,
     province,
     parties: () => ({ withManifesto: published.map(zone).sort(byName), pending: zonePending() }),
