@@ -22,6 +22,8 @@ export const MODELS: Record<Task, string> = {
   'answer-question': 'claude-sonnet-5-5',
   'take-pulse': 'claude-opus-5-5',
   'settle-approaches': 'claude-opus-5-5',
+  // Generates text: a different model from the V10/V11 judges (Opus).
+  'rewrite-approach': 'claude-sonnet-5-5',
 };
 
 /**
