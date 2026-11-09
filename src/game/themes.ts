@@ -179,7 +179,7 @@ export interface Affinity {
 
 /** The v2 methods of a Game. `G` is the Game type (actions return a new one). */
 export interface ThemeGame<G> {
-  /** Themes playable in this province, in their order: national ones plus its regionalTheme. */
+  /** Themes playable in this province, in their order: national ones plus its regionalTheme; only those with a published base question. */
   themes(): Theme[];
   /** Pick the themes to play, or "all" ("Todas"). Replaces the previous pick. */
   selectThemes(themeIds: string[] | typeof ALL): G;
@@ -236,8 +236,11 @@ export interface ThemeContext<G> {
 export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
   const { dataset, seed, state } = ctx;
   const region = ctx.province === null ? null : (provinceByCode(ctx.province)?.regionCode ?? null);
+  // A theme plays only with at least one published base question (settleApproaches may have
+  // published none of its questions): otherwise it would be revealed empty and count as played.
   const themes = (dataset.themes ?? [])
     .filter((t) => t.region === undefined || t.region === region)
+    .filter((t) => (dataset.questions ?? []).some((q) => q.theme === t.id && !q.followUp))
     .sort((a, b) => a.order - b.order);
   const questions = (dataset.questions ?? [])
     .filter((q) => themes.some((t) => t.id === q.theme))

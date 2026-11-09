@@ -1021,6 +1021,19 @@ describe('createGame: a full game by themes (#24)', () => {
     expect(() => again.repeatTheme('nope')).toThrow();
   });
 
+  it('a theme with no published question is neither listed nor playable, and never counts toward the ranking', () => {
+    const ds: Dataset = { ...themesDataset, themes: [...themesDataset.themes!, { id: 'empleo', title: 'Empleo', order: 4 }] };
+    const game = createGame(ds, null, 's');
+    expect(ids(game.themes())).toEqual(['vivienda', 'sanidad']);
+    expect(ids(game.selectThemes('all').selectedThemes())).toEqual(['vivienda', 'sanidad']);
+    expect(() => game.selectThemes(['empleo'])).toThrow();
+    expect(() => game.revealTheme('empleo')).toThrow();
+    expect(() => game.theme('empleo')).toThrow();
+    // A theme left with only follow-up questions has nothing to play first either.
+    const onlyFollowUp: Dataset = { ...themesDataset, questions: themesDataset.questions!.filter((q) => q.theme !== 'vivienda' || q.followUp) };
+    expect(ids(createGame(onlyFollowUp, null, 's').themes())).toEqual(['sanidad']);
+  });
+
   it('the game state holds only choices and themes, never a party', () => {
     const game = finish(fresh('35').selectThemes('all'), 'vivienda').chooseApproach('okupacion', 'A');
     expect(JSON.stringify(game.state)).not.toMatch(/aaa|bbb|ccc|isla|bcn/);
