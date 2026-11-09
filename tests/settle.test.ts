@@ -303,6 +303,21 @@ describe("settleApproaches (test point A')", () => {
       expect(Question.safeParse(result.question).success).toBe(true);
     });
 
+    it('a frozen approach that loses its last defender becomes filler, keeps its text and figures, and the party is not blocked', async () => {
+      const q = await published();
+      // taxCut, defended only by otp, was published with a figure backed by otp's quote back then.
+      const withFigure: Question = { ...q, approaches: q.approaches.map((a, i) => (i === 1 ? { ...a, figure: 'Unos 10.000 euros por comprador' } : a)) };
+      const result = await settleApproaches({ question, positions, frozen: frozenOf(withFigure, ['otp']) }, fakeAi(() => placing(withFigure)));
+
+      expect(result.report.reason).toBeUndefined();
+      expect(result.publishable).toBe(true);
+      expect(texts(result.question!)).toEqual(texts(withFigure));
+      expect(result.question!.approaches[1]!.filler).toBe(true);
+      expect(result.question!.approaches.filter((a) => a.filler)).toHaveLength(1);
+      expect(result.question!.otherProposals).toEqual([{ party: 'otp', quote: { text: QUOTES.otp, page: 3 } }]);
+      expect(result.report.entries).toContainEqual(expect.objectContaining({ check: 'V4', approach: withFigure.approaches[1]!.id, result: 'pass' }));
+    });
+
     it('a pass that classifies an already-published party is not valid (it is not sent to the AI)', async () => {
       const q = await published();
       const meddling = { approaches: placing(q, 'qui', 0).approaches.map((a, i) => (i === 1 ? { ...a, stances: [stance('pej')] } : a)) };

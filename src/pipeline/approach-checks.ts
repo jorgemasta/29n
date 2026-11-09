@@ -95,10 +95,13 @@ export function amounts(text: string): Amount[] {
 const significantDigits = (value: number) => String(value).replace('.', '').replace(/^0+/, '').replace(/0+$/, '').length;
 
 /** V4: every figure of the approach is a rounding compatible with its defenders' figures (years: the same year). */
-export const figuresCheck = (): ApproachCheck => async (approach, { positions }) => {
+export const figuresCheck = (): ApproachCheck => async (approach, { positions, frozen }) => {
   const own = amounts(fullText(approach));
   if (own.length === 0) return [pass('V4', 'sin cifras')];
   const backers = new Set(defenders(approach).map((s) => s.party));
+  // A frozen approach left without defenders: its figures were backed when it was published, and
+  // its text can never change.
+  if (backers.size === 0 && frozen) return [pass('V4', `enfoque congelado que ya no defiende ningún partido: sus cifras se publicaron con respaldo (${own.map((a) => a.written).join(', ')})`)];
   if (backers.size === 0)
     return [fail('V4', `enfoque inventado con cifras: ${own.map((a) => a.written).join(', ')}`, 'Un enfoque inventado no lo defiende ningún partido: quita sus cifras.')];
   const quoted = positions.filter((p) => backers.has(p.party)).flatMap((p) => (p.quotes ?? []).flatMap((q) => amounts(q.text)));

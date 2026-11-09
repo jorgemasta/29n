@@ -74,7 +74,14 @@ export interface ApproachFinding {
  */
 export type ApproachCheck = (
   approach: Approach,
-  context: { question: QuestionSpec; approaches: readonly Approach[]; positions: readonly SettlePosition[]; ai: AIAdapter },
+  context: {
+    question: QuestionSpec;
+    approaches: readonly Approach[];
+    positions: readonly SettlePosition[];
+    ai: AIAdapter;
+    /** The approaches are frozen (#28): published, their text never changes. */
+    frozen: boolean;
+  },
 ) => Promise<ApproachFinding[]>;
 
 export interface SettleOptions {
@@ -183,7 +190,7 @@ async function checkApproaches(input: SettleInput, settled: Approach[], ai: AIAd
     const findings: { approach: Approach; finding: ApproachFinding }[] = [];
     for (const approach of approaches) {
       for (const check of checks) {
-        const found = await check(approach, { question: input.question, approaches, positions: input.positions, ai });
+        const found = await check(approach, { question: input.question, approaches, positions: input.positions, ai, frozen: !!input.frozen });
         findings.push(...found.map((finding) => ({ approach, finding })));
       }
     }
@@ -262,8 +269,10 @@ function readPass(answer: SettleResponse, input: SettleInput, proposing: readonl
 
 /**
  * The frozen question with `frozen.parties` taken out and the late classification put in: same
- * ids and texts, everyone else's stances untouched. A filler approach a late party defends is no
- * longer filler (its text stays: it was plausible enough to be someone's proposal).
+ * ids and texts, everyone else's stances untouched. `filler` follows who defends it now: a filler
+ * approach a late party defends is no longer filler (its text stays: it was plausible enough to be
+ * someone's proposal), and one whose last defender left becomes filler (it adds to nobody; its
+ * frozen text and figures stay, V4 lets them through: they were backed when it was published).
  */
 function mergeFrozen(
   frozen: FrozenQuestion,
@@ -280,7 +289,7 @@ function mergeFrozen(
       ...classified.filter((p) => !a.stances.some((s) => s.party === p.party)).map((p) => levelOf(p.party)),
     ];
     const defended = stances.some((s) => s.stance !== 'none');
-    return { ...a, filler: a.filler && !defended, stances };
+    return { ...a, filler: !defended, stances };
   });
   const otherProposals = [...frozen.otherProposals.filter((o) => !reclassified.has(o.party)).map((o) => ({ ...o })), ...late.otherProposals];
   return { approaches, otherProposals };

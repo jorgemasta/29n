@@ -92,7 +92,7 @@ describe('applyMode: provisional sources in v2 questions', () => {
       p.id === 'aaa' && p.manifesto.state === 'published' ? { ...p, manifesto: { ...p.manifesto, source: 'manifesto-2023' } } : p,
     ),
     questions: themesDataset.questions!.map((q) =>
-      q.id === 'listas' ? { ...q, otherProposals: [{ party: 'aaa', quote: q.approaches[0]!.stances[0]!.quote! }], approaches: q.approaches.map((a, i) => (i === 0 ? { ...a, stances: [{ party: 'ccc', stance: 'full' as const, quote: { text: 'Cita literal del programa de ccc con más de cuarenta caracteres.', page: 2 } }] } : a)) } : q,
+      q.id === 'listas' ? { ...q, otherProposals: [{ party: 'aaa', quote: { text: 'Cita literal del programa de aaa con más de cuarenta caracteres.', page: 3 } }], approaches: q.approaches.map((a, i) => (i === 0 ? { ...a, stances: [{ party: 'ccc', stance: 'full' as const, quote: { text: 'Cita literal del programa de ccc con más de cuarenta caracteres.', page: 2 } }] } : a)) } : q,
     ),
     approachReports: [
       { question: 'alquiler', promptVersion: 'enfoques-v1', rounds: 1, publishable: true, entries: [
