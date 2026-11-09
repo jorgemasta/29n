@@ -97,8 +97,8 @@ function listFiles(dir: string): string[] {
 }
 
 describe('no aggregated affinity statistics are published (art. 69 LOREG)', () => {
-  it('analytics events can only carry a topic or the share-card type', () => {
-    for (const fields of Object.values(EVENTS)) for (const c of fields) expect(['topic', 'variant']).toContain(c);
+  it('analytics events can only carry a topic, a question or the share-card type', () => {
+    for (const fields of Object.values(EVENTS)) for (const c of fields) expect(['topic', 'question', 'variant']).toContain(c);
     for (const name of Object.keys(EVENTS)) expect(name).not.toMatch(/afinidad|ranking|partido|resultado-|porcentaje/);
   });
 

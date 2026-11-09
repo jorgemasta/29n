@@ -7,6 +7,7 @@ import {
   sharedEvent,
   startedEvent,
   confirmEvents,
+  guessEvents,
   sawResultEvent,
   type AnalyticsEvent,
   type ShareVariant,
@@ -50,6 +51,8 @@ export const trackViewTopic = (game: Game) => {
 };
 export const trackConfirm = (before: Game, after: Game, topic: string) =>
   confirmEvents(before, after, topic).forEach(send);
+/** Hit or miss of the guesses on these questions, once revealed (never the party). */
+export const trackGuesses = (game: Game, questionIds: string[]) => guessEvents(game, questionIds).forEach(send);
 export const trackResult = (game: Game) => {
   if (game.result().available) once(sawResultEvent());
 };

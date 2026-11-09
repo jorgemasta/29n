@@ -8,6 +8,7 @@ import { aiLabel } from './ai';
 import { button, h, type Child } from './dom';
 import { icon } from './icons';
 import { createReader } from './listen';
+import { guessChoices } from './guess';
 import { questionReveal } from './reveal';
 import { openSheet } from './sheet';
 
@@ -15,8 +16,10 @@ export const themeHref = (themeId: string, questionId?: string) =>
   `#tematica/${encodeURIComponent(themeId)}${questionId ? `/${encodeURIComponent(questionId)}` : ''}`;
 
 export interface QuestionActions {
-  /** The voter confirmed in the sheet: a letter or "none". */
-  choose(letter: string): void;
+  /** The voter confirmed in the sheet: a letter or "none", with the party guessed if any. */
+  choose(letter: string, guess?: string): void;
+  /** "No volver a preguntarme": turn the guess off for good (then `choose` follows). */
+  disableGuess(): void;
 }
 
 const choiceText = (choice: string | null) =>
@@ -120,16 +123,28 @@ export function questionView(game: Game, questionId: string, actions: QuestionAc
     press(value);
     navigator.vibrate?.(10); // short haptic tap where supported
     const chosen = view.approaches.find((a) => a.letter === value);
+    // The guess is only asked with an approach chosen, and while the voter has not turned it off.
+    const parties = chosen ? game.questionGuessOptions(questionId) : [];
+    const confirmWith = (guess?: string) => {
+      sheet.close();
+      actions.choose(value, guess);
+    };
     const sheet = openSheet({
       title: chosen ? `Te quedas con la ${value}` : 'No te convence ninguna',
       content: [
         chosen
           ? h('div', { class: 'sheet-choice' }, h('span', { class: 'letter', 'aria-hidden': 'true' }, chosen.letter), h('strong', {}, chosen.what))
           : h('p', {}, 'No sumará a ningún partido.'),
-        button('Confirmar y seguir', 'primary', () => {
-          sheet.close();
-          actions.choose(value);
-        }),
+        ...(parties.length
+          ? guessChoices(parties, {
+              guess: (party) => confirmWith(party),
+              skip: () => confirmWith(),
+              disable: () => {
+                actions.disableGuess();
+                confirmWith();
+              },
+            })
+          : [button('Confirmar y seguir', 'primary', () => confirmWith())]),
         button('Cambiar mi elección', 'text-link', () => sheet.close()),
       ],
       onClose: () => {
