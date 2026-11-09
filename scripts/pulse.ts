@@ -8,7 +8,7 @@ import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import { createClaudeAI } from '../src/ai/claude';
-import { createFakeAI, type FakeResponses } from '../src/ai/fake';
+import { createFakeAI } from '../src/ai/fake';
 import { Pulse, PulseSources, takePulse, type PulseOptions } from '../src/pulse';
 import { PARTIES } from '../src/registry/parties';
 import { EXAMPLE_PARTIES, EXAMPLE_RESPONSE, EXAMPLE_SOURCES } from './pulse-example';
@@ -38,8 +38,7 @@ if (!dryRun && existsSync(values.out) && !values.force) {
 const sources = dryRun ? EXAMPLE_SOURCES : PulseSources.parse(JSON.parse(await readFile(values.sources!, 'utf8')));
 const parties: PulseOptions['parties'] = dryRun ? EXAMPLE_PARTIES : Object.values(PARTIES);
 // The pulse only calls take-pulse; any other task would throw (no canned answer).
-const example: Partial<FakeResponses> = { 'take-pulse': () => EXAMPLE_RESPONSE };
-const ai = dryRun ? createFakeAI(example as FakeResponses) : createClaudeAI();
+const ai = dryRun ? createFakeAI({ 'take-pulse': () => EXAMPLE_RESPONSE }) : createClaudeAI();
 
 const pulse = Pulse.parse(await takePulse(sources, ai, { frozenAt: values.date, parties }));
 

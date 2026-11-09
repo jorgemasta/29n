@@ -3,9 +3,8 @@ import type { AIAdapter, AIRequest, Task } from './adapter';
 
 /** `attempt` counts previous calls for the same task with the same topic or question (0 = first). */
 export type FakeResponse = (input: any, attempt: number) => unknown;
-/** Tasks outside the per-manifesto pipeline (the pulse) are optional; calling a missing one throws. */
-type OptionalTask = 'take-pulse';
-export type FakeResponses = Record<Exclude<Task, OptionalTask>, FakeResponse> & Partial<Record<OptionalTask, FakeResponse>>;
+/** Canned answer per task; calling a task without one throws. */
+export type FakeResponses = Partial<Record<Task, FakeResponse>>;
 
 export interface AICall {
   task: Task;

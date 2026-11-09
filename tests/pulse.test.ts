@@ -1,7 +1,7 @@
 // Pulse (#23): the frozen list of themes and questions, exercised only through takePulse with test
 // sources and the fake AI.
 import { describe, expect, it } from 'vitest';
-import { createFakeAI, type FakeResponses } from '../src/ai/fake';
+import { createFakeAI } from '../src/ai/fake';
 import { Pulse, takePulse, type PulseOptions, type PulseResponse, type PulseSources } from '../src/pulse';
 
 const sources: PulseSources = {
@@ -72,7 +72,7 @@ const response = (...themes: PulseResponse['themes']): PulseResponse => ({ theme
 /** Fake AI whose two passes answer `first` and `second` (the same unless given). */
 function pulseAI(first: PulseResponse, second: PulseResponse = first) {
   // The pulse only uses take-pulse: any other task throws (no canned answer).
-  return createFakeAI({ 'take-pulse': (_input, attempt) => (attempt === 0 ? first : second) } as FakeResponses);
+  return createFakeAI({ 'take-pulse': (_input, attempt) => (attempt === 0 ? first : second) });
 }
 
 describe('takePulse', () => {

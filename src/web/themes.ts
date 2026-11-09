@@ -2,12 +2,13 @@
 // summary before revealing a theme, and the reveal. All the logic lives in the engine
 // (src/game/themes.ts); these functions only render and call back. Routes (Spanish: the voter sees
 // them): #tematicas, #tematica/<theme>, #tematica/<theme>/<question>.
-import { NONE, type Game, type QuestionItem, type QuestionReveal, type RevealedApproach, type RevealedParty, type ThemeView } from '../game';
+import { NONE, type Game, type QuestionItem, type ThemeView } from '../game';
 import type { Theme } from '../dataset/schema';
 import { aiLabel } from './ai';
 import { button, h, type Child } from './dom';
 import { icon } from './icons';
 import { createReader } from './listen';
+import { questionReveal } from './reveal';
 import { openSheet } from './sheet';
 
 export const themeHref = (themeId: string, questionId?: string) =>
@@ -174,62 +175,5 @@ export function revealView(game: Game, themeId: string, onContinue: () => void):
       : null,
     h('p', { class: 'note' }, aiLabel(), ' Las propuestas y su agrupación están hechas con IA. Cada partido va con la cita literal de su programa.'),
     h('div', { class: 'action-bar' }, h('div', {}, button('Seguir con otra temática', 'primary', onContinue))),
-  );
-}
-
-function questionReveal(q: QuestionReveal): HTMLElement {
-  return h('section', { class: 'revealed-question' },
-    h('h2', {}, q.question.text),
-    h('p', { class: 'your-choice' }, q.choice === NONE ? 'No te convenció ninguna.' : `Elegiste la ${q.choice}.`),
-    h('ol', { class: 'options revealed-options', role: 'list' }, ...q.approaches.map((a) => h('li', {}, approachReveal(a)))),
-    q.otherProposals.length
-      ? h('div', { class: 'other-proposals' },
-          h('p', {}, h('strong', {}, 'Proponen otra cosa: '), names(q.otherProposals.map((o) => o.party))),
-          quotes(q.otherProposals))
-      : null,
-  );
-}
-
-function approachReveal(a: RevealedApproach): HTMLElement {
-  const full = a.parties.filter((p) => p.stance === 'full');
-  const partial = a.parties.filter((p) => p.stance === 'partial');
-  return h('article', { class: a.chosen ? 'option revealed chosen' : 'option revealed' },
-    h('span', { class: 'letter', 'aria-hidden': 'true' }, a.letter),
-    h('div', { class: 'text' },
-      a.chosen ? h('span', { class: 'tag' }, icon('check'), 'Tu elección') : null,
-      h('strong', { class: 'what' }, h('span', { class: 'visually-hidden' }, `Propuesta ${a.letter}: `), a.what),
-      h('span', { class: 'how' }, a.how),
-      a.figure ? h('span', { class: 'figure' }, a.figure) : null,
-      a.filler
-        ? h('p', { class: 'defenders grey' }, 'Ningún partido la defiende: la añadimos para que hubiera 3 opciones.')
-        : a.parties.length === 0
-          ? h('p', { class: 'defenders grey' }, 'Ningún partido de tu zona la defiende.')
-          : h('dl', { class: 'defenders' },
-              full.length ? h('div', {}, h('dt', {}, 'De lleno'), h('dd', {}, names(full.map((p) => p.party)))) : null,
-              partial.length ? h('div', {}, h('dt', {}, 'En parte'), h('dd', {}, names(partial.map((p) => p.party)))) : null),
-      a.parties.length ? quotes(a.parties) : null,
-    ),
-  );
-}
-
-/** "Partido A, Partido B" with a PRUEBA label on test parties. */
-function names(parties: RevealedParty[]): DocumentFragment {
-  const f = document.createDocumentFragment();
-  parties.forEach((p, i) => {
-    if (i) f.append(', ');
-    f.append(p.name);
-    if (p.test) f.append(' ', h('span', { class: 'label' }, 'PRUEBA'));
-  });
-  return f;
-}
-
-function quotes(list: { party: RevealedParty; quote: { text: string; page: number; link: string } }[]): HTMLElement {
-  return h('details', { class: 'quotes' },
-    h('summary', {}, list.length === 1 ? 'Ver la cita' : `Ver las ${list.length} citas`),
-    ...list.map(({ party, quote }) =>
-      h('blockquote', {},
-        h('p', {}, `«${quote.text}»`),
-        h('footer', {}, `— ${party.name}, pág. ${quote.page} · `,
-          h('a', { href: quote.link, target: '_blank', rel: 'noopener' }, 'Abrir el PDF en la página', icon('external'))))),
   );
 }

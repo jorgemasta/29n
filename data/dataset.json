@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-11-09T22:02:06.494Z",
+  "generated": "2026-11-09T22:19:38.517Z",
   "origin": "simulated",
   "note": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso, también las respuestas de Preguntar. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.",
   "parties": [
@@ -11616,7 +11616,7 @@
   ],
   "questions": [
     {
-      "id": "vivienda-asequible",
+      "id": "vivienda",
       "theme": "vivienda",
       "text": "¿Qué harían para que la vivienda sea asequible?",
       "followUp": false,

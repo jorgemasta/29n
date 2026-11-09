@@ -1,0 +1,215 @@
+// settleApproaches (#20, test point A'): every party's position on one question → the 3 approaches
+// of that question, each party's stance on each of them, and a publication verdict.
+//
+// Two independent AI passes (different party order) must agree; they agree when they classify the
+// parties the same way: the same 3 approaches by defenders and stance, whatever the wording. The
+// first pass's wording is kept. On disagreement (or an invalid pass) both passes are retried once;
+// if they still disagree the question is not published and the report says why.
+//
+// Seams for later tickets: `options.checks` runs per approach on the agreed result (V3, V4, V5, V6,
+// V10, V11, #22); `input.frozen` keeps already-published approaches and only classifies (#28).
+import { z } from 'zod';
+import type { AIAdapter } from '../ai/adapter';
+import {
+  Check,
+  Question,
+  type Approach,
+  type OtherProposal,
+  type PartyStance,
+  type Position,
+  type Quote,
+  ReportEntry,
+} from '../dataset/schema';
+import { QUOTE_LENGTH } from './checks';
+import { normalizeQuote } from './normalize';
+import { SETTLE_INSTRUCTIONS, SETTLE_PROMPT_VERSION, SettleResponse } from './prompts-settle';
+
+/** A question as the pulse publishes it, before its approaches are settled. */
+export type QuestionSpec = Omit<Question, 'approaches' | 'otherProposals'>;
+
+/** The part of a party's `Position` on the question that settling needs. */
+export interface SettlePosition {
+  party: string;
+  state: Position['state'];
+  quotes?: readonly Quote[];
+}
+
+export interface SettleInput {
+  question: QuestionSpec;
+  positions: readonly SettlePosition[];
+  /** Already-published approaches of this question: kept as they are, parties only classified (#28). */
+  frozen?: readonly Approach[];
+}
+
+export interface ApproachFinding {
+  check: z.infer<typeof Check>;
+  result: ReportEntry['result'];
+  detail: string;
+}
+
+/** A check on one settled approach (#22). A `discard` or `block` finding makes the question unpublishable. */
+export type ApproachCheck = (
+  approach: Approach,
+  context: { question: QuestionSpec; approaches: readonly Approach[]; positions: readonly SettlePosition[]; ai: AIAdapter },
+) => Promise<ApproachFinding[]>;
+
+export interface SettleOptions {
+  checks?: readonly ApproachCheck[];
+}
+
+/** Two passes per round; one retry. */
+export const MAX_ROUNDS = 2;
+
+export const SettleEntry = z.object({
+  /** `agreement`: the two passes. V1–V13: a check on an approach. */
+  check: z.union([Check, z.literal('agreement')]),
+  approach: z.string().optional(),
+  result: z.enum([...ReportEntry.shape.result.options, 'retry']),
+  detail: z.string(),
+});
+
+/** Report of one question's settling, published next to the per-manifesto reports. */
+export const SettleReport = z.object({
+  question: z.string(),
+  promptVersion: z.string(),
+  /** Rounds of two passes used (1, or 2 after a retry). */
+  rounds: z.number().int().min(0),
+  publishable: z.boolean(),
+  reason: z.string().optional(),
+  entries: z.array(SettleEntry),
+});
+export type SettleEntry = z.infer<typeof SettleEntry>;
+export type SettleReport = z.infer<typeof SettleReport>;
+
+export interface SettleResult {
+  /** The question with its 3 approaches; null when not publishable. */
+  question: Question | null;
+  publishable: boolean;
+  report: SettleReport;
+}
+
+interface Classification {
+  approaches: Approach[];
+  otherProposals: OtherProposal[];
+}
+
+type PassResult = { ok: true; classification: Classification } | { ok: false; reason: string };
+
+export async function settleApproaches(input: SettleInput, ai: AIAdapter, options: SettleOptions = {}): Promise<SettleResult> {
+  const { question } = input;
+  const entries: SettleEntry[] = [];
+  const proposing = input.positions.filter((p) => p.state === 'proposes' && (p.quotes?.length ?? 0) > 0);
+  const result = (publishable: boolean, rounds: number, q: Question | null, reason?: string): SettleResult => ({
+    question: publishable ? q : null,
+    publishable,
+    report: { question: question.id, promptVersion: SETTLE_PROMPT_VERSION, rounds, publishable, ...(reason ? { reason } : {}), entries },
+  });
+
+  if (proposing.length === 0) return result(false, 0, null, 'ningún partido propone nada en esta pregunta');
+
+  let settled: Classification | null = null;
+  let rounds = 0;
+  while (!settled && rounds < MAX_ROUNDS) {
+    rounds++;
+    const first = await runPass(ai, input, proposing, 1, rounds);
+    const second = await runPass(ai, input, proposing, 2, rounds);
+    const disagreement = !first.ok ? `pasada 1 no válida: ${first.reason}` : !second.ok ? `pasada 2 no válida: ${second.reason}` : differences(first.classification, second.classification);
+    if (!disagreement && first.ok) {
+      settled = first.classification;
+      entries.push({ check: 'agreement', result: 'pass', detail: `las dos pasadas coinciden (ronda ${rounds})` });
+    } else {
+      entries.push({ check: 'agreement', result: rounds < MAX_ROUNDS ? 'retry' : 'block', detail: `ronda ${rounds}: ${disagreement}` });
+    }
+  }
+  if (!settled) return result(false, rounds, null, `las dos pasadas no coinciden tras ${MAX_ROUNDS} rondas`);
+
+  const full: Question = { ...question, ...settled };
+  for (const approach of full.approaches) {
+    for (const check of options.checks ?? []) {
+      const findings = await check(approach, { question, approaches: full.approaches, positions: input.positions, ai });
+      entries.push(...findings.map((f) => ({ ...f, approach: approach.id })));
+    }
+  }
+  const blocked = entries.find((e) => e.check !== 'agreement' && (e.result === 'discard' || e.result === 'block'));
+  if (blocked) return result(false, rounds, null, `${blocked.check} en ${blocked.approach}: ${blocked.detail}`);
+
+  // V9: what is returned always fits the published schema.
+  const parsed = Question.safeParse(full);
+  if (!parsed.success) {
+    const detail = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
+    entries.push({ check: 'V9', result: 'block', detail });
+    return result(false, rounds, null, `esquema no válido: ${detail}`);
+  }
+  return result(true, rounds, parsed.data);
+}
+
+async function runPass(ai: AIAdapter, input: SettleInput, proposing: readonly SettlePosition[], pass: 1 | 2, round: number): Promise<PassResult> {
+  // Independent passes see the parties in a different order; `pass`/`round` keep cache keys apart.
+  const ordered = pass === 1 ? proposing : [...proposing].reverse();
+  const answer = await ai.complete({
+    task: 'settle-approaches',
+    instructions: SETTLE_INSTRUCTIONS,
+    input: {
+      question: { id: input.question.id, text: input.question.text },
+      pass,
+      round,
+      positions: ordered.map((p) => ({ party: p.party, quotes: (p.quotes ?? []).map((q) => q.text) })),
+      ...(input.frozen ? { frozenApproaches: input.frozen.map(({ what, how, figure, filler }) => ({ what, how, figure, filler })) } : {}),
+    },
+    schema: SettleResponse,
+  });
+  return readPass(answer, input, proposing);
+}
+
+/** Validates one pass and turns it into a classification of every proposing party. */
+function readPass(answer: SettleResponse, input: SettleInput, proposing: readonly SettlePosition[]): PassResult {
+  const fail = (reason: string): PassResult => ({ ok: false, reason });
+  if (answer.approaches.length !== 3) return fail(`devuelve ${answer.approaches.length} enfoques en vez de 3`);
+  const byParty = new Map(proposing.map((p) => [p.party, p]));
+  const approaches: Approach[] = [];
+  const defenders = new Set<string>();
+  for (const [i, a] of answer.approaches.entries()) {
+    const levels = new Map<string, PartyStance>();
+    for (const s of a.stances) {
+      const position = byParty.get(s.party);
+      if (!position) return fail(`clasifica a ${s.party}, que no propone nada en esta pregunta`);
+      if (levels.has(s.party)) return fail(`da más de un nivel a ${s.party} en el enfoque ${i + 1}`);
+      const quote = findQuote(s.quote, position);
+      if (!quote) return fail(`la cita de ${s.party} en el enfoque ${i + 1} no está en su postura`);
+      levels.set(s.party, { party: s.party, stance: s.stance, quote });
+      defenders.add(s.party);
+    }
+    const frozen = input.frozen?.[i];
+    const filler = frozen ? frozen.filler : levels.size === 0;
+    if (filler && levels.size > 0) return fail(`el enfoque ${i + 1} es inventado pero lo defienden partidos`);
+    approaches.push({
+      id: frozen?.id ?? `${input.question.id}-${i + 1}`,
+      what: frozen?.what ?? a.what,
+      how: frozen?.how ?? a.how,
+      figure: frozen ? frozen.figure : a.figure,
+      filler,
+      stances: proposing.map((p) => levels.get(p.party) ?? { party: p.party, stance: 'none' as const }),
+    });
+  }
+  if (approaches.every((a) => a.filler)) return fail('ningún enfoque lo defiende un partido');
+  // Whoever fits no approach "proposes something else", shown at the reveal with its first quote.
+  const otherProposals = proposing.filter((p) => !defenders.has(p.party)).map((p) => ({ party: p.party, quote: { ...p.quotes![0]! } }));
+  return { ok: true, classification: { approaches, otherProposals } };
+}
+
+/** The party's own quote that contains what the AI quoted (literal, normalised like V1). */
+function findQuote(text: string, position: SettlePosition): Quote | null {
+  const searched = normalizeQuote(text);
+  if (searched.length < QUOTE_LENGTH.min) return null;
+  const found = (position.quotes ?? []).find((q) => normalizeQuote(q.text).includes(searched));
+  return found ? { ...found } : null;
+}
+
+/** How two passes differ (null when they agree): approaches compared by who defends them and how. */
+function differences(a: Classification, b: Classification): string | null {
+  const signature = (x: Approach) => (x.filler ? 'inventado' : x.stances.filter((s) => s.stance !== 'none').map((s) => `${s.party}:${s.stance}`).sort().join(', '));
+  const left = a.approaches.map(signature).sort();
+  const right = b.approaches.map(signature).sort();
+  if (left.join(' | ') === right.join(' | ')) return null;
+  return `las pasadas clasifican distinto: [${left.join(' | ')}] frente a [${right.join(' | ')}]`;
+}
