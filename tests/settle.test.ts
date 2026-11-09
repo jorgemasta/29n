@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createFakeAI, type FakeResponse, type FakeResponses } from '../src/ai/fake';
 import { Dataset, Question } from '../src/dataset/schema';
 import { GUESS_ROUNDS, MAX_REWRITES } from '../src/pipeline/approach-checks';
-import { settleApproaches, type ApproachCheck, type QuestionSpec, type SettlePosition } from '../src/pipeline/settle';
+import { publishSettled, settleApproaches, type ApproachCheck, type QuestionSpec, type SettlePosition } from '../src/pipeline/settle';
 
 const question: QuestionSpec = {
   id: 'alquiler',
@@ -581,5 +581,34 @@ describe('approach checks (V3, V4, V5, V6, V10, V11)', () => {
     const parties = (ai.calls.find((c) => c.task === 'guess-party')!.input as { parties: { id: string; name: string }[] }).parties;
     expect(parties).toContainEqual(expect.objectContaining({ id: 'pp', name: 'Partido Popular' }));
     expect(parties).toContainEqual(expect.objectContaining({ id: 'otp', name: 'otp' }));
+  });
+});
+
+describe('publishSettled: the settled question and its report go into the dataset (#29)', () => {
+  const base = Dataset.parse({
+    version: 2, generated: '2026-11-09', origin: 'test',
+    parties: Object.keys(QUOTES).map((id) => ({ id, name: id, acronym: id, scope: { type: 'national' }, manifesto: { state: 'pending' } })),
+    topics: [{ id: 'vivienda', title: 'Vivienda', question: '¿Qué?', scope: 'national', order: 1 }],
+    topicPositions: [], positions: [], reports: [],
+    themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
+    questions: [],
+  });
+  const ai = () => createFakeAI({ 'settle-approaches': () => threeApproaches });
+  const positions = (Object.keys(QUOTES) as Id[]).map(proposes);
+
+  it('keeps the report with the question text and theme, and the question when publishable', async () => {
+    const result = await settleApproaches({ question, positions }, ai(), { checks: [] });
+    const ds = Dataset.parse(publishSettled(base, result));
+    expect(ds.questions!.map((q) => q.id)).toEqual(['alquiler']);
+    expect(ds.approachReports).toEqual([expect.objectContaining({ question: 'alquiler', theme: 'vivienda', text: question.text, publishable: true })]);
+  });
+
+  it('an unpublishable question leaves the dataset with its reason, and replaces an earlier report', async () => {
+    const first = publishSettled(base, await settleApproaches({ question, positions }, ai(), { checks: [] }));
+    const failed = await settleApproaches({ question, positions: [] }, ai(), { checks: [] });
+    const ds = Dataset.parse(publishSettled(first, failed));
+    expect(ds.questions).toEqual([]);
+    expect(ds.approachReports).toHaveLength(1);
+    expect(ds.approachReports![0]).toMatchObject({ question: 'alquiler', publishable: false, reason: expect.any(String) });
   });
 });

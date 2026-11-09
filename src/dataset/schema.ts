@@ -268,6 +268,30 @@ export const PositionSummary = z.object({
   reason: z.string().optional(),
 });
 
+/** One step of settling a question's approaches: `agreement` (the two passes) or a check V1–V13 on an approach. */
+export const ApproachReportEntry = z.object({
+  check: z.union([Check, z.literal('agreement')]),
+  approach: z.string().optional(),
+  result: z.enum([...ReportEntry.shape.result.options, 'retry']),
+  detail: z.string(),
+});
+
+/**
+ * Public report of settling one question's approaches (settleApproaches). An unpublishable one is
+ * listed in the methodology ("preguntas no publicadas") with its reason, so it keeps text and theme.
+ */
+export const ApproachReport = z.object({
+  question: z.string(),
+  theme: z.string().optional(),
+  text: z.string().optional(),
+  promptVersion: z.string(),
+  /** Rounds of two passes used (1, or 2 after a retry). */
+  rounds: z.number().int().min(0),
+  publishable: z.boolean(),
+  reason: z.string().optional(),
+  entries: z.array(ApproachReportEntry),
+});
+
 /** Public verification report, one per programme. */
 export const Report = z.object({
   party: id,
@@ -304,6 +328,8 @@ export const Dataset = z
     /** v2: themes and their questions with 3 approaches each. Optional until v1 topics go away (#24). */
     themes: z.array(Theme).optional(),
     questions: z.array(Question).optional(),
+    /** v2: one settle report per question, published or not (the unpublished ones say why). */
+    approachReports: z.array(ApproachReport).optional(),
   })
   .superRefine((d, ctx) => {
     const parties = new Set(d.parties.map((p) => p.id));
@@ -405,3 +431,5 @@ export type Approach = z.infer<typeof Approach>;
 export type OtherProposal = z.infer<typeof OtherProposal>;
 export type QuestionOrigin = z.infer<typeof QuestionOrigin>;
 export type Question = z.infer<typeof Question>;
+export type ApproachReportEntry = z.infer<typeof ApproachReportEntry>;
+export type ApproachReport = z.infer<typeof ApproachReport>;

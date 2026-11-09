@@ -2,8 +2,12 @@
 // Screen 14 "Cómo funciona" (story 41/42): data process, the 13 checks, rubric, versioned prompts,
 // feasibility breakdown per party and topic, verification reports and who makes it.
 import InfoPage from '../components/InfoPage.astro';
-import { dataset } from '../transparency/data';
-import { PROMPTS, FREE_QUESTION_PROMPTS, REPO, repoLink, feasibilityDistribution, manifestos } from '../transparency';
+import { dataset, pulse, dayDate } from '../transparency/data';
+import { PROMPTS, FREE_QUESTION_PROMPTS, REPO, repoLink, feasibilityDistribution, partiesWithStances, pulseSummary, questionList, unpublishedQuestions } from '../transparency';
+import { MIN_MANIFESTOS, PULSE_PROMPT_VERSION } from '../pulse';
+import { SETTLE_PROMPT_VERSION } from '../pipeline/prompts-settle';
+import { MAX_ROUNDS } from '../pipeline/settle';
+import { MAX_REWRITES, CHANCE_SIGNIFICANCE, GUESS_ROUNDS } from '../pipeline/approach-checks';
 import { CHECKS } from '../registry/checks';
 import { levelName } from '../registry/rubric';
 import { MODELS, FREE_QUESTION_MODELS } from '../ai/claude';
@@ -14,14 +18,21 @@ import { MAX_DISCARD } from '../pipeline';
 import { Check } from '../dataset/schema';
 
 const distribution = feasibilityDistribution(dataset);
-const withReport = manifestos(dataset).withManifesto.filter((p) => p.report);
+const reportIds = new Set([...dataset.reports.map((r) => r.party), ...partiesWithStances(dataset)]);
+const withReport = [...dataset.parties].filter((p) => reportIds.has(p.id)).sort((a, b) => a.name.localeCompare(b.name, 'es'));
 const SHORT: Record<string, string> = {
   viable: 'Viable', viableWithCaveats: 'Con matices', difficult: 'Difícil', veryDifficult: 'Muy difícil',
   notConcrete: 'Sin concreción', noConsensus: 'Sin consenso', noNote: 'Sin nota', noProposal: '—', unverified: 'No verificada', noData: '·',
 };
 const topicsWithData = distribution.byTopic.filter((t) => t.cells.some((c) => c !== 'noData'));
 import { MAX_FEASIBILITY_REPEATS } from '../pipeline/feasibility';
-import { MIN_GUESSES, HIT_THRESHOLD } from '../guesses';
+import { MIN_GUESSES } from '../guesses';
+
+const pulseInfo = pulseSummary(pulse);
+const themeList = questionList(dataset, pulse);
+const unpublished = unpublishedQuestions(dataset, pulse);
+const NETWORK: Record<string, string> = { reddit: 'Reddit', 'google-trends': 'Google Trends', web: 'otras webs abiertas' };
+const STAGE = { pulse: 'No entró en la lista del pulso', approaches: 'No se pudieron fijar sus 3 enfoques' } as const;
 ---
 <InfoPage title="Cómo funciona" description="Metodología de 29N: de dónde salen las propuestas, cómo se verifican y cómo se valora la viabilidad.">
   <h1>Cómo funciona</h1>
@@ -31,6 +42,10 @@ import { MIN_GUESSES, HIT_THRESHOLD } from '../guesses';
   </p>
   <nav aria-label="Índice">
     <ul>
+      <li><a href="#pulso">¿De dónde salen las preguntas?</a></li>
+      <li><a href="#enfoques">¿Cómo se agrupan las propuestas en 3 enfoques?</a></li>
+      <li><a href="#preguntas">Lista de preguntas y su origen</a></li>
+      <li><a href="#no-publicadas">Preguntas que no se publicaron</a></li>
       <li><a href="#proceso">¿De dónde salen las propuestas?</a></li>
       <li><a href="#barreras">Las 13 comprobaciones</a></li>
       <li><a href="#viabilidad">¿Cómo se valora si se puede hacer?</a></li>
@@ -42,6 +57,97 @@ import { MIN_GUESSES, HIT_THRESHOLD } from '../guesses';
       <li><a href="#privacidad">Privacidad</a></li>
     </ul>
   </nav>
+
+  <h2 id="pulso">¿De dónde salen las preguntas?</h2>
+  <p>
+    Las temáticas y sus preguntas salen de un <strong>pulso</strong> que hace una IA sobre lo que preocupa a la gente y
+    lo que tratan los programas. La lista se congela antes del lanzamiento y no cambia después.
+  </p>
+  <ul>
+    <li><strong>Fuentes.</strong> El barómetro del CIS (qué problemas preocupan y a cuánta gente), los temas que tratan los
+      programas y, solo para descubrir candidatas, Reddit y otras redes abiertas. <strong>Nunca X (Twitter)</strong>: es
+      demasiado fácil de manipular con una campaña coordinada.</li>
+    <li><strong>Reglas de entrada.</strong> Una pregunta entra si tiene un dato del CIS que la respalde o si la tratan al
+      menos {MIN_MANIFESTOS} programas. Lo comprueba un script contra las fuentes, no la IA. Lo que solo sale de redes se
+      descarta.</li>
+    <li><strong>Dos pasadas.</strong> La IA hace la lista dos veces, de forma independiente. Solo entra lo que proponen las
+      dos.</li>
+    <li><strong>Redacción neutral.</strong> Cada pregunta es abierta («¿Qué harían…?») y sin cifras, que ya enmarcarían la
+      respuesta.</li>
+    <li><strong>Tamaño.</strong> Cada temática tiene 3 preguntas base y hasta 2 «para afinar». «Tu comunidad» solo existe
+      donde hay partidos regionales.</li>
+  </ul>
+  {pulseInfo ? (
+    <p>
+      <strong>Lista congelada el {dayDate(pulseInfo.frozenAt)}</strong>, con el
+      <a href={pulseInfo.cis.url}>{pulseInfo.cis.barometer}</a>, los temas de {pulseInfo.manifestos} programas
+      {pulseInfo.networks.length > 0 && <> y candidatas de {pulseInfo.networks.map((n) => `${NETWORK[n.source] ?? n.source} (${n.count})`).join(', ')}</>}.
+      Entraron {pulseInfo.questions} preguntas y se descartaron {pulseInfo.rejected}. Instrucciones
+      <code>{pulseInfo.promptVersion}</code> (<a href={repoLink('src/pulse/prompt.ts')}>ver</a>).
+    </p>
+  ) : (
+    <p class="grey">
+      El pulso aún no se ha hecho: la fecha de congelación y sus fuentes aparecerán aquí. Instrucciones
+      <code>{PULSE_PROMPT_VERSION}</code> (<a href={repoLink('src/pulse/prompt.ts')}>ver</a>).
+    </p>
+  )}
+
+  <h2 id="enfoques">¿Cómo se agrupan las propuestas en 3 enfoques?</h2>
+  <p>
+    Cada pregunta ofrece siempre <strong>3 enfoques</strong>: formas de abordar el problema. Un enfoque lo pueden
+    defender uno o varios partidos. Agrupar es una decisión delicada, así que se hace así:
+  </p>
+  <ol>
+    <li>Una IA lee las citas literales de lo que propone cada partido sobre la pregunta y forma 3 enfoques.</li>
+    <li>Lo hace <strong>dos veces, de forma independiente</strong>. Las dos pasadas tienen que coincidir en los enfoques y
+      en dónde queda cada partido. Si no coinciden, se repite {MAX_ROUNDS - 1} vez; si siguen sin coincidir, la pregunta
+      <a href="#no-publicadas">no se publica</a> y se dice por qué.</li>
+    <li>Cada partido queda en un enfoque <strong>de lleno</strong> (cuenta 1) o <strong>en parte</strong> (cuenta 0,5), y
+      cada nivel lleva su <strong>cita literal</strong> con la página del programa. Un partido que no encaja en ninguno
+      aparece como <strong>«propone otra cosa»</strong>, también con su cita, y se enseña al destapar.</li>
+    <li>Si los programas no dan para 3 enfoques, se añade un <strong>enfoque inventado</strong> que no defiende nadie.
+      Al destapar se dice claramente, y elegirlo no suma a ningún partido.</li>
+    <li>Los textos de los enfoques pasan las <a href="#barreras">comprobaciones</a> V3, V4, V5, V6, V10 y V11: sin
+      marcas de partido, cifras redondeadas, longitud parecida, misma plantilla y fieles a las citas. Si uno falla, se
+      reescribe hasta {MAX_REWRITES} veces; si sigue fallando, la pregunta no se publica.</li>
+    <li><strong>Comparación con el azar (V11).</strong> Otra IA intenta adivinar, {GUESS_ROUNDS} veces y con los enfoques
+      en órdenes distintos, qué partidos defienden cada uno. Si acierta tanto que por azar pasaría menos del
+      {CHANCE_SIGNIFICANCE * 100} % de las veces, el enfoque delata a sus partidos y se reescribe.</li>
+    <li>Los enfoques se congelan. Si un programa llega tarde, sus propuestas se clasifican en los enfoques ya fijados,
+      sin rehacerlos.</li>
+  </ol>
+  <p>
+    <strong>Lo hace la IA, sin revisión humana.</strong> Por eso publicamos dónde queda cada partido, con su cita, en
+    los <a href="#informes">informes por partido</a>. Instrucciones <code>{SETTLE_PROMPT_VERSION}</code>
+    (<a href={repoLink('src/pipeline/prompts-settle.ts')}>ver</a>).
+  </p>
+
+  <h2 id="preguntas">Lista de preguntas y su origen</h2>
+  {themeList.length === 0 ? <p class="grey">Aún no hay preguntas publicadas.</p> : themeList.map((t) => (
+    <>
+      <h3>{t.theme.title}</h3>
+      <ul class="question-list">
+        {t.questions.map((q) => (
+          <li id={`pregunta-${q.id}`}>
+            {q.text}{q.followUp && <span class="grey"> · para afinar</span>}
+            <br /><span class="grey">Origen: {q.origin.map((o, i) => <>{i > 0 && ' · '}<a href={o.href}>{o.text}</a></>)}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  ))}
+
+  <h2 id="no-publicadas">Preguntas que no se publicaron</h2>
+  {unpublished.length === 0 ? <p class="grey">Ninguna por ahora.</p> : (
+    <ul class="question-list">
+      {unpublished.map((q) => (
+        <li>
+          {q.text} <span class="grey">({q.theme})</span>
+          <br /><strong>{STAGE[q.stage]}:</strong> {q.reason}
+        </li>
+      ))}
+    </ul>
+  )}
 
   <h2 id="proceso">¿De dónde salen las propuestas?</h2>
   <ol>
@@ -84,9 +190,11 @@ import { MIN_GUESSES, HIT_THRESHOLD } from '../guesses';
     (la valoración sigue siendo útil) y la tarjeta lo dice: «Sin fuentes verificables».
   </p>
   <p id="apuestas">
-    La apuesta opcional («¿de quién crees que es?») se cuenta de forma anónima por tema. Si en un tema se acierta más del
-    {HIT_THRESHOLD * 100} % de las veces, sus textos no son lo bastante neutrales y se abre una incidencia para reescribirlos.
-    Solo se mira a partir de {MIN_GUESSES} apuestas en el tema: con menos, el porcentaje es ruido.
+    La apuesta opcional («¿de qué partido crees que es?») se cuenta de forma anónima por pregunta: solo si acertaste o no,
+    nunca el partido. Aciertas si ese partido defiende, de lleno o en parte, el enfoque que elegiste. Cada pregunta se compara
+    con lo que se acertaría al azar en ella, que depende de cuántos partidos defienden cada enfoque. Si se acierta claramente
+    más que al azar, sus enfoques delatan a los partidos y se abre una incidencia para reescribirlos. Solo se mira a partir
+    de {MIN_GUESSES} apuestas en la pregunta: con menos, el porcentaje es ruido.
   </p>
   <p><a href="/rubrica/">Rúbrica completa, niveles, fuentes permitidas e instrucciones →</a></p>
 
@@ -161,8 +269,8 @@ import { MIN_GUESSES, HIT_THRESHOLD } from '../guesses';
     </div>
   </details>
 
-  <h2 id="informes">Informes de verificación</h2>
-  <p>Qué se comprobó en cada programa, qué se reescribió y qué se descartó y por qué.</p>
+  <h2 id="informes">Informes por partido</h2>
+  <p>Dónde queda cada partido en cada pregunta (de lleno, en parte o «propone otra cosa»), con su cita, y qué se comprobó en su programa.</p>
   {withReport.length === 0 ? <p class="grey">Aún no hay programas procesados.</p> : (
     <ul>{withReport.map((p) => <li><a href={`/informes/${p.id}/`}>{p.name}</a></li>)}</ul>
   )}

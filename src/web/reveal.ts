@@ -8,12 +8,13 @@ import type { LinkedQuote } from '../game/party';
 import { aiLabel } from './ai';
 import { h } from './dom';
 import { feasibilityChip, feasibilityNote } from './feasibility';
+import { guessLine } from './guess';
 import { icon } from './icons';
 
 /** Where each kind of AI content is explained. */
 export const AI_EXPLAINED = {
   /** Approaches: the neutral texts and how parties were grouped into them. */
-  approaches: '/metodologia/#proceso',
+  approaches: '/metodologia/#enfoques',
   /** A party's concrete proposal, rewritten with the common template. */
   proposal: '/metodologia/#proceso',
 } as const;
@@ -24,6 +25,7 @@ export function questionReveal(q: QuestionReveal): HTMLElement {
   return h('section', { class: 'revealed-question' },
     h('h2', {}, q.question.text),
     h('p', { class: 'your-choice' }, q.choice === NONE ? 'No te convenció ninguna.' : `Elegiste la ${q.choice}.`),
+    guessLine(q.guess),
     h('ol', { class: 'options revealed-options', role: 'list' }, ...q.approaches.map((a) => h('li', {}, approachReveal(a)))),
     q.otherProposals.length ? otherProposals(q.otherProposals) : null,
     q.noProposal.length

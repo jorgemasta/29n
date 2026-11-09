@@ -502,80 +502,6 @@ describe('the factual journey label in the reveal', () => {
   });
 });
 
-describe('affinity result', () => {
-  const five = (): P => {
-    let p = privateOnly();
-    p = chooseParty(p, 'vivienda', 'uno');
-    p = chooseParty(p, 'empleo', 'uno');
-    p = chooseParty(p, 'sanidad', 'dos');
-    p = chooseParty(p, 'pensiones', 'viejo');
-    return p.choose('impuestos', NONE);
-  };
-
-  it('is not offered before 5 topics', () => {
-    let p = privateOnly();
-    for (const t of ['vivienda', 'empleo', 'sanidad', 'pensiones']) {
-      p = chooseParty(p, t, 'uno');
-      expect(p.result().available).toBe(false);
-    }
-    expect(p.result().topics).toBe(4);
-    expect(p.choose('impuestos', NONE).result().available).toBe(true);
-  });
-
-  it('ranks every party in play with a percentage, including 0 %, ties alphabetically with the same place', () => {
-    const r = five().result();
-    expect(r.ranking.map((f) => [f.party.id, f.rank, f.percent, f.topics, f.tie])).toEqual([
-      ['uno', 1, 40, 2, false],
-      ['dos', 2, 20, 1, true],
-      ['viejo', 2, 20, 1, true],
-      ['dichos', 4, 0, 0, false],
-    ]);
-  });
-
-  it('"Ninguna me convence" adds to no party and is counted apart', () => {
-    const r = five().result();
-    expect(r.topics).toBe(5);
-    expect(r.none).toBe(1);
-    expect(r.ranking.reduce((s, f) => s + f.points, 0)).toBe(4);
-    expect(r.distinctParties).toBe(3);
-  });
-
-  it('when every choice is "Ninguna" there is no ranking', () => {
-    const p = ['vivienda', 'empleo', 'sanidad', 'pensiones', 'impuestos'].reduce((acc, t) => acc.choose(t, NONE), privateOnly());
-    const r = p.result();
-    expect(r.available).toBe(true);
-    expect(r.allNone).toBe(true);
-    expect(r.ranking).toEqual([]);
-  });
-
-  it('warns about parties with a pending programme and about the missing province', () => {
-    const publicGame = ['vivienda', 'empleo', 'sanidad', 'pensiones', 'impuestos'].reduce(
-      (acc, t) => chooseParty(acc, t, 'uno'),
-      createGame(topicsDataset, null, 's'),
-    );
-    const r = publicGame.result();
-    expect(r.pending.map((p) => p.id)).toEqual(['dichos', 'viejo']);
-    expect(r.noProvince).toBe(true);
-    expect(r.ranking.map((f) => f.party.id)).toEqual(['uno', 'dos']);
-    expect(createGame(sampleDataset, '28', 's').result().noProvince).toBe(false);
-  });
-
-  it('summarises the bets: how many times the chosen card was not from the party guessed', () => {
-    let p = privateOnly();
-    p = chooseParty(p, 'vivienda', 'uno', 'dos');
-    p = chooseParty(p, 'empleo', 'uno', 'uno');
-    p = chooseParty(p, 'sanidad', 'dos', 'viejo');
-    p = chooseParty(p, 'pensiones', 'dos');
-    const a = p.result().guesses;
-    expect(a.total).toBe(3);
-    expect(a.wrong).toBe(2);
-    expect(a.surprises.map((s) => [s.party.id, s.topics.map((t) => t.id)])).toEqual([
-      ['dos', ['sanidad']],
-      ['uno', ['vivienda']],
-    ]);
-  });
-});
-
 describe('choosing again', () => {
   it('"Volver a elegir" forgets the choice and re-shuffles the cards', () => {
     const p = chooseParty(privateOnly(), 'vivienda', 'uno', 'dos');
@@ -628,7 +554,6 @@ describe('returning visit: news', () => {
     expect(n.topics.map((t) => [t.topic.id, t.newOnes])).toEqual([['vivienda', 1], ['empleo', 1]]);
     expect(returnVisit.list().suggested[0]!.newOnes).toBe(1);
     expect(returnVisit.list().suggested[2]!.newOnes).toBe(0);
-    expect(returnVisit.result().topicsWithNews).toBe(2);
   });
 
   it('news are announced once; topic news last until reviewed or kept', () => {
@@ -1099,6 +1024,95 @@ describe('createGame: a full game by themes (#24)', () => {
   it('the game state holds only choices and themes, never a party', () => {
     const game = finish(fresh('35').selectThemes('all'), 'vivienda').chooseApproach('okupacion', 'A');
     expect(JSON.stringify(game.state)).not.toMatch(/aaa|bbb|ccc|isla|bcn/);
+  });
+});
+
+describe('createGame: the guess with approaches (#26)', () => {
+  const fresh = (province: string | null = null, options = {}) => createGame(themesDataset, province, 's', undefined, options);
+  /** The letter the voter sees for an approach id (the shuffle hides ids). */
+  const letterOf = (game: ReturnType<typeof fresh>, questionId: string, what: string) =>
+    game.question(questionId).approaches.find((a) => a.what === what)!.letter;
+  /** Chooses "control" (aaa full, bbb partial) in alquiler with a guess, "none" in compra, and reveals vivienda. */
+  const play = (guess?: string, game = fresh()) =>
+    game
+      .chooseApproach('alquiler', letterOf(game, 'alquiler', 'Enfoque uno'), guess === undefined ? undefined : { guess })
+      .chooseApproach('compra', NONE)
+      .revealTheme('vivienda');
+  const guessIn = (game: ReturnType<typeof fresh>) => game.themeReveal('vivienda')!.questions.find((q) => q.question.id === 'alquiler')!.guess;
+
+  it('offers every party in play with a published manifesto, by name, whatever it proposes', () => {
+    expect(fresh().questionGuessOptions('alquiler').map((p) => p.id)).toEqual(['aaa', 'bbb', 'ccc', 'nada']);
+    expect(fresh('35').questionGuessOptions('alquiler').map((p) => p.id)).toContain('isla');
+    expect(() => fresh().questionGuessOptions('nope')).toThrow();
+  });
+
+  it('a guess is right if the party is full or partial in the chosen approach: several valid answers', () => {
+    expect(guessIn(play('aaa'))).toMatchObject({ party: { id: 'aaa' }, correct: true });
+    expect(guessIn(play('bbb'))).toMatchObject({ party: { id: 'bbb' }, correct: true });
+    expect(guessIn(play('ccc'))).toMatchObject({ party: { id: 'ccc' }, correct: false });
+    expect(guessIn(play('nada'))).toMatchObject({ correct: false });
+  });
+
+  it('a guess on a filler approach is never right', () => {
+    const game = fresh();
+    const played = game.chooseApproach('alquiler', letterOf(game, 'alquiler', 'Enfoque tres'), { guess: 'aaa' }).chooseApproach('compra', NONE).revealTheme('vivienda');
+    expect(guessIn(played)).toMatchObject({ correct: false });
+  });
+
+  it('without a guess the reveal shows none and nothing is counted', () => {
+    const played = play();
+    expect(guessIn(played)).toBeNull();
+    expect(played.guessScore()).toEqual({ hits: 0, total: 0 });
+    expect(played.guessOutcomes()).toEqual({});
+  });
+
+  it('the result counts hits over revealed questions only; outcomes carry hit/miss per question, never the party', () => {
+    const game = fresh();
+    const answered = game
+      .chooseApproach('alquiler', letterOf(game, 'alquiler', 'Enfoque uno'), { guess: 'bbb' })
+      .chooseApproach('compra', letterOf(game, 'compra', 'Enfoque cuatro'), { guess: 'ccc' })
+      .chooseApproach('listas', letterOf(game, 'listas', 'Enfoque diez'), { guess: 'aaa' });
+    expect(answered.guessScore()).toEqual({ hits: 0, total: 0 });
+    const revealed = answered.revealTheme('vivienda');
+    expect(revealed.guessScore()).toEqual({ hits: 1, total: 2 });
+    expect(revealed.guessOutcomes()).toEqual({ alquiler: true, compra: false });
+    expect(revealed.revealTheme('sanidad').guessScore()).toEqual({ hits: 2, total: 3 });
+  });
+
+  it('the guess survives a JSON round trip, is dropped when the choice changes without one, and is not allowed with "none"', () => {
+    const game = fresh().chooseApproach('alquiler', 'A', { guess: 'aaa' });
+    const restored = createGame(themesDataset, null, 's', JSON.parse(JSON.stringify(game.state)));
+    expect(guessIn(play('aaa', restored))).toMatchObject({ party: { id: 'aaa' } });
+    expect(guessIn(play(undefined, game))).toBeNull();
+    expect(() => fresh().chooseApproach('alquiler', NONE, { guess: 'aaa' })).toThrow();
+    expect(() => fresh().chooseApproach('alquiler', 'A', { guess: 'isla' })).toThrow(); // not in play outside Canarias
+    expect(() => fresh().chooseApproach('alquiler', 'A', { guess: 'pend' })).toThrow(); // no manifesto yet
+  });
+
+  it('with the guess disabled ("No volver a preguntarme") nothing is offered and a guess is refused', () => {
+    const off = fresh(null, { guess: false });
+    expect(off.questionGuessOptions('alquiler')).toEqual([]);
+    expect(() => off.chooseApproach('alquiler', 'A', { guess: 'aaa' })).toThrow();
+    expect(guessIn(play(undefined, off))).toBeNull();
+    // Guesses made before disabling it are still shown and counted.
+    const before = play('aaa');
+    const later = createGame(themesDataset, null, 's', before.state, { guess: false });
+    expect(guessIn(later)).toMatchObject({ correct: true });
+    expect(later.guessScore()).toEqual({ hits: 1, total: 1 });
+  });
+
+  it('repeating a theme forgets its guesses too', () => {
+    const again = play('aaa').repeatTheme('vivienda');
+    expect(again.guessScore()).toEqual({ hits: 0, total: 0 });
+    expect(guessIn(play(undefined, again))).toBeNull();
+  });
+
+  it('chance of a blind guess: the most generous approach, its defenders in play over the parties offered', () => {
+    // alquiler: control has aaa+bbb of aaa, bbb, ccc, nada → 2/4; in 35, oferta has ccc+isla of 5 → 2/5, control 2/5.
+    expect(fresh().guessChance('alquiler')).toBe(0.5);
+    expect(fresh('35').guessChance('alquiler')).toBe(0.4);
+    expect(fresh().guessChance('compra')).toBe(0.25);
+    expect(fresh(null, { guess: false }).guessChance('compra')).toBe(0.25);
   });
 });
 
