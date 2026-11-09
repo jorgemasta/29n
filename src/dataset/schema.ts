@@ -118,7 +118,7 @@ export const Position = z.discriminatedUnion('state', [
  * Suggested question of the "Preguntar" tab. `keywords` are the public search terms used to
  * find the candidate pages of each programme ("cómo lo buscamos").
  */
-export const Question = z.object({
+export const SuggestedQuestion = z.object({
   id,
   text: z.string().min(1),
   keywords: z.array(z.string().min(1)).min(1),
@@ -129,7 +129,7 @@ export const Question = z.object({
 const baseAnswer = { party: id, question: id, versions: Versions };
 
 /** One party's answer to one question (precomputed by the pipeline, or live in #15). */
-export const QuestionAnswer = z.discriminatedUnion('state', [
+export const SuggestedAnswer = z.discriminatedUnion('state', [
   /** Same template as a position (what / how / figure) and same checks: V1, V3–V6, V10. */
   z.object({ ...baseAnswer, state: z.literal('answers'), text: NeutralText, quotes: z.array(Quote).min(1) }),
   /** "El programa de X no lo menciona". */
@@ -144,7 +144,7 @@ export const ReportEntry = z.object({
   /** Absent for programme-level checks (V7) and for answers to questions. */
   topic: id.optional(),
   /** Suggested question this entry is about (answers, not positions). */
-  question: id.optional(),
+  suggestedQuestion: id.optional(),
   check: Check,
   /** `extract`: V12 found a proposal the first pass missed. `warning`: V11 internal warning, published anyway. */
   result: z.enum(['pass', 'fix', 'rewrite', 'discard', 'block', 'extract', 'warning']),
@@ -192,8 +192,8 @@ export const Dataset = z
     positions: z.array(Position),
     reports: z.array(Report),
     /** Suggested questions of the "Preguntar" tab and their precomputed answers. */
-    questions: z.array(Question).optional(),
-    answers: z.array(QuestionAnswer).optional(),
+    suggestedQuestions: z.array(SuggestedQuestion).optional(),
+    answers: z.array(SuggestedAnswer).optional(),
   })
   .superRefine((d, ctx) => {
     const parties = new Set(d.parties.map((p) => p.id));
@@ -216,7 +216,7 @@ export const Dataset = z
     }
     // Answers: known party and question, at most one per party × question. A missing answer is
     // allowed (a party processed before a question was added): it is simply not shown.
-    const questions = new Set((d.questions ?? []).map((p) => p.id));
+    const questions = new Set((d.suggestedQuestions ?? []).map((p) => p.id));
     const answered = new Set<string>();
     (d.answers ?? []).forEach((r, i) => {
       const key = `${r.party}/${r.question}`;
@@ -240,8 +240,8 @@ export type FeasibilityResult = z.infer<typeof FeasibilityResult>;
 export type Source = z.infer<typeof Source>;
 export type Assessment = z.infer<typeof Assessment>;
 export type FeasibilityNote = z.infer<typeof FeasibilityNote>;
-export type Question = z.infer<typeof Question>;
-export type QuestionAnswer = z.infer<typeof QuestionAnswer>;
+export type SuggestedQuestion = z.infer<typeof SuggestedQuestion>;
+export type SuggestedAnswer = z.infer<typeof SuggestedAnswer>;
 export type ReportEntry = z.infer<typeof ReportEntry>;
 export type PositionSummary = z.infer<typeof PositionSummary>;
 export type Report = z.infer<typeof Report>;

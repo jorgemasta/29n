@@ -101,10 +101,10 @@ describe('free question: answers', () => {
     const r = await service.ask({ question: QUESTION, session: 's1' });
     if (r.state !== 'ok') throw new Error(r.state);
     const game = createGame(dataset, '35', 'semilla');
-    const view = game.question(r.question, r.answers);
+    const view = game.suggestedQuestion(r.question, r.answers);
     expect(view.cards.map((t) => t.headline)).toContain(goodAnswer.what);
     expect(JSON.stringify(view)).not.toMatch(/aaa|AAA/);
-    const revealed = game.revealQuestion(r.question, r.answers);
+    const revealed = game.revealSuggestedQuestion(r.question, r.answers);
     expect(revealed.cards.map((t) => t.party.id)).toEqual(['aaa']);
     expect(revealed.notMentioned.map((p) => p.id)).toEqual(['bbb', 'isla']);
   });
@@ -115,7 +115,7 @@ describe('free question: answers', () => {
     if (r.state !== 'ok') throw new Error(r.state);
     expect(r.answers.every((x) => x.state !== 'answers')).toBe(true);
     // ccc and nada have no usable text: unverified, so it cannot claim that no programme talks about it.
-    expect(createGame(dataset, null, 's').question(r.question, r.answers)).toMatchObject({ cards: [], noneAtAll: false, unverified: 2 });
+    expect(createGame(dataset, null, 's').suggestedQuestion(r.question, r.answers)).toMatchObject({ cards: [], noneAtAll: false, unverified: 2 });
     expect(answerCalls(ai)).toHaveLength(0);
   });
 

@@ -2,10 +2,10 @@
 // with "Ver de quién es cada una", then the reveal with quote and PDF (no feasibility note).
 // The free text box (#15) is live only when built with PUBLIC_FREE_QUESTION=1 (and the function's
 // own flag is on); otherwise it is shown disabled ("Muy pronto"). Live answers are anonymised by the
-// same engine calls (Game.question / revealQuestion with the answers); this only renders.
+// same engine calls (Game.question / revealSuggestedQuestion with the answers); this only renders.
 import { FREE_QUESTION_OPEN, askLive, type FreeQuestionResponse, type Offline } from '../client/api';
-import type { Game, QuestionSummary, QuestionReveal, QuestionView } from '../game';
-import type { QuestionAnswer } from '../dataset/schema';
+import type { Game, SuggestedQuestionSummary, SuggestedQuestionReveal, SuggestedQuestionView } from '../game';
+import type { SuggestedAnswer } from '../dataset/schema';
 import { SESSION_LIMIT, MAX_CHARS, MIN_CHARS } from '../questions/limits';
 import { provinceChip } from './province';
 import { aiLabel } from './ai';
@@ -25,7 +25,7 @@ const header = (game: Game, back: { href: string; text: string }) =>
 
 /** List of suggested questions plus the (disabled) free text box. */
 export function questionsView(game: Game): HTMLElement {
-  const questions = game.questions();
+  const questions = game.suggestedQuestions();
   return h('section', { class: 'ask' },
     header(game, { href: '#temas', text: '← Temas' }),
     h('h1', { tabindex: '-1' }, 'Pregunta a los programas'),
@@ -120,22 +120,22 @@ function noAnswerMessage(r: Exclude<FreeQuestionResponse, { state: 'ok' }> | Off
 
 interface AnswerOptions {
   /** Live answers (free question); absent = the dataset's precomputed ones. */
-  answers?: QuestionAnswer[];
+  answers?: SuggestedAnswer[];
   /** "Otra pregunta" for an in-memory answer (default: back to #preguntar). */
   onBack?: (section: HTMLElement) => void;
 }
 
 /** One question: anonymous answers first; "Ver de quién es cada una" reveals them in place. */
-export function answerView(game: Game, questionId: string | QuestionSummary, options: AnswerOptions = {}): HTMLElement {
+export function answerView(game: Game, questionId: string | SuggestedQuestionSummary, options: AnswerOptions = {}): HTMLElement {
   const section = h('section', { class: 'answer' });
   const { answers } = options;
   const render = (revealed: boolean) => {
-    const view = game.question(questionId, answers);
+    const view = game.suggestedQuestion(questionId, answers);
     const children: Child[] = [
       header(game, { href: '#preguntar', text: '← Preguntas' }),
       h('p', { class: 'kicker' }, 'Pregunta a los programas'),
       h('h1', { tabindex: '-1' }, view.question.text),
-      ...(revealed || view.cards.length === 0 ? reveal(game.revealQuestion(questionId, answers)) : blindPhase(view)),
+      ...(revealed || view.cards.length === 0 ? reveal(game.revealSuggestedQuestion(questionId, answers)) : blindPhase(view)),
       h('p', { class: 'note' }, 'Esto no cuenta para tu resultado.'),
       AI_NOTICE(),
       h('div', { class: 'sticky-bar' },
@@ -153,7 +153,7 @@ export function answerView(game: Game, questionId: string | QuestionSummary, opt
   return section;
 }
 
-function blindPhase(v: QuestionView): Child[] {
+function blindPhase(v: SuggestedQuestionView): Child[] {
   const notMentioned = v.notMentioned
     ? ` ${v.notMentioned} ${v.notMentioned === 1 ? 'programa no lo menciona' : 'programas no lo mencionan'} (los verás al descubrir).`
     : '';
@@ -172,7 +172,7 @@ function blindPhase(v: QuestionView): Child[] {
   ];
 }
 
-function reveal(r: QuestionReveal): Child[] {
+function reveal(r: SuggestedQuestionReveal): Child[] {
   const warning = (text: string) => h('p', { class: 'zone-notice', role: 'status' }, h('strong', {}, text));
   return [
     r.noneAtAll ? warning('Ningún programa habla de esto.') : null,

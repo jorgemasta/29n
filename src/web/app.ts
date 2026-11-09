@@ -117,7 +117,7 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
     else if (path === 'inicio') root.replaceChildren(returnViewApp());
     else if (path === 'temas') root.replaceChildren(listView());
     else if (path === 'preguntar') root.replaceChildren(questionsView(game));
-    else if (path.startsWith('preguntar/') && game.questions().some((p) => p.id === decodeURIComponent(path.slice(10))))
+    else if (path.startsWith('preguntar/') && game.suggestedQuestions().some((p) => p.id === decodeURIComponent(path.slice(10))))
       root.replaceChildren(answerView(game, decodeURIComponent(path.slice(10))));
     else if (path === 'resultado') root.replaceChildren(resultViewApp()), trackResult(game);
     else if (path === 'compartir') root.replaceChildren(shareViewApp());
@@ -249,7 +249,7 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
               ...list.hidden.map((t) => h('li', { class: 'topic-row hidden-item' }, h('span', { class: 'name' }, t.title)))))
         : null,
       partiesBlock(game),
-      game.questions().length
+      game.suggestedQuestions().length
         ? h('p', {}, h('a', { href: '#preguntar', class: 'topic-row' }, h('span', { class: 'name' }, 'Pregunta a los programas'), h('span', { class: 'state' }, '→')))
         : null,
       h('p', {}, h('a', { href: '#datos' }, 'Tus datos')),

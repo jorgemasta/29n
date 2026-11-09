@@ -8,7 +8,7 @@ import { CHECKS } from '../../registry/checks';
 export function getStaticPaths() {
   return dataset.reports.map((report) => ({ params: { party: report.party }, props: { report } }));
 }
-const r = reportSummary(Astro.props.report, dataset.topics, dataset.questions);
+const r = reportSummary(Astro.props.report, dataset.topics, dataset.suggestedQuestions);
 const i = r.report;
 const party = dataset.parties.find((p) => p.id === i.party);
 const manifesto = party?.manifesto.state === 'published' ? party.manifesto : null;
@@ -50,11 +50,11 @@ const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite
       </ul>
     </details>
   ))}
-  {r.questions.length > 0 && (
+  {r.suggestedQuestions.length > 0 && (
     <>
       <h2>Respuestas a las preguntas sugeridas</h2>
       <p>Lo que se comprobó en cada respuesta de la pestaña Preguntar. Estas respuestas no cuentan para publicar o bloquear el programa.</p>
-      {r.questions.map((p) => (
+      {r.suggestedQuestions.map((p) => (
         <details class="report-topic">
           <summary>{p.question.text}</summary>
           <ul class="entries">

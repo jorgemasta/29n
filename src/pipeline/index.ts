@@ -10,13 +10,13 @@ import type {
   Report,
   Party,
   Position,
-  Question,
-  QuestionAnswer,
+  SuggestedQuestion,
+  SuggestedAnswer,
   PositionSummary,
   Topic,
   NeutralText,
 } from '../dataset/schema';
-import { Position as PositionSchema, QuestionAnswer as AnswerSchema } from '../dataset/schema';
+import { Position as PositionSchema, SuggestedAnswer as AnswerSchema } from '../dataset/schema';
 import { answerQuestion, QUESTION_PROMPT_VERSION } from '../questions';
 import { SUGGESTED_QUESTIONS } from '../registry/questions';
 import type { AIAdapter } from '../ai/adapter';
@@ -65,7 +65,7 @@ export interface ProcessOptions {
   /** Capture date of the PDF, recorded with its hash (V7). Defaults to the programme's date. */
   date?: string;
   /** Suggested questions to precompute answers for (default: registry/questions). */
-  questions?: Question[];
+  suggestedQuestions?: SuggestedQuestion[];
 }
 
 export interface ProcessResult {
@@ -73,7 +73,7 @@ export interface ProcessResult {
   report: Report;
   publishable: boolean;
   /** One answer per suggested question (anonymous until revealed in the Preguntar tab). */
-  answers: QuestionAnswer[];
+  answers: SuggestedAnswer[];
   /**
    * Page text of the programme, published next to the site (public/texts/<party>.json) so the
    * live free question can answer and run V1/V2 on it. Null when blocked before reading the PDF (V7).
@@ -160,16 +160,16 @@ export async function processManifesto(
 
   // Suggested questions: one answer per question, with the same quote/marks/fidelity checks.
   // They never count towards the publication rule (a programme is not about our questions).
-  const answers: QuestionAnswer[] = [];
-  for (const question of options.questions ?? SUGGESTED_QUESTIONS) {
+  const answers: SuggestedAnswer[] = [];
+  for (const question of options.suggestedQuestions ?? SUGGESTED_QUESTIONS) {
     const r = await answerQuestion(ctx.ai, question, ctx.pages, {
       terms: ctx.terms,
-      annotate: (check, result, detail) => entries.push({ question: question.id, check, result, detail }),
+      annotate: (check, result, detail) => entries.push({ suggestedQuestion: question.id, check, result, detail }),
     });
     const base = { party: party.id, question: question.id, versions: { prompt: QUESTION_PROMPT_VERSION } };
     if (r.state === 'answers') answers.push({ ...base, state: 'answers', text: r.text, quotes: r.quotes });
     else {
-      if (r.state === 'notMentioned') entries.push({ question: question.id, check: 'V12', result: 'pass', detail: `no lo menciona: ${r.detail}` });
+      if (r.state === 'notMentioned') entries.push({ suggestedQuestion: question.id, check: 'V12', result: 'pass', detail: `no lo menciona: ${r.detail}` });
       answers.push({ ...base, state: r.state });
     }
   }
@@ -179,7 +179,7 @@ export async function processManifesto(
   for (const p of invalid) entries.push({ topic: p.topic, check: 'V9', result: 'discard', detail: 'no valida contra el esquema' });
   const validAnswers = answers.filter((r) => {
     const ok = AnswerSchema.safeParse(r).success;
-    if (!ok) entries.push({ question: r.question, check: 'V9', result: 'discard', detail: 'la respuesta no valida contra el esquema' });
+    if (!ok) entries.push({ suggestedQuestion: r.question, check: 'V9', result: 'discard', detail: 'la respuesta no valida contra el esquema' });
     return ok;
   });
 

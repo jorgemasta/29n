@@ -1,7 +1,7 @@
-import type { Dataset, QuestionAnswer } from '../../src/dataset/schema';
+import type { Dataset, SuggestedAnswer } from '../../src/dataset/schema';
 import { sampleDataset } from './sample-dataset';
 
-const answers = (party: string, question: string, n: string): QuestionAnswer => ({
+const answers = (party: string, question: string, n: string): SuggestedAnswer => ({
   party,
   question,
   state: 'answers',
@@ -9,7 +9,7 @@ const answers = (party: string, question: string, n: string): QuestionAnswer => 
   quotes: [{ text: `Cita literal del programa de ${party} sobre la pregunta, con más de cuarenta caracteres.`, page: 3 }],
   versions: { prompt: 'v1' },
 });
-const other = (party: string, question: string, state: 'notMentioned' | 'unverified'): QuestionAnswer => ({
+const other = (party: string, question: string, state: 'notMentioned' | 'unverified'): SuggestedAnswer => ({
   party, question, state, versions: { prompt: 'v1' },
 });
 
@@ -19,7 +19,7 @@ const other = (party: string, question: string, state: 'notMentioned' | 'unverif
  */
 export const questionsDataset: Dataset = {
   ...sampleDataset,
-  questions: [
+  suggestedQuestions: [
     { id: 'mili', text: '¿Qué dicen sobre el servicio militar?', keywords: ['servicio militar'], order: 2 },
     { id: 'luz', text: '¿Quién propone bajar el IVA de la luz?', keywords: ['IVA', 'luz'], order: 1 },
   ],

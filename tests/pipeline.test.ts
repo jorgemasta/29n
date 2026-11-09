@@ -105,7 +105,7 @@ const options = (o: Partial<ProcessOptions> = {}): ProcessOptions => ({
   checkUrl: async () => true,
   domains: testDomains,
   // Suggested questions are tested on their own (see "suggested questions").
-  questions: [],
+  suggestedQuestions: [],
   ...o,
 });
 
@@ -590,7 +590,7 @@ describe('processManifesto', () => {
       // Our own position is not recognised.
       expect(result.report.entries).toContainEqual(expect.objectContaining({ check: 'V11', result: 'pass' }));
       const publish = (ds: typeof previous) =>
-        mergeManifesto(ds, sampleParty, result, { topics: [housingTopic], questions: [], generated: '2026-11-08T00:00:00.000Z' });
+        mergeManifesto(ds, sampleParty, result, { topics: [housingTopic], suggestedQuestions: [], generated: '2026-11-08T00:00:00.000Z' });
       const merge = publish(previous);
       if (!merge.ok) throw new Error(merge.reason);
       const feedbackOtp = merge.dataset.reports.find((i) => i.party === 'otp')!.entries;
@@ -788,7 +788,7 @@ describe('processManifesto', () => {
         generated: '2026-11-08T00:00:00.000Z',
         origin: 'real',
       });
-      const merge = mergeManifesto(previous, sampleParty, result, { topics: [housingTopic], questions: [], generated: '2026-11-08T00:00:00.000Z' });
+      const merge = mergeManifesto(previous, sampleParty, result, { topics: [housingTopic], suggestedQuestions: [], generated: '2026-11-08T00:00:00.000Z' });
       if (!merge.ok) throw new Error(merge.reason);
       expect(merge.dataset.reports.find((i) => i.party === 'ter')!.entries).toEqual([
         expect.objectContaining({ topic: 'vivienda', check: 'V5', result: 'warning', detail: expect.stringContaining('60 palabras') }),
@@ -1014,7 +1014,7 @@ describe('processManifesto', () => {
       ai.calls.filter((l) => l.task === 'answer-question' && l.input.question.id === id);
 
     it('answers each suggested question with a neutral text and a verified literal quote', async () => {
-      const { answers: rs, report } = await runPipeline(answers({ 'answer-question': () => goodAnswer }), { questions: [jubilacion] });
+      const { answers: rs, report } = await runPipeline(answers({ 'answer-question': () => goodAnswer }), { suggestedQuestions: [jubilacion] });
       expect(rs).toEqual([
         expect.objectContaining({
           party: 'pej',
@@ -1025,22 +1025,22 @@ describe('processManifesto', () => {
         }),
       ]);
       for (const b of ['V1', 'V3', 'V10'])
-        expect(report.entries).toContainEqual(expect.objectContaining({ question: 'jubilacion', check: b, result: 'pass' }));
+        expect(report.entries).toContainEqual(expect.objectContaining({ suggestedQuestion: 'jubilacion', check: b, result: 'pass' }));
     });
 
     it('answers with the suggested questions of the registry by default', async () => {
-      const { answers: rs } = await runPipeline(answers(), { questions: undefined });
+      const { answers: rs } = await runPipeline(answers(), { suggestedQuestions: undefined });
       expect(rs.length).toBe(7);
     });
 
     it('a programme with no page about the question "does not mention it", without asking the AI', async () => {
-      const { answers: rs, ai } = await runPipeline(answers({ 'answer-question': () => goodAnswer }), { questions: [mili] });
+      const { answers: rs, ai } = await runPipeline(answers({ 'answer-question': () => goodAnswer }), { suggestedQuestions: [mili] });
       expect(rs).toEqual([expect.objectContaining({ question: 'mili', state: 'notMentioned' })]);
       expect(questionCalls(ai, 'mili')).toHaveLength(0);
     });
 
     it('"does not mention it" when the AI finds nothing in the candidate pages', async () => {
-      const { answers: rs } = await runPipeline(answers(), { questions: [jubilacion] });
+      const { answers: rs } = await runPipeline(answers(), { suggestedQuestions: [jubilacion] });
       expect(rs).toEqual([expect.objectContaining({ question: 'jubilacion', state: 'notMentioned' })]);
     });
 
@@ -1048,22 +1048,22 @@ describe('processManifesto', () => {
       const invented = { text: 'Bajaremos la edad de jubilación a los sesenta años para todo el mundo.', page: 3 };
       const { answers: rs, report } = await runPipeline(
         answers({ 'answer-question': () => ({ ...goodAnswer, quotes: [invented, ...goodAnswer.quotes] }) }),
-        { questions: [jubilacion] },
+        { suggestedQuestions: [jubilacion] },
       );
       expect(rs).toEqual([expect.objectContaining({ state: 'answers', quotes: [{ text: QUOTE_PENSIONS, page: 3 }] })]);
-      expect(report.entries).toContainEqual(expect.objectContaining({ question: 'jubilacion', check: 'V1', result: 'discard' }));
+      expect(report.entries).toContainEqual(expect.objectContaining({ suggestedQuestion: 'jubilacion', check: 'V1', result: 'discard' }));
     });
 
     it('an answer whose quotes are all invented is asked again, then not published (V1)', async () => {
       const invented = { text: 'Bajaremos la edad de jubilación a los sesenta años para todo el mundo.', page: 3 };
       const { answers: rs, report, publishable } = await runPipeline(
         answers({ 'answer-question': () => ({ ...goodAnswer, quotes: [invented] }) }),
-        { questions: [jubilacion] },
+        { suggestedQuestions: [jubilacion] },
       );
       expect(rs).toEqual([expect.objectContaining({ question: 'jubilacion', state: 'unverified' })]);
       expect(rs[0]).not.toHaveProperty('quotes');
       // Asked 3 times: the invented quote is removed each time.
-      expect(report.entries.filter((e) => e.question === 'jubilacion' && e.detail.startsWith('cita eliminada'))).toHaveLength(3);
+      expect(report.entries.filter((e) => e.suggestedQuestion === 'jubilacion' && e.detail.startsWith('cita eliminada'))).toHaveLength(3);
       // Answers never block the programme.
       expect(publishable).toBe(true);
     });
@@ -1071,10 +1071,10 @@ describe('processManifesto', () => {
     it('rewrites an answer with identifying marks and, if they persist after 2 retries, does not publish it (V3)', async () => {
       const { answers: rs, report } = await runPipeline(
         answers({ 'answer-question': () => ({ ...goodAnswer, what: `Como propone OTP, ${goodAnswer.what}` }) }),
-        { questions: [jubilacion] },
+        { suggestedQuestions: [jubilacion] },
       );
-      expect(report.entries.filter((e) => e.question === 'jubilacion' && e.check === 'V3' && e.result === 'rewrite')).toHaveLength(2);
-      expect(report.entries).toContainEqual(expect.objectContaining({ question: 'jubilacion', check: 'V3', result: 'discard' }));
+      expect(report.entries.filter((e) => e.suggestedQuestion === 'jubilacion' && e.check === 'V3' && e.result === 'rewrite')).toHaveLength(2);
+      expect(report.entries).toContainEqual(expect.objectContaining({ suggestedQuestion: 'jubilacion', check: 'V3', result: 'discard' }));
       expect(rs).toEqual([expect.objectContaining({ state: 'unverified' })]);
     });
 
@@ -1084,7 +1084,7 @@ describe('processManifesto', () => {
         answers({
           'answer-question': fixesWith(/"avoid":\[[^\]]*Bruno Jefe/, { ...goodAnswer, what: `Bruno Jefe quiere ${goodAnswer.what}` }, goodAnswer),
         }),
-        { questions: [jubilacion] },
+        { suggestedQuestions: [jubilacion] },
       );
       expect(rs).toEqual([expect.objectContaining({ state: 'answers', text: expect.objectContaining({ what: goodAnswer.what }) })]);
       expect(JSON.stringify(rs)).not.toMatch(/Bruno Jefe/);
@@ -1098,22 +1098,22 @@ describe('processManifesto', () => {
           'verify-fidelity': (e) =>
             e.text.how.includes('poder de compra') ? { ...faithful, adds: true, explanation: 'Habla de poder de compra.' } : faithful,
         }),
-        { questions: [jubilacion] },
+        { suggestedQuestions: [jubilacion] },
       );
       expect(rs[0]).toEqual(expect.objectContaining({ state: 'answers', text: expect.objectContaining({ how: noPurchasingPower.how }) }));
-      expect(report.entries).toContainEqual(expect.objectContaining({ question: 'jubilacion', check: 'V10', result: 'rewrite' }));
+      expect(report.entries).toContainEqual(expect.objectContaining({ suggestedQuestion: 'jubilacion', check: 'V10', result: 'rewrite' }));
       expect(rs[0]!.state).toBe('answers');
     });
 
     it('answers go into a dataset that validates (V9)', async () => {
       const { positions, report, answers: rs } = await runPipeline(
         answers({ 'answer-question': () => goodAnswer }),
-        { questions: [jubilacion, mili] },
+        { suggestedQuestions: [jubilacion, mili] },
       );
       const dataset = buildDataset({
         parties: [sampleParty],
         topics: [housingTopic],
-        questions: [jubilacion, mili],
+        suggestedQuestions: [jubilacion, mili],
         results: [{ positions, report, answers: rs }],
         generated: '2026-11-08T00:00:00.000Z',
         origin: 'test',
@@ -1126,8 +1126,8 @@ describe('processManifesto', () => {
     it('two runs with the cache give identical answers', async () => {
       const cache = createMemoryCache();
       const r = answers({ 'answer-question': () => goodAnswer });
-      const first = await runPipeline(r, { cache, questions: [jubilacion, mili] });
-      const second = await runPipeline(r, { cache, questions: [jubilacion, mili] });
+      const first = await runPipeline(r, { cache, suggestedQuestions: [jubilacion, mili] });
+      const second = await runPipeline(r, { cache, suggestedQuestions: [jubilacion, mili] });
       expect(second.ai.calls).toHaveLength(0);
       expect(second.answers).toEqual(first.answers);
     });

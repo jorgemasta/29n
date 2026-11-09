@@ -324,19 +324,19 @@ describe('where the voter votes', () => {
 
 describe('Preguntar: suggested questions with precomputed answers', () => {
   const ids = (l: { id: string }[]) => l.map((p) => p.id).sort();
-  const revealed = (p: ReturnType<typeof createGame>, id = 'luz') => p.revealQuestion(id).cards.map((t) => t.party.id).sort();
+  const revealed = (p: ReturnType<typeof createGame>, id = 'luz') => p.revealSuggestedQuestion(id).cards.map((t) => t.party.id).sort();
 
   it('uses a valid example dataset', () => {
     expect(validateDataset(questionsDataset)).toEqual({ valid: true, errors: [] });
   });
 
   it('lists the suggested questions in their fixed order', () => {
-    expect(createGame(questionsDataset, null, 's').questions().map((p) => p.id)).toEqual(['luz', 'mili']);
-    expect(createGame(sampleDataset, null, 's').questions()).toEqual([]);
+    expect(createGame(questionsDataset, null, 's').suggestedQuestions().map((p) => p.id)).toEqual(['luz', 'mili']);
+    expect(createGame(sampleDataset, null, 's').suggestedQuestions()).toEqual([]);
   });
 
   it('shows each party\'s answer as an anonymous card A, B, C…', () => {
-    const view = createGame(questionsDataset, null, 's').question('luz');
+    const view = createGame(questionsDataset, null, 's').suggestedQuestion('luz');
     expect(view.question.text).toBe('¿Quién propone bajar el IVA de la luz?');
     expect(view.cards.map((t) => t.letter)).toEqual(['A', 'B']);
     for (const t of view.cards) {
@@ -348,15 +348,15 @@ describe('Preguntar: suggested questions with precomputed answers', () => {
   });
 
   it('shuffles the answers stably per seed and question', () => {
-    const order = (seed: string) => createGame(questionsDataset, '35', seed).question('luz').cards.map((t) => t.headline).join('|');
+    const order = (seed: string) => createGame(questionsDataset, '35', seed).suggestedQuestion('luz').cards.map((t) => t.headline).join('|');
     expect(order('s1')).toBe(order('s1'));
     expect(new Set(['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'].map(order)).size).toBeGreaterThan(1);
   });
 
   it('reveals whose answer each one was, with its quote and PDF page, and who does not mention it', () => {
     const p = createGame(questionsDataset, null, 's');
-    const anonymous = p.question('luz').cards;
-    const r = p.revealQuestion('luz');
+    const anonymous = p.suggestedQuestion('luz').cards;
+    const r = p.revealSuggestedQuestion('luz');
     expect(r.cards.map(({ letter, headline, detail }) => ({ letter, headline, detail }))).toEqual(anonymous);
     const aaa = r.cards.find((t) => t.party.id === 'aaa')!;
     expect(aaa.party.name).toBe('Partido AAA');
@@ -370,20 +370,20 @@ describe('Preguntar: suggested questions with precomputed answers', () => {
 
   it('says when no programme talks about it', () => {
     const p = createGame(questionsDataset, null, 's');
-    expect(p.question('mili')).toMatchObject({ cards: [], noneAtAll: true });
-    expect(p.revealQuestion('mili')).toMatchObject({ cards: [], noneAtAll: true });
-    expect(ids(p.revealQuestion('mili').notMentioned)).toEqual(['aaa', 'bbb', 'ccc', 'nada']);
+    expect(p.suggestedQuestion('mili')).toMatchObject({ cards: [], noneAtAll: true });
+    expect(p.revealSuggestedQuestion('mili')).toMatchObject({ cards: [], noneAtAll: true });
+    expect(ids(p.revealSuggestedQuestion('mili').notMentioned)).toEqual(['aaa', 'bbb', 'ccc', 'nada']);
   });
 
   it('a party in play with no answer at all is shown as "no lo menciona", not hidden', () => {
     const withoutAaa: Dataset = { ...questionsDataset, answers: questionsDataset.answers!.filter((r) => r.party !== 'aaa') };
     const p = createGame(withoutAaa, null, 's');
-    expect(ids(p.revealQuestion('luz').notMentioned)).toEqual(['aaa', 'bbb']);
-    expect(p.question('luz').notMentioned).toBe(2);
+    expect(ids(p.revealSuggestedQuestion('luz').notMentioned)).toEqual(['aaa', 'bbb']);
+    expect(p.suggestedQuestion('luz').notMentioned).toBe(2);
     // Same for live answers: a party left out of the answers did not mention it.
     const free = { id: 'libre', text: '¿Bicis?' };
     const onlyCcc = questionsDataset.answers!.filter((r) => r.question === 'luz' && r.party === 'ccc').map((r) => ({ ...r, question: 'libre' }));
-    expect(ids(p.revealQuestion(free, onlyCcc).notMentioned)).toEqual(['aaa', 'bbb', 'nada']);
+    expect(ids(p.revealSuggestedQuestion(free, onlyCcc).notMentioned)).toEqual(['aaa', 'bbb', 'nada']);
   });
 
   it('respects the province: regional parties only answer where they run', () => {
@@ -393,7 +393,7 @@ describe('Preguntar: suggested questions with precomputed answers', () => {
   });
 
   it('pending parties never answer and are reported as pending', () => {
-    const r = createGame(questionsDataset, '35', 's').revealQuestion('luz');
+    const r = createGame(questionsDataset, '35', 's').revealSuggestedQuestion('luz');
     expect(ids(r.pending)).toEqual(['pend', 'penreg']);
   });
 
@@ -410,7 +410,7 @@ describe('Preguntar: suggested questions with precomputed answers', () => {
 
   it('answering does not count as a topic done', () => {
     const p = createGame(questionsDataset, null, 's');
-    p.revealQuestion('luz');
+    p.revealSuggestedQuestion('luz');
     expect(p.done()).toEqual([]);
   });
 
@@ -418,24 +418,24 @@ describe('Preguntar: suggested questions with precomputed answers', () => {
     const p = createGame(questionsDataset, '08', 's');
     const free = { id: 'libre', text: '¿Qué proponen sobre bicicletas?' };
     const fromDataset = questionsDataset.answers!.filter((r) => r.question === 'luz').map((r) => ({ ...r, question: 'libre' }));
-    const view = p.question(free, fromDataset);
+    const view = p.suggestedQuestion(free, fromDataset);
     expect(view.question.text).toBe('¿Qué proponen sobre bicicletas?');
     expect(view.cards).toHaveLength(3);
     expect(revealedFree()).toEqual(['aaa', 'bcn', 'ccc']);
     function revealedFree() {
-      return p.revealQuestion(free, fromDataset).cards.map((t) => t.party.id).sort();
+      return p.revealSuggestedQuestion(free, fromDataset).cards.map((t) => t.party.id).sort();
     }
   });
 
   it('the published dataset answers the 7 suggested questions', () => {
     const p = createGame(publishedDataset as Dataset, null, 's', undefined, { mode: 'private' });
-    expect(p.questions()).toHaveLength(7);
-    for (const q of p.questions()) {
-      const r = p.revealQuestion(q.id);
+    expect(p.suggestedQuestions()).toHaveLength(7);
+    for (const q of p.suggestedQuestions()) {
+      const r = p.revealSuggestedQuestion(q.id);
       expect(r.cards.length + r.notMentioned.length + r.unverified.length, q.id).toBe(p.parties().withManifesto.length);
     }
-    expect(p.questions().some((q) => p.question(q.id).noneAtAll)).toBe(true);
-    expect(p.questions().filter((q) => p.question(q.id).cards.length >= 2).length).toBeGreaterThanOrEqual(4);
+    expect(p.suggestedQuestions().some((q) => p.suggestedQuestion(q.id).noneAtAll)).toBe(true);
+    expect(p.suggestedQuestions().filter((q) => p.suggestedQuestion(q.id).cards.length >= 2).length).toBeGreaterThanOrEqual(4);
   });
 });
 
@@ -749,12 +749,12 @@ describe('Preguntar: honest states', () => {
       state: 'unverified' as const,
       versions: { prompt: 'v1' },
     }));
-    expect(p.question('luz', answers)).toMatchObject({ cards: [], noneAtAll: false, unverified: 4 });
-    expect(p.revealQuestion('luz', answers)).toMatchObject({ cards: [], noneAtAll: false });
+    expect(p.suggestedQuestion('luz', answers)).toMatchObject({ cards: [], noneAtAll: false, unverified: 4 });
+    expect(p.revealSuggestedQuestion('luz', answers)).toMatchObject({ cards: [], noneAtAll: false });
   });
 
   it('lists the pending parties of the zone by name, like the topics', () => {
-    const r = createGame(sampleDataset, '35', 's').revealQuestion({ id: 'libre', text: '¿Algo?' }, []);
+    const r = createGame(sampleDataset, '35', 's').revealSuggestedQuestion({ id: 'libre', text: '¿Algo?' }, []);
     expect(r.pending.map((p) => [p.id, p.regional])).toEqual([['pend', false], ['penreg', true]]);
   });
 });

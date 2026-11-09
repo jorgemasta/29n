@@ -5,8 +5,8 @@ import {
   type Mode,
   type Party,
   type Position,
-  type Question,
-  type QuestionAnswer,
+  type SuggestedQuestion,
+  type SuggestedAnswer,
   type Topic,
   type SourceType,
 } from './schema';
@@ -33,8 +33,8 @@ export function buildDataset(args: {
   parties: Party[];
   topics: Topic[];
   /** Suggested questions; their answers come from each result's `answers`. */
-  questions?: Question[];
-  results: { positions: Position[]; report: Report; answers?: QuestionAnswer[] }[];
+  suggestedQuestions?: SuggestedQuestion[];
+  results: { positions: Position[]; report: Report; answers?: SuggestedAnswer[] }[];
   generated: string;
   origin: Dataset['origin'];
   note?: string;
@@ -48,9 +48,9 @@ export function buildDataset(args: {
     topics: [...args.topics].sort((a, b) => a.order - b.order),
     positions: args.results.flatMap((r) => r.positions),
     reports: args.results.map((r) => r.report),
-    ...(args.questions
+    ...(args.suggestedQuestions
       ? {
-          questions: [...args.questions].sort((a, b) => a.order - b.order),
+          suggestedQuestions: [...args.suggestedQuestions].sort((a, b) => a.order - b.order),
           answers: args.results.flatMap((r) => r.answers ?? []),
         }
       : {}),

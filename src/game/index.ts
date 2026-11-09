@@ -1,7 +1,7 @@
 // Game engine (test point B). Pure functions over the dataset, no I/O: runs in the browser.
 //   createGame(dataset, province, seed, state?, options?) → Game (immutable; actions return a new one)
 import { applyMode, isPrivateOnly, sourceOf } from '../dataset';
-import type { Dataset, Mode, FeasibilityNote, Party, Position, Question, QuestionAnswer, Topic, SourceType } from '../dataset/schema';
+import type { Dataset, Mode, FeasibilityNote, Party, Position, SuggestedQuestion, SuggestedAnswer, Topic, SourceType } from '../dataset/schema';
 import { shuffle } from './random';
 
 export const NONE = 'none' as const;
@@ -180,12 +180,12 @@ export interface ZoneParties {
   pending: ZoneParty[];
 }
 
-/** Question to answer: a suggested one (dataset) or a live free question (#15). */
-export type QuestionSummary = Pick<Question, 'id' | 'text'>;
+/** SuggestedQuestion to answer: a suggested one (dataset) or a live free question (#15). */
+export type SuggestedQuestionSummary = Pick<SuggestedQuestion, 'id' | 'text'>;
 
 /** Preguntar, blind phase: anonymous answers A, B, C… ("Cita disponible al descubrir"). */
-export interface QuestionView {
-  question: QuestionSummary;
+export interface SuggestedQuestionView {
+  question: SuggestedQuestionSummary;
   cards: Card[];
   /** Parties in play whose programme does not mention it. */
   notMentioned: number;
@@ -195,12 +195,12 @@ export interface QuestionView {
   noneAtAll: boolean;
 }
 
-export type RevealedQuestionCard = PartyCard;
+export type RevealedAnswerCard = PartyCard;
 
 /** Preguntar, after "Ver de quién es cada una". No feasibility note; does not count for the result. */
-export interface QuestionReveal {
-  question: QuestionSummary;
-  cards: RevealedQuestionCard[];
+export interface SuggestedQuestionReveal {
+  question: SuggestedQuestionSummary;
+  cards: RevealedAnswerCard[];
   /** "El programa de X no lo menciona". */
   notMentioned: RevealedParty[];
   /** "No pudimos verificar su respuesta". */
@@ -249,15 +249,15 @@ export interface Game {
   /** Topic list: 5 suggested topics first, then the extra ones alphabetically, then the hidden ones. */
   list(): TopicList;
   /** Suggested questions of the Preguntar tab, in their fixed order. */
-  questions(): Question[];
+  suggestedQuestions(): SuggestedQuestion[];
   /**
    * Anonymous answers to a suggested question (by id, answers from the dataset), or to any
    * question with the given answers (live free question, #15). Same province and pending rules
    * as the topics; order shuffled stably per seed and question.
    */
-  question(question: string | QuestionSummary, answers?: QuestionAnswer[]): QuestionView;
+  suggestedQuestion(question: string | SuggestedQuestionSummary, answers?: SuggestedAnswer[]): SuggestedQuestionView;
   /** Who wrote each answer, with quotes. Revealing never changes the game state. */
-  revealQuestion(question: string | QuestionSummary, answers?: QuestionAnswer[]): QuestionReveal;
+  revealSuggestedQuestion(question: string | SuggestedQuestionSummary, answers?: SuggestedAnswer[]): SuggestedQuestionReveal;
 }
 
 type ProposingPosition = Extract<Position, { state: 'proposes' }>;
@@ -306,28 +306,28 @@ export function createGame(
     }));
   };
 
-  const questions = [...(dataset.questions ?? [])].sort((a, b) => a.order - b.order);
+  const questions = [...(dataset.suggestedQuestions ?? [])].sort((a, b) => a.order - b.order);
   /** Answers of the parties in play, in their shuffled order (stable per seed and question). */
-  const answersOf = (q: string | QuestionSummary, given?: QuestionAnswer[]) => {
+  const answersOf = (q: string | SuggestedQuestionSummary, given?: SuggestedAnswer[]) => {
     const question = typeof q === 'string' ? questions.find((p) => p.id === q) : q;
     if (!question) throw new Error(`Pregunta no disponible: ${String(q)}`);
     const givenInPlay = (given ?? dataset.answers ?? []).filter((r) => r.question === question.id && byId.has(r.party));
     // A published party in play with no answer at all did not mention it: say so, never hide it.
     const withAny = new Set(givenInPlay.map((r) => r.party));
-    const all: QuestionAnswer[] = [
+    const all: SuggestedAnswer[] = [
       ...givenInPlay,
       ...[...byId.keys()]
         .filter((id) => !withAny.has(id))
-        .map((party): QuestionAnswer => ({ party, question: question.id, state: 'notMentioned', versions: { prompt: '' } })),
+        .map((party): SuggestedAnswer => ({ party, question: question.id, state: 'notMentioned', versions: { prompt: '' } })),
     ];
     const withAnswer = all
-      .filter((r): r is Extract<QuestionAnswer, { state: 'answers' }> => r.state === 'answers')
+      .filter((r): r is Extract<SuggestedAnswer, { state: 'answers' }> => r.state === 'answers')
       .sort((a, b) => a.party.localeCompare(b.party));
     const shuffledCards = shuffle(withAnswer, `${seed}:pregunta:${question.id}`).map((answer, i) => ({
       answer,
       card: toCard(answer, LETTERS[i]!),
     }));
-    const withState = (e: QuestionAnswer['state']) =>
+    const withState = (e: SuggestedAnswer['state']) =>
       all.filter((r) => r.state === e).map((r) => revealParty(byId.get(r.party)!)).sort((a, b) => a.name.localeCompare(b.name, 'es'));
     return { question: { id: question.id, text: question.text }, shuffledCards, withState };
   };
@@ -478,8 +478,8 @@ export function createGame(
         hidden,
       };
     },
-    questions: () => questions,
-    question(q, given) {
+    suggestedQuestions: () => questions,
+    suggestedQuestion(q, given) {
       const { question, shuffledCards, withState } = answersOf(q, given);
       return {
         question,
@@ -489,7 +489,7 @@ export function createGame(
         noneAtAll: shuffledCards.length === 0 && withState('unverified').length === 0,
       };
     },
-    revealQuestion(q, given) {
+    revealSuggestedQuestion(q, given) {
       const { question, shuffledCards, withState } = answersOf(q, given);
       return {
         question,

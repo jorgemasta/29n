@@ -125,7 +125,7 @@ for (const f of FICTIONAL) {
   if (!r.publishable) throw new Error(`${f.id} no publicable: ${r.report.reason}`);
   const failed = r.positions.filter((p) => p.state === 'unverified');
   const unverified = r.answers.filter((x) => x.state === 'unverified');
-  if (unverified.length) throw new Error(`${f.id}: respuestas sin verificar ${unverified.map((x) => x.question).join(', ')}: ${JSON.stringify(r.report.entries.filter((e) => e.question && e.result !== 'pass'))}`);
+  if (unverified.length) throw new Error(`${f.id}: respuestas sin verificar ${unverified.map((x) => x.question).join(', ')}: ${JSON.stringify(r.report.entries.filter((e) => e.suggestedQuestion && e.result !== 'pass'))}`);
   if (failed.length) throw new Error(`${f.id}: sin verificar ${failed.map((p) => p.topic).join(', ')}: ${JSON.stringify(r.report.entries.filter((e) => e.result === 'discard'))}`);
   parties.push({ ...party, manifesto: { ...party.manifesto, hashPdf: r.report.hashPdf } } as Party);
   // Page text for the live free question (read by the Cloudflare function).
@@ -139,7 +139,7 @@ for (const f of FICTIONAL_PENDING)
 const dataset = buildDataset({
   parties,
   topics: TOPICS,
-  questions: SUGGESTED_QUESTIONS,
+  suggestedQuestions: SUGGESTED_QUESTIONS,
   results,
   generated: new Date().toISOString(),
   origin: 'simulated',

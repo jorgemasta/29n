@@ -122,8 +122,8 @@ describe('reportSummary', () => {
       ...report,
       entries: [
         ...report.entries,
-        { question: 'mili', check: 'V12', result: 'pass', detail: 'no lo menciona' },
-        { question: 'luz', check: 'V1', result: 'pass', detail: 'ok' },
+        { suggestedQuestion: 'mili', check: 'V12', result: 'pass', detail: 'no lo menciona' },
+        { suggestedQuestion: 'luz', check: 'V1', result: 'pass', detail: 'ok' },
       ],
     };
     const questions = [
@@ -132,7 +132,7 @@ describe('reportSummary', () => {
     ];
     const r = reportSummary(withAnswers, sampleDataset.topics, questions);
     expect(r.manifesto.map((e) => e.check)).toEqual(['V7']);
-    expect(r.questions.map((p) => [p.question.text, p.entries.map((e) => e.check)])).toEqual([
+    expect(r.suggestedQuestions.map((p) => [p.question.text, p.entries.map((e) => e.check)])).toEqual([
       ['¿IVA de la luz?', ['V1']],
       ['¿Servicio militar?', ['V12']],
     ]);

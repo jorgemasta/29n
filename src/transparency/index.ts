@@ -1,7 +1,7 @@
 // Transparency data (#11): derived views of the dataset for the methodology, parties-and-programmes
 // and verification-report pages, plus the prefilled GitHub issue links ("Reportar error", "Falta un partido").
 // Pure functions: the pages only render what these return.
-import type { Dataset, ReportEntry, Report, Party, Question, FeasibilityResult, PositionSummary, Topic, SourceType } from '../dataset/schema';
+import type { Dataset, ReportEntry, Report, Party, SuggestedQuestion, FeasibilityResult, PositionSummary, Topic, SourceType } from '../dataset/schema';
 import { CHECKS } from '../registry/checks';
 import { provinceByCode } from '../registry/territory';
 
@@ -114,10 +114,10 @@ export interface ReportSummary {
   manifesto: SummaryEntry[];
   topics: (Omit<PositionSummary, 'topic'> & { topic: { id: string; title: string }; entries: SummaryEntry[] })[];
   /** Checks of the precomputed answers to the suggested questions (Preguntar), per question. */
-  questions: { question: { id: string; text: string }; entries: SummaryEntry[] }[];
+  suggestedQuestions: { question: { id: string; text: string }; entries: SummaryEntry[] }[];
 }
 
-export function reportSummary(report: Report, topics: Topic[], questions: Question[] = []): ReportSummary {
+export function reportSummary(report: Report, topics: Topic[], questions: SuggestedQuestion[] = []): ReportSummary {
   const withName = (e: ReportEntry): SummaryEntry => ({ ...e, name: CHECKS[e.check].name });
   const order = new Map(topics.map((t) => [t.id, t]));
   const ids = [...new Set([...report.positions.map((p) => p.topic), ...report.entries.flatMap((e) => (e.topic ? [e.topic] : []))])];
@@ -125,11 +125,11 @@ export function reportSummary(report: Report, topics: Topic[], questions: Questi
   return {
     report,
     published: report.positions.filter((p) => p.state === 'proposes').length,
-    manifesto: report.entries.filter((e) => !e.topic && !e.question).map(withName),
-    questions: [...new Set(report.entries.flatMap((e) => (e.question ? [e.question] : [])))]
+    manifesto: report.entries.filter((e) => !e.topic && !e.suggestedQuestion).map(withName),
+    suggestedQuestions: [...new Set(report.entries.flatMap((e) => (e.suggestedQuestion ? [e.suggestedQuestion] : [])))]
       .map((id) => questions.find((p) => p.id === id) ?? { id, text: id, order: Infinity })
       .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id))
-      .map(({ id, text }) => ({ question: { id, text }, entries: report.entries.filter((e) => e.question === id).map(withName) })),
+      .map(({ id, text }) => ({ question: { id, text }, entries: report.entries.filter((e) => e.suggestedQuestion === id).map(withName) })),
     topics: ids.map((id) => {
       const summary = report.positions.find((p) => p.topic === id);
       return {

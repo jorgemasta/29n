@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-11-09T15:14:36.154Z",
+  "generated": "2026-11-09T21:59:07.601Z",
   "origin": "simulated",
   "note": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso, también las respuestas de Preguntar. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.",
   "parties": [
@@ -6405,193 +6405,193 @@
           "detail": "consenso: viable"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: turístic, vacacional, vacacionales, pisos turísticos, viviendas de uso turístico, turismo; ninguna página los menciona"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "servicio-militar",
+          "suggestedQuestion": "servicio-militar",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; ninguna página los menciona"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
@@ -7855,163 +7855,163 @@
           "detail": "consenso: veryDifficult"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: turístic, vacacional, vacacionales, pisos turísticos, viviendas de uso turístico, turismo; ninguna página los menciona"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "servicio-militar",
+          "suggestedQuestion": "servicio-militar",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; revisadas las páginas 16 sin respuesta"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: ley electoral, sistema electoral, LOREG, circunscripción, listas abiertas, D’Hondt, D'Hondt, proporcionalidad, voto rogado; ninguna página los menciona"
@@ -9275,103 +9275,103 @@
           "detail": "términos buscados: Canarias, canari, cayuco, patera, ruta atlántica, Atlántico, menores migrantes, menores no acompañados, acogida, Salvamento Marítimo, llegadas, Mauritania, Senegal; revisadas las páginas 18 sin propuesta"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: IVA, luz, electricidad, eléctric, factura energética, bono social; ninguna página los menciona"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: cuatro días, 4 días, semana laboral, jornada, horas semanales, 32 horas; ninguna página los menciona"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: jubilación, jubilar, edad de retiro, retiro, pensiones, prejubila; revisadas las páginas 5 sin respuesta"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "servicio-militar",
+          "suggestedQuestion": "servicio-militar",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; ninguna página los menciona"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: ley electoral, sistema electoral, LOREG, circunscripción, listas abiertas, D’Hondt, D'Hondt, proporcionalidad, voto rogado; ninguna página los menciona"
@@ -10335,133 +10335,133 @@
           "detail": "términos buscados: Canarias, canari, cayuco, patera, ruta atlántica, Atlántico, menores migrantes, menores no acompañados, acogida, Salvamento Marítimo, llegadas, Mauritania, Senegal; revisadas las páginas 11 sin propuesta"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: turístic, vacacional, vacacionales, pisos turísticos, viviendas de uso turístico, turismo; ninguna página los menciona"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: cuatro días, 4 días, semana laboral, jornada, horas semanales, 32 horas; ninguna página los menciona"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "servicio-militar",
+          "suggestedQuestion": "servicio-militar",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; ninguna página los menciona"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: ley electoral, sistema electoral, LOREG, circunscripción, listas abiertas, D’Hondt, D'Hondt, proporcionalidad, voto rogado; ninguna página los menciona"
@@ -10945,103 +10945,103 @@
           "detail": "consenso: difficult"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "iva-luz",
+          "suggestedQuestion": "iva-luz",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V1",
           "result": "pass",
           "detail": "1 cita(s) localizadas"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V3",
           "result": "pass",
           "detail": "sin marcas identificativas"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V4",
           "result": "pass",
           "detail": "cifras trazables a las citas"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V5",
           "result": "pass",
           "detail": "longitud dentro del rango"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V6",
           "result": "pass",
           "detail": "plantilla completa"
         },
         {
-          "question": "alquiler-turistico",
+          "suggestedQuestion": "alquiler-turistico",
           "check": "V10",
           "result": "pass",
           "detail": "fiel a la cita según un verificador independiente"
         },
         {
-          "question": "semana-4-dias",
+          "suggestedQuestion": "semana-4-dias",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: cuatro días, 4 días, semana laboral, jornada, horas semanales, 32 horas; ninguna página los menciona"
         },
         {
-          "question": "edad-jubilacion",
+          "suggestedQuestion": "edad-jubilacion",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: jubilación, jubilar, edad de retiro, retiro, pensiones, prejubila; ninguna página los menciona"
         },
         {
-          "question": "cuidado-mayores",
+          "suggestedQuestion": "cuidado-mayores",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: personas mayores, persona mayor, gente mayor, dependen, residencia, cuidados, ayuda a domicilio, teleasistencia, envejecimiento; ninguna página los menciona"
         },
         {
-          "question": "servicio-militar",
+          "suggestedQuestion": "servicio-militar",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: servicio militar, mili, reclutamiento, conscripción, reservistas, servicio civil, Fuerzas Armadas; ninguna página los menciona"
         },
         {
-          "question": "ley-electoral",
+          "suggestedQuestion": "ley-electoral",
           "check": "V12",
           "result": "pass",
           "detail": "no lo menciona: términos buscados: ley electoral, sistema electoral, LOREG, circunscripción, listas abiertas, D’Hondt, D'Hondt, proporcionalidad, voto rogado; ninguna página los menciona"
@@ -11049,7 +11049,7 @@
       ]
     }
   ],
-  "questions": [
+  "suggestedQuestions": [
     {
       "id": "iva-luz",
       "text": "¿Quién propone bajar el IVA de la luz?",

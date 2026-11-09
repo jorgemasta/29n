@@ -2,7 +2,7 @@
 // the watcher). Real data replaces simulated data entirely; the party's previous positions and
 // report are replaced by the new ones, the other parties are kept as they were.
 import { buildDataset, validateDataset } from '../dataset';
-import type { Dataset, Report, Party, Question, Topic } from '../dataset/schema';
+import type { Dataset, Report, Party, SuggestedQuestion, Topic } from '../dataset/schema';
 import { SUGGESTED_QUESTIONS } from '../registry/questions';
 import type { ProcessOptions, ProcessResult, Revision } from './index';
 
@@ -38,7 +38,7 @@ export function mergeManifesto(
   args: {
     topics: Topic[];
     /** Suggested questions (default: registry/questions). */
-    questions?: Question[];
+    suggestedQuestions?: SuggestedQuestion[];
     generated: string;
     date?: string;
     /** Party registry (src/registry/parties.ts): when given, every registered party without a
@@ -64,7 +64,7 @@ export function mergeManifesto(
   const dataset = buildDataset({
     parties,
     topics: args.topics,
-    questions: args.questions ?? SUGGESTED_QUESTIONS,
+    suggestedQuestions: args.suggestedQuestions ?? SUGGESTED_QUESTIONS,
     results: [
       ...priorData.reports
         .filter((i) => i.party !== party.id && (!registry || registry[i.party]))
@@ -73,7 +73,7 @@ export function mergeManifesto(
           positions: priorData.positions.filter((p) => p.party === report.party),
           // Answers to questions no longer suggested are dropped (V9 rejects unknown questions).
           answers: (priorData.answers ?? []).filter(
-            (r) => r.party === report.party && (args.questions ?? SUGGESTED_QUESTIONS).some((q) => q.id === r.question),
+            (r) => r.party === report.party && (args.suggestedQuestions ?? SUGGESTED_QUESTIONS).some((q) => q.id === r.question),
           ),
         })),
       result,
