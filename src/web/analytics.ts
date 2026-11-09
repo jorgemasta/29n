@@ -40,7 +40,11 @@ const once = (e: AnalyticsEvent) => {
 export const setupAnalytics = (ids: readonly string[]) => {
   parties = ids;
 };
-/** A topic is on screen: a player with nothing done yet has started. */
+/** A question is on screen: a player with nothing answered yet has started. */
+export const trackStarted = (game: Game) => {
+  if (Object.keys(game.state.questionChoices ?? {}).length === 0) once(startedEvent());
+};
+/** v1: a topic is on screen: a player with nothing done yet has started. */
 export const trackViewTopic = (game: Game) => {
   if (game.done().length === 0) once(startedEvent());
 };

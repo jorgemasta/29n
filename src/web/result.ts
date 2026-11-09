@@ -178,7 +178,8 @@ export interface DataActions {
 
 /** "Tus datos": what is stored (only on this phone), the bet switch and "Borrar todo". */
 export function dataView(game: Game, options: { chosenProvince: boolean; guessEnabled: boolean; storage: boolean; largeText?: boolean }, actions: DataActions): HTMLElement {
-  const priorities = game.priorities().map((id) => game.topics().find((t) => t.id === id)!.title);
+  const answered = Object.keys(game.state.questionChoices ?? {}).length;
+  const revealed = game.themes().filter((t) => game.theme(t.id).revealed).length;
   const toggle = h('input', { type: 'checkbox', id: 'guess-pref', class: 'toggle' }) as HTMLInputElement;
   toggle.checked = !options.guessEnabled;
   toggle.addEventListener('change', () => actions.changeGuess(!toggle.checked));
@@ -189,9 +190,9 @@ export function dataView(game: Game, options: { chosenProvince: boolean; guessEn
       : 'En este modo no podemos guardar nada: tu progreso se perderá al cerrar.'),
     h('ul', {},
       h('li', {}, `Provincia: ${options.chosenProvince ? provinceName(game.province) : 'sin elegir'}`),
-      h('li', {}, `Temas hechos: ${game.done().length}, con tus elecciones y apuestas`),
-      h('li', {}, `Tus temas importantes: ${priorities.length ? joinList(priorities) : 'ninguno'}`),
-      h('li', {}, 'Tu barajado (la semilla que ordena las tarjetas)'),
+      h('li', {}, `Preguntas contestadas: ${answered}, con lo que elegiste en cada una`),
+      h('li', {}, `Temáticas destapadas: ${revealed}`),
+      h('li', {}, 'Tu barajado (la semilla que ordena las propuestas)'),
       h('li', {}, `Tamaño de letra: ${options.largeText ? 'grande' : 'normal'} (botón Aa)`),
     ),
     h('p', { class: 'grey' }, 'Nada de esto sale de tu móvil: ni tus elecciones, ni tus apuestas, ni tu resultado.'),

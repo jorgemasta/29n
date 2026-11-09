@@ -27,7 +27,7 @@ const header = (game: Game, back: { href: string; text: string }) =>
 export function questionsView(game: Game): HTMLElement {
   const questions = game.suggestedQuestions();
   return h('section', { class: 'ask' },
-    header(game, { href: '#temas', text: '← Temas' }),
+    header(game, { href: '#tematicas', text: '← Temáticas' }),
     h('h1', { tabindex: '-1' }, 'Pregunta a los programas'),
     h('p', {}, 'Respondemos solo con lo que está escrito en los programas, siempre con cita. Si no lo dicen, te lo decimos.'),
     questions.length

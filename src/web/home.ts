@@ -14,18 +14,18 @@ function cards(): HTMLElement {
 }
 
 export function homeView(onStart: () => void): HTMLElement {
-  const start = h('button', { type: 'button', class: 'primary' }, 'Empezar por vivienda');
+  const start = h('button', { type: 'button', class: 'primary' }, 'Empezar');
   start.addEventListener('click', onStart);
   return h('section', { class: 'home' },
     h('p', { class: 'kicker' }, '29N · Elecciones generales · 29 de noviembre'),
     h('h1', { tabindex: '-1' }, 'Lee lo que proponen sin saber de quién es.'),
-    h('p', { class: 'subtitle' }, 'Elige la que más te convence. Después te enseñamos de qué partido era cada una.'),
+    h('p', { class: 'subtitle' }, 'Elige la que más te convence. Al terminar cada temática te enseñamos qué partidos defienden cada una.'),
     cards(),
     h('ol', { class: 'steps', role: 'list' },
-      h('li', {}, h('span', { 'aria-hidden': 'true' }, '📖 '), '1 · Lees'),
-      h('li', {}, h('span', { 'aria-hidden': 'true' }, '👆 '), '2 · Eliges'),
-      h('li', {}, h('span', { 'aria-hidden': 'true' }, '🔍 '), '3 · Descubres')),
-    h('div', { class: 'sticky-bar' }, start),
+      h('li', {}, '1 · Lees tres propuestas'),
+      h('li', {}, '2 · Eliges una'),
+      h('li', {}, '3 · Destapas quién la defiende')),
+    h('div', { class: 'action-bar' }, h('div', {}, start)),
     h('ul', { class: 'confidence', role: 'list' },
       h('li', {}, 'No pedimos nombre, teléfono ni dinero. Nunca.'),
       h('li', {}, 'No te decimos a quién votar. Vota a quien quieras.'),

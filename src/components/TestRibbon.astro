@@ -1,0 +1,9 @@
+---
+// One-line ribbon while the data is not real (#18): it says so without taking over the screen.
+import { dataset } from '../transparency/data';
+---
+{dataset.origin !== 'real' && (
+  <p class="test-ribbon" role="note" title={dataset.note}>
+    <strong>Datos de prueba:</strong> partidos y programas ficticios. <a href="/metodologia/">Qué es esto</a>
+  </p>
+)}
