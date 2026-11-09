@@ -53,8 +53,9 @@ export const trackConfirm = (before: Game, after: Game, topic: string) =>
   confirmEvents(before, after, topic).forEach(send);
 /** Hit or miss of the guesses on these questions, once revealed (never the party). */
 export const trackGuesses = (game: Game, questionIds: string[]) => guessEvents(game, questionIds).forEach(send);
+/** "Mi resultado" is on screen with at least one revealed theme in it. */
 export const trackResult = (game: Game) => {
-  if (game.result().available) once(sawResultEvent());
+  if (game.affinity().themes.length) once(sawResultEvent());
 };
 /** For the share button (#9). */
 export const trackShare = (variant: ShareVariant) => send(sharedEvent(variant));

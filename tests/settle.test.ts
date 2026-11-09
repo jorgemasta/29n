@@ -1,7 +1,8 @@
 // Test point A': settleApproaches (settle the 3 approaches of a question), with the fake AI.
 import { describe, expect, it } from 'vitest';
-import { createFakeAI, type FakeResponse } from '../src/ai/fake';
+import { createFakeAI, type FakeResponse, type FakeResponses } from '../src/ai/fake';
 import { Dataset, Question } from '../src/dataset/schema';
+import { GUESS_ROUNDS, MAX_REWRITES } from '../src/pipeline/approach-checks';
 import { settleApproaches, type ApproachCheck, type QuestionSpec, type SettlePosition } from '../src/pipeline/settle';
 
 const question: QuestionSpec = {
@@ -41,9 +42,17 @@ const threeApproaches = {
 
 const positions = [proposes('pej'), proposes('otp'), proposes('ter'), proposes('cua')];
 
-function fakeAi(settle: FakeResponse) {
-  return createFakeAI({ 'settle-approaches': settle });
+/** V10 finds every approach faithful; V11 always guesses a party that defends nothing. */
+const passingChecks: FakeResponses = {
+  'verify-fidelity': () => ({ adds: false, omits: false, changesMeaning: false, explanation: 'Fiel a la cita.' }),
+  'guess-party': (input: { approaches: { letter: string }[] }) => ({ assignments: input.approaches.map((a) => ({ letter: a.letter, party: 'nadie', hint: 'ninguna' })) }),
+};
+
+function fakeAi(settle: FakeResponse, extra: FakeResponses = {}) {
+  return createFakeAI({ ...passingChecks, 'settle-approaches': settle, ...extra });
 }
+
+const settleCalls = (ai: { calls: { task: string; input: unknown }[] }) => ai.calls.filter((c) => c.task === 'settle-approaches');
 
 describe("settleApproaches (test point A')", () => {
   it('settles exactly 3 approaches, each party at its stance with its quote', async () => {
@@ -102,6 +111,7 @@ describe("settleApproaches (test point A')", () => {
     const parties = result.question!.approaches.flatMap((a) => a.stances.map((s) => s.party));
     expect(parties).not.toContain('qui');
     expect(result.question!.otherProposals).toEqual([]);
+    expect(ai.calls.some((c) => c.task === 'guess-party')).toBe(true);
     expect(JSON.stringify(ai.calls.map((c) => c.input))).not.toMatch(/"qui"|"sex"/);
   });
 
@@ -156,7 +166,7 @@ describe("settleApproaches (test point A')", () => {
       const ai = fakeAi((_, attempt) => (attempt === 0 ? threeApproaches : reworded));
       const result = await settleApproaches({ question, positions }, ai);
 
-      const passes = ai.calls.filter((c) => c.task === 'settle-approaches').map((c) => c.input as { positions: { party: string }[] });
+      const passes = settleCalls(ai).map((c) => c.input as { positions: { party: string }[] });
       expect(passes).toHaveLength(2);
       expect(passes[1]!.positions.map((p) => p.party)).not.toEqual(passes[0]!.positions.map((p) => p.party));
       expect(result.publishable).toBe(true);
@@ -168,17 +178,17 @@ describe("settleApproaches (test point A')", () => {
       const ai = fakeAi((_, attempt) => (attempt === 1 ? disagreeing : threeApproaches));
       const result = await settleApproaches({ question, positions }, ai);
 
-      expect(ai.calls).toHaveLength(4);
+      expect(settleCalls(ai)).toHaveLength(4);
       expect(result.publishable).toBe(true);
       expect(result.report.rounds).toBe(2);
-      expect(result.report.entries.map((e) => [e.check, e.result])).toEqual([['agreement', 'retry'], ['agreement', 'pass']]);
+      expect(result.report.entries.filter((e) => e.check === 'agreement').map((e) => e.result)).toEqual(['retry', 'pass']);
     });
 
     it('is not publishable after the retry still disagrees, and says why in the report', async () => {
       const ai = fakeAi((_, attempt) => (attempt % 2 === 0 ? threeApproaches : disagreeing));
       const result = await settleApproaches({ question, positions }, ai);
 
-      expect(ai.calls).toHaveLength(4);
+      expect(settleCalls(ai)).toHaveLength(4);
       expect(result.publishable).toBe(false);
       expect(result.question).toBeNull();
       expect(result.report).toMatchObject({ question: 'alquiler', publishable: false, rounds: 2 });
@@ -189,18 +199,20 @@ describe("settleApproaches (test point A')", () => {
     });
   });
 
-  it('runs every approach check on the settled approaches; a discard blocks the question (seam for #22)', async () => {
+  it('runs every approach check on the settled approaches; a block finding makes the question unpublishable without rewriting', async () => {
     const seen: string[] = [];
     const v3: ApproachCheck = async (approach) => {
       seen.push(approach.id);
-      return approach.what.includes('impuestos') ? [{ check: 'V3', result: 'discard', detail: 'marca de partido' }] : [{ check: 'V3', result: 'pass', detail: 'sin marcas' }];
+      return approach.what.includes('impuestos') ? [{ check: 'V3', result: 'block', detail: 'marca de partido' }] : [{ check: 'V3', result: 'pass', detail: 'sin marcas' }];
     };
-    const result = await settleApproaches({ question, positions }, fakeAi(() => threeApproaches), { checks: [v3] });
+    const ai = fakeAi(() => threeApproaches);
+    const result = await settleApproaches({ question, positions }, ai, { checks: [v3] });
 
     expect(seen).toHaveLength(3);
     expect(result.publishable).toBe(false);
-    expect(result.report.entries).toContainEqual({ check: 'V3', approach: result.report.entries.find((e) => e.result === 'discard')!.approach, result: 'discard', detail: 'marca de partido' });
+    expect(result.report.entries).toContainEqual({ check: 'V3', approach: 'alquiler-2', result: 'block', detail: 'marca de partido' });
     expect(result.report.reason).toMatch(/V3/);
+    expect(ai.calls.filter((c) => c.task === 'rewrite-approach')).toHaveLength(0);
   });
 
   it('keeps frozen approaches as published and only classifies the parties (seam for #28)', async () => {
@@ -213,7 +225,7 @@ describe("settleApproaches (test point A')", () => {
     expect(result.question!.approaches.map(({ id, what, how, figure, filler }) => ({ id, what, how, figure, filler }))).toEqual(
       frozen.map(({ id, what, how, figure, filler }) => ({ id, what, how, figure, filler })),
     );
-    expect((ai.calls[0]!.input as { frozenApproaches: unknown[] }).frozenApproaches).toHaveLength(3);
+    expect((settleCalls(ai)[0]!.input as { frozenApproaches: unknown[] }).frozenApproaches).toHaveLength(3);
   });
 
   it('the settled question plays in a valid v2 dataset (V9)', async () => {
@@ -224,10 +236,263 @@ describe("settleApproaches (test point A')", () => {
     const dataset = {
       version: 2, generated: '2026-11-09', origin: 'test', parties,
       topics: [{ id: 'vivienda', title: 'Vivienda', question: '¿Qué harían con la vivienda?', scope: 'national', order: 1 }],
-      positions: [], reports: [],
+      topicPositions: [], positions: [], reports: [],
       themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
       questions: [q],
     };
     expect(Dataset.safeParse(dataset).error?.issues).toBeUndefined();
+  });
+});
+describe('approach checks (V3, V4, V5, V6, V10, V11)', () => {
+  type Text = { what: string; how: string; figure: string | null };
+  /** The pass answer with the taxCut approach (otp's, `alquiler-2`) written as `text`. */
+  const withTaxCut = (text: Text) => ({ approaches: [threeApproaches.approaches[0], { ...threeApproaches.approaches[1], ...text }, threeApproaches.approaches[2]] });
+  const rewriteCalls = (ai: { calls: { task: string; input: unknown }[] }) => ai.calls.filter((c) => c.task === 'rewrite-approach').map((c) => c.input as { approach: Text; fixes: string[]; quotes: string[] });
+  const entriesOf = (r: { report: { entries: { check: string; approach?: string; result: string }[] } }, check: string) => r.report.entries.filter((e) => e.check === check);
+
+  it('every approach passes every check when it is clean', async () => {
+    const result = await settleApproaches({ question, positions }, fakeAi(() => threeApproaches));
+
+    expect(result.publishable).toBe(true);
+    for (const check of ['V3', 'V4', 'V5', 'V6', 'V10', 'V11']) {
+      expect(entriesOf(result, check).map((e) => [e.approach, e.result])).toEqual([
+        ['alquiler-1', 'pass'],
+        ['alquiler-2', 'pass'],
+        ['alquiler-3', 'pass'],
+      ]);
+    }
+  });
+
+  describe('a failing approach is rewritten, a limited number of times', () => {
+    const marked = { ...taxCut, what: 'Bajar impuestos como propone el Partido Popular a quien compra.' };
+
+    it('rewrites the failing approach with what to fix, and publishes the rewrite when it passes', async () => {
+      const ai = fakeAi(() => withTaxCut(marked), { 'rewrite-approach': () => taxCut });
+      const result = await settleApproaches({ question, positions }, ai);
+
+      expect(result.publishable).toBe(true);
+      expect(result.question!.approaches[1]!.what).toBe(taxCut.what);
+      const [rewrite] = rewriteCalls(ai);
+      expect(rewriteCalls(ai)).toHaveLength(1);
+      expect(rewrite!.approach.what).toBe(marked.what);
+      expect(rewrite!.fixes.join(' ')).toMatch(/Partido Popular/);
+      expect(rewrite!.quotes).toEqual([QUOTES.otp]);
+      expect(entriesOf(result, 'V3').map((e) => [e.approach, e.result])).toContainEqual(['alquiler-2', 'rewrite']);
+    });
+
+    it('is not publishable when the rewrites keep failing, and the report says which check', async () => {
+      const ai = fakeAi(() => withTaxCut(marked), { 'rewrite-approach': () => marked });
+      const result = await settleApproaches({ question, positions }, ai);
+
+      expect(result.publishable).toBe(false);
+      expect(result.question).toBeNull();
+      expect(rewriteCalls(ai)).toHaveLength(MAX_REWRITES);
+      expect(result.report.entries.find((e) => e.result === 'block')).toMatchObject({ check: 'V3', approach: 'alquiler-2' });
+      expect(result.report.reason).toMatch(/V3 en alquiler-2/);
+    });
+
+    it('never rewrites a frozen approach: the question is not publishable', async () => {
+      const first = await settleApproaches({ question, positions }, fakeAi(() => threeApproaches));
+      const frozen = first.question!.approaches.map((a, i) => (i === 1 ? { ...a, ...marked } : a));
+      const ai = fakeAi(() => threeApproaches, { 'rewrite-approach': () => taxCut });
+      const result = await settleApproaches({ question, positions, frozen }, ai);
+
+      expect(result.publishable).toBe(false);
+      expect(rewriteCalls(ai)).toHaveLength(0);
+    });
+  });
+
+  describe('V3: no party names, acronyms or brands', () => {
+    it('fails an approach naming a party (any party, case and accents ignored)', async () => {
+      const result = await settleApproaches({ question, positions }, fakeAi(() => withTaxCut({ ...taxCut, how: 'Con la rebaja del IVA que defiende feijoo.' }), { 'rewrite-approach': () => taxCut }));
+
+      expect(entriesOf(result, 'V3').find((e) => e.result === 'rewrite')!).toMatchObject({ approach: 'alquiler-2' });
+      expect(result.publishable).toBe(true);
+    });
+
+    it('passes words that only contain a mark inside them', async () => {
+      const result = await settleApproaches({ question, positions }, fakeAi(() => withTaxCut({ ...taxCut, how: 'Con una rebaja del IVA, con apoyo popular.' })));
+
+      expect(entriesOf(result, 'V3').every((e) => e.result === 'pass')).toBe(true);
+    });
+  });
+
+  describe('V4: every figure is a rounding compatible with the defenders’ figures', () => {
+    const housingQuote = 'Construiremos 47.300 viviendas públicas en alquiler social en suelo del Estado antes de 2030.';
+    const withFigures: SettlePosition[] = [proposes('pej'), proposes('cua'), proposes('otp'), { party: 'ter', state: 'proposes', quotes: [{ text: housingQuote, page: 7 }] }];
+    const housing = (figure: string | null, how = publicHousing.how) => ({
+      approaches: [threeApproaches.approaches[0], threeApproaches.approaches[1], { ...publicHousing, how, figure, filler: false, stances: [{ party: 'ter', stance: 'full', quote: housingQuote }] }],
+    });
+    const run = (answer: unknown, rewrite?: Text) => settleApproaches({ question, positions: withFigures }, fakeAi(() => answer, rewrite ? { 'rewrite-approach': () => rewrite } : {}));
+    const v4 = async (figure: string | null, how?: string) => entriesOf(await run(housing(figure, how), { ...publicHousing, figure: 'Decenas de miles de viviendas' }), 'V4').find((e) => e.approach === 'alquiler-3')!.result;
+
+    it('passes a rounded figure close to the defender’s figure', async () => {
+      expect(await v4('Unas 50.000 viviendas')).toBe('pass');
+      expect(await v4('Cerca de 45 mil viviendas')).toBe('pass');
+      expect(await v4('Decenas de miles de viviendas')).toBe('pass');
+    });
+
+    it('passes a year the defenders give', async () => {
+      expect(await v4('Decenas de miles de viviendas', 'En suelo público, en todas las provincias, antes de 2030.')).toBe('pass');
+    });
+
+    it('fails the defender’s exact figure, which would give the party away', async () => {
+      expect(await v4('47.300 viviendas')).toBe('rewrite');
+    });
+
+    it('fails a rounding not compatible with any defender’s figure', async () => {
+      expect(await v4('Unas 200.000 viviendas')).toBe('rewrite');
+      expect(await v4('Decenas de miles de viviendas', 'En suelo público, en todas las provincias, antes de 2028.')).toBe('rewrite');
+    });
+
+    it('fails a figure in a filler approach, which no party backs', async () => {
+      const answer = { approaches: [threeApproaches.approaches[0], threeApproaches.approaches[1], { ...filler, figure: 'Unos 100 euros al mes', filler: true, stances: [] }] };
+      const result = await run(answer, filler);
+
+      expect(entriesOf(result, 'V4').find((e) => e.approach === 'alquiler-3')!.result).toBe('rewrite');
+      expect(result.publishable).toBe(true);
+    });
+
+    it('asks the rewrite for an order of magnitude compatible with the quotes', async () => {
+      const ai = fakeAi(() => housing('47.300 viviendas'), { 'rewrite-approach': () => publicHousing });
+      await settleApproaches({ question, positions: withFigures }, ai);
+
+      expect(rewriteCalls(ai)[0]!.fixes.join(' ')).toMatch(/47\.300/);
+    });
+  });
+
+  describe('V5: the 3 approaches have a similar length', () => {
+    const long = { ...taxCut, how: 'Con una rebaja del IVA de la vivienda nueva para quien compra por primera vez, con deducciones en la renta, avales públicos para la entrada y un plan de ayudas a la compra.' };
+
+    it('fails an approach much longer than the others, and asks for the length of the others', async () => {
+      const ai = fakeAi(() => withTaxCut(long), { 'rewrite-approach': () => taxCut });
+      const result = await settleApproaches({ question, positions }, ai);
+
+      expect(entriesOf(result, 'V5').filter((e) => e.result === 'rewrite').map((e) => e.approach)).toEqual(['alquiler-2']);
+      expect(rewriteCalls(ai)[0]!.fixes.join(' ')).toMatch(/palabras/);
+      expect(result.publishable).toBe(true);
+    });
+
+    it('passes approaches a few words apart', async () => {
+      const result = await settleApproaches({ question, positions }, fakeAi(() => withTaxCut({ ...taxCut, how: 'Con una rebaja del IVA de la vivienda nueva y usada.' })));
+
+      expect(entriesOf(result, 'V5').every((e) => e.result === 'pass')).toBe(true);
+    });
+  });
+
+  describe('V6: the what/how template is complete', () => {
+    it('fails an approach without "how"', async () => {
+      const ai = fakeAi(() => withTaxCut({ ...taxCut, how: '  ' }), { 'rewrite-approach': () => taxCut });
+      const result = await settleApproaches({ question, positions }, ai);
+
+      expect(entriesOf(result, 'V6').find((e) => e.result === 'rewrite')).toMatchObject({ approach: 'alquiler-2' });
+      expect(rewriteCalls(ai)[0]!.fixes.join(' ')).toMatch(/how/);
+      expect(result.publishable).toBe(true);
+    });
+
+    it('passes without a figure (the figure is optional)', async () => {
+      const result = await settleApproaches({ question, positions }, fakeAi(() => withTaxCut({ ...taxCut, figure: null })));
+
+      expect(entriesOf(result, 'V6').every((e) => e.result === 'pass')).toBe(true);
+    });
+  });
+
+  describe('V10: faithful to the quotes of the parties classified in full', () => {
+    type FidelityInput = { approach: Text; quotes: string[] };
+    const unfaithfulIfTaxCut = (input: FidelityInput) =>
+      input.approach.what === taxCut.what
+        ? { adds: true, omits: false, changesMeaning: false, explanation: 'Añade un colectivo que no está en la cita.' }
+        : { adds: false, omits: false, changesMeaning: false, explanation: 'Fiel a la cita.' };
+    const rewritten = { ...taxCut, what: 'Rebajar impuestos a quien compra su primera vivienda.' };
+
+    it('fails an unfaithful approach and rewrites it with the verifier’s explanation', async () => {
+      const ai = fakeAi(() => threeApproaches, { 'verify-fidelity': unfaithfulIfTaxCut, 'rewrite-approach': () => rewritten });
+      const result = await settleApproaches({ question, positions }, ai);
+
+      expect(entriesOf(result, 'V10').find((e) => e.result === 'rewrite')).toMatchObject({ approach: 'alquiler-2' });
+      expect(rewriteCalls(ai)[0]!.fixes.join(' ')).toMatch(/Añade un colectivo/);
+      expect(result.publishable).toBe(true);
+    });
+
+    it('checks against the quotes of full defenders only, and skips approaches without any', async () => {
+      const ai = fakeAi(() => threeApproaches);
+      const result = await settleApproaches({ question, positions }, ai);
+
+      const verified = ai.calls.filter((c) => c.task === 'verify-fidelity').map((c) => (c.input as FidelityInput).quotes);
+      expect(verified).toEqual([[QUOTES.pej], [QUOTES.otp], [QUOTES.ter]]);
+      expect(entriesOf(result, 'V10').every((e) => e.result === 'pass')).toBe(true);
+    });
+
+    it('does not verify a filler approach', async () => {
+      const answer = { approaches: [threeApproaches.approaches[0], threeApproaches.approaches[1], { ...filler, filler: true, stances: [] }] };
+      const ai = fakeAi(() => answer);
+      const result = await settleApproaches({ question, positions: positions.filter((p) => p.party !== 'ter') }, ai);
+
+      expect(ai.calls.filter((c) => c.task === 'verify-fidelity')).toHaveLength(2);
+      expect(entriesOf(result, 'V10').find((e) => e.approach === 'alquiler-3')!.result).toBe('pass');
+    });
+  });
+
+  describe('V11: a guesser does not find the defenders above chance', () => {
+    type GuessInput = { parties: { id: string }[]; approaches: { letter: string; text: string }[] };
+    /** Names `party` for every approach whose text matches `pattern`, and a non-defender otherwise. */
+    const guesser = (pattern: RegExp, party: string) => (input: GuessInput) => ({
+      assignments: input.approaches.map((a) => (pattern.test(a.text) ? { letter: a.letter, party, hint: 'habla del IVA' } : { letter: a.letter, party: 'nadie', hint: 'ninguna' })),
+    });
+    const noVat = { ...taxCut, how: 'Con una rebaja fiscal en la vivienda nueva.' };
+
+    it('guesses with the anonymous approaches, shuffled, and the parties that propose something', async () => {
+      const ai = fakeAi(() => threeApproaches);
+      await settleApproaches({ question, positions }, ai);
+
+      const rounds = ai.calls.filter((c) => c.task === 'guess-party').map((c) => c.input as GuessInput);
+      expect(rounds).toHaveLength(GUESS_ROUNDS);
+      expect(rounds[0]!.parties.map((p) => p.id).sort()).toEqual(['cua', 'otp', 'pej', 'ter']);
+      expect(new Set(rounds.map((r) => r.approaches.map((a) => a.text).join('|'))).size).toBeGreaterThan(1);
+      expect(JSON.stringify(rounds)).not.toMatch(/alquiler-\d/);
+    });
+
+    it('rewrites an approach whose only defender is guessed every time (1 in 4 by chance)', async () => {
+      const ai = fakeAi(() => threeApproaches, { 'guess-party': guesser(/IVA/, 'otp'), 'rewrite-approach': () => noVat });
+      const result = await settleApproaches({ question, positions }, ai);
+
+      expect(entriesOf(result, 'V11').find((e) => e.result === 'rewrite')).toMatchObject({ approach: 'alquiler-2' });
+      expect(rewriteCalls(ai)[0]!.fixes.join(' ')).toMatch(/habla del IVA/);
+      expect(result.publishable).toBe(true);
+      expect(result.question!.approaches[1]!.how).toBe(noVat.how);
+    });
+
+    it('is not publishable when the rewrites are still guessed', async () => {
+      const ai = fakeAi(() => threeApproaches, { 'guess-party': guesser(/IVA/, 'otp'), 'rewrite-approach': () => taxCut });
+      const result = await settleApproaches({ question, positions }, ai);
+
+      expect(result.publishable).toBe(false);
+      expect(result.report.reason).toMatch(/V11 en alquiler-2/);
+    });
+
+    it('passes a guess every time when half the parties defend the approach (that is chance)', async () => {
+      const ai = fakeAi(() => threeApproaches, { 'guess-party': guesser(/alquiler/, 'pej') });
+      const result = await settleApproaches({ question, positions }, ai);
+
+      expect(entriesOf(result, 'V11').find((e) => e.approach === 'alquiler-1')!.result).toBe('pass');
+      expect(result.publishable).toBe(true);
+    });
+
+    it('passes a party guessed that does not defend the approach', async () => {
+      const result = await settleApproaches({ question, positions }, fakeAi(() => threeApproaches, { 'guess-party': guesser(/IVA/, 'pej') }));
+
+      expect(entriesOf(result, 'V11').every((e) => e.result === 'pass')).toBe(true);
+    });
+  });
+
+  it('runs by default, with the registry party names for the guesser', async () => {
+    const pp: SettlePosition = { party: 'pp', state: 'proposes', quotes: [{ text: QUOTES.pej, page: 3 }] };
+    const answer = { approaches: [{ ...capRent, filler: false, stances: [{ party: 'pp', stance: 'full', quote: QUOTES.pej }] }, threeApproaches.approaches[1], threeApproaches.approaches[2]] };
+    const ai = fakeAi(() => answer);
+    await settleApproaches({ question, positions: [pp, proposes('otp'), proposes('ter')] }, ai);
+
+    const parties = (ai.calls.find((c) => c.task === 'guess-party')!.input as { parties: { id: string; name: string }[] }).parties;
+    expect(parties).toContainEqual(expect.objectContaining({ id: 'pp', name: 'Partido Popular' }));
+    expect(parties).toContainEqual(expect.objectContaining({ id: 'otp', name: 'otp' }));
   });
 });

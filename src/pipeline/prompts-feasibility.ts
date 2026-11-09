@@ -5,10 +5,10 @@ import { AssessmentLevel, RubricReasons } from '../dataset/schema';
 import { rubricAsText } from '../registry/rubric';
 import { INSTITUTIONAL_DOMAINS } from '../registry/institutional-domains';
 
-export const FEASIBILITY_PROMPT_VERSION = 'viabilidad-v1';
+export const FEASIBILITY_PROMPT_VERSION = 'viabilidad-v2';
 
 export const FEASIBILITY_INSTRUCTIONS = `Evalúas la viabilidad de una propuesta electoral en España. No sabes de qué partido es
-y no debes intentar averiguarlo. Recibes el tema, la propuesta reescrita en estilo neutro (qué / cómo / cifra)
+y no debes intentar averiguarlo. Recibes la pregunta a la que responde, la propuesta concreta (qué / cómo / cifra)
 y las citas literales del programa (los nombres propios de partidos aparecen como [partido]).
 No valoras si la propuesta es buena idea: solo qué haría falta para aplicarla.
 

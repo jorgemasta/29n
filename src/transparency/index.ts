@@ -1,7 +1,7 @@
 // Transparency data (#11): derived views of the dataset for the methodology, parties-and-programmes
 // and verification-report pages, plus the prefilled GitHub issue links ("Reportar error", "Falta un partido").
 // Pure functions: the pages only render what these return.
-import type { Dataset, ReportEntry, Report, Party, SuggestedQuestion, FeasibilityResult, PositionSummary, Topic, SourceType } from '../dataset/schema';
+import type { Dataset, ReportEntry, Report, Party, SuggestedQuestion, FeasibilityResult, PositionSummary, Question, SourceType } from '../dataset/schema';
 import { CHECKS } from '../registry/checks';
 import { provinceByCode } from '../registry/territory';
 
@@ -38,7 +38,8 @@ export function feasibilityDistribution(ds: Dataset): FeasibilityDistribution {
   const parties = ds.parties.filter((p) => p.manifesto.state === 'published').sort(byName);
   const topics = [...ds.topics].sort((a, b) => a.order - b.order);
   const cell = new Map<string, DistributionCell>();
-  for (const p of ds.positions) {
+  // v1 (legacy) topic cards, until #29 moves the distribution to questions.
+  for (const p of ds.topicPositions) {
     cell.set(`${p.party}/${p.topic}`, p.state === 'proposes' ? (p.feasibility?.result ?? 'noNote') : p.state);
   }
   const byParty = parties.map((p): DistributionRow => {
@@ -112,32 +113,37 @@ export interface ReportSummary {
   published: number;
   /** Programme-level entries (V7…). */
   manifesto: SummaryEntry[];
-  topics: (Omit<PositionSummary, 'topic'> & { topic: { id: string; title: string }; entries: SummaryEntry[] })[];
+  /** One per question: the position's final state and the checks it went through. */
+  positions: (Omit<PositionSummary, 'question'> & { question: { id: string; text: string }; entries: SummaryEntry[] })[];
   /** Checks of the precomputed answers to the suggested questions (Preguntar), per question. */
   suggestedQuestions: { question: { id: string; text: string }; entries: SummaryEntry[] }[];
 }
 
-export function reportSummary(report: Report, topics: Topic[], questions: SuggestedQuestion[] = []): ReportSummary {
+/** `questions`: the dataset's questions, in their published order (others go last, by id, with the id as text). */
+export function reportSummary(
+  report: Report,
+  questions: Pick<Question, 'id' | 'text'>[] = [],
+  suggestedQuestions: SuggestedQuestion[] = [],
+): ReportSummary {
   const withName = (e: ReportEntry): SummaryEntry => ({ ...e, name: CHECKS[e.check].name });
-  const order = new Map(topics.map((t) => [t.id, t]));
-  const ids = [...new Set([...report.positions.map((p) => p.topic), ...report.entries.flatMap((e) => (e.topic ? [e.topic] : []))])];
-  ids.sort((a, b) => (order.get(a)?.order ?? Infinity) - (order.get(b)?.order ?? Infinity) || a.localeCompare(b));
+  const order = new Map(questions.map((q, i) => [q.id, i]));
+  const ids = [...new Set([...report.positions.map((p) => p.question), ...report.entries.flatMap((e) => (e.question ? [e.question] : []))])];
+  ids.sort((a, b) => (order.get(a) ?? Infinity) - (order.get(b) ?? Infinity) || a.localeCompare(b));
   return {
     report,
     published: report.positions.filter((p) => p.state === 'proposes').length,
-    manifesto: report.entries.filter((e) => !e.topic && !e.suggestedQuestion).map(withName),
+    manifesto: report.entries.filter((e) => !e.question && !e.suggestedQuestion).map(withName),
     suggestedQuestions: [...new Set(report.entries.flatMap((e) => (e.suggestedQuestion ? [e.suggestedQuestion] : [])))]
-      .map((id) => questions.find((p) => p.id === id) ?? { id, text: id, order: Infinity })
+      .map((id) => suggestedQuestions.find((p) => p.id === id) ?? { id, text: id, order: Infinity })
       .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id))
       .map(({ id, text }) => ({ question: { id, text }, entries: report.entries.filter((e) => e.suggestedQuestion === id).map(withName) })),
-    topics: ids.map((id) => {
-      const summary = report.positions.find((p) => p.topic === id);
+    positions: ids.map((id) => {
+      const summary = report.positions.find((p) => p.question === id);
       return {
-        topic: { id, title: order.get(id)?.title ?? id },
+        question: { id, text: questions.find((q) => q.id === id)?.text ?? id },
         state: summary?.state ?? 'unverified',
-        rewrites: summary?.rewrites ?? 0,
         ...(summary?.reason ? { reason: summary.reason } : {}),
-        entries: report.entries.filter((e) => e.topic === id).map(withName),
+        entries: report.entries.filter((e) => e.question === id).map(withName),
       };
     }),
   };
@@ -231,11 +237,10 @@ export function missingPartyIssue(d: MissingPartyData = {}): IssueContent {
 
 /** Every AI task, what it does and the repository file holding its exact instructions. */
 export const PROMPTS = [
-  { task: 'extract-position', what: 'Extrae la propuesta de cada tema con sus citas literales', file: 'src/pipeline/prompts.ts' },
-  { task: 'neutralize', what: 'Reescribe la propuesta en el estilo común, sin marcas del partido', file: 'src/pipeline/prompts.ts' },
+  { task: 'extract-position', what: 'Extrae la propuesta concreta de cada partido en cada pregunta, con sus citas literales', file: 'src/pipeline/prompts.ts' },
   { task: 'verify-fidelity', what: 'V10: comprueba que la reescritura es fiel a las citas', file: 'src/pipeline/fidelity.ts' },
   { task: 'guess-party', what: 'V11: intenta adivinar de qué partido es cada texto', file: 'src/pipeline/recognizability.ts' },
-  { task: 'confirm-absence', what: 'V12: confirma que un partido no propone nada sobre un tema', file: 'src/pipeline/absence.ts' },
+  { task: 'confirm-absence', what: 'V12: confirma que un partido no propone nada sobre una pregunta', file: 'src/pipeline/absence.ts' },
   { task: 'assess-feasibility', what: 'V13: evalúa la viabilidad a ciegas, dos veces', file: 'src/pipeline/prompts-feasibility.ts' },
   { task: 'answer-question', what: 'Responde a las preguntas sugeridas con citas literales', file: 'src/questions/prompts.ts' },
 ] as const;

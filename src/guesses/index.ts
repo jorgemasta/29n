@@ -4,9 +4,8 @@
 // Chance differs per question (how many parties defend each approach among those offered), so each
 // question is compared with its own chance, and only from MIN_GUESSES guesses on.
 // Ports: the Umami API (counts of 'guess-hit' / 'guess-miss' per question) and GitHub (`gh`).
-import type { Dataset } from '../dataset/schema';
-import { createGame } from '../game';
-import { PROVINCES } from '../registry/territory';
+import type { QuestionChance } from '../game/chance';
+export { questionChances, type QuestionChance } from '../game/chance';
 
 /** Below this many guesses on a question the rate is noise (a few friends testing), so nothing is opened. */
 export const MIN_GUESSES = 30;
@@ -30,12 +29,6 @@ export interface GuessPorts {
   openIssues(): Promise<string[]>;
   openIssue(issue: NewIssue): Promise<void>;
 }
-/** A question with the chance of a blind guess being right on it. */
-export interface QuestionChance {
-  id: string;
-  text: string;
-  chance: number;
-}
 export type QuestionAction = 'opened' | 'alreadyOpen' | 'ok' | 'fewGuesses';
 export interface QuestionResult {
   question: string;
@@ -43,24 +36,6 @@ export interface QuestionResult {
   rate: number;
   chance: number;
   action: QuestionAction;
-}
-
-/**
- * Chance per published question: in every province (and without one), each approach's defenders in
- * play over the parties offered; the most generous approach and province. Generous on purpose: an
- * issue means the rate beats chance whatever the voters chose and wherever they vote.
- */
-export function questionChances(dataset: Dataset): QuestionChance[] {
-  const chances = new Map<string, number>();
-  for (const province of [null, ...PROVINCES.map((p) => p.code)]) {
-    const game = createGame(dataset, province, 'chance');
-    for (const t of game.themes()) {
-      const v = game.theme(t.id);
-      for (const { question } of [...v.questions, ...v.followUps])
-        chances.set(question.id, Math.max(chances.get(question.id) ?? 0, game.guessChance(question.id)));
-    }
-  }
-  return (dataset.questions ?? []).filter((q) => chances.has(q.id)).map((q) => ({ id: q.id, text: q.text, chance: chances.get(q.id)! }));
 }
 
 /** Clearly above chance: a one-sided binomial z test. */

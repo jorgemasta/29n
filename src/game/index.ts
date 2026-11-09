@@ -1,15 +1,17 @@
 // Game engine (test point B). Pure functions over the dataset, no I/O: runs in the browser.
 //   createGame(dataset, province, seed, state?, options?) → Game (immutable; actions return a new one)
 import { applyMode, isPrivateOnly, sourceOf } from '../dataset';
-import type { Dataset, Mode, FeasibilityNote, Party, Position, SuggestedQuestion, SuggestedAnswer, Topic, SourceType } from '../dataset/schema';
+import type { Dataset, Mode, FeasibilityNote, Party, TopicPosition, SuggestedQuestion, SuggestedAnswer, Topic, SourceType } from '../dataset/schema';
 import { shuffle } from './random';
 import { themeGame, type ThemeGame, type ThemeState } from './themes';
-export { MINUTES_PER_QUESTION } from './themes';
+export { MIN_THEMES_FOR_RANKING, MINUTES_PER_QUESTION } from './themes';
 import { byName, linkQuote, revealParty, type RevealedParty } from './party';
 import { noSources } from './proposal';
 
 export type { PartyProposal } from './proposal';
 export type {
+  Affinity,
+  AffinityRow,
   ApproachChoiceOptions,
   BlindApproach,
   GuessReveal,
@@ -21,6 +23,7 @@ export type {
   QuestionView,
   RevealedApproach,
   RevealedStance,
+  ThemeAffinity,
   ThemeReveal,
   ThemeView,
 } from './themes';
@@ -37,8 +40,6 @@ export interface GameState extends ThemeState {
   choices: Record<string, string | None>;
   /** Optional bet per topic: the party the voter thought their card was from. */
   guesses?: Record<string, string>;
-  /** Up to MAX_PRIORITIES done topics that count double. */
-  priorities?: string[];
   /** Times each topic was re-shuffled ("Volver a elegir", "Barajar otra vez"). */
   reshuffles?: Record<string, number>;
   /** Parties with a card in each done topic when it was chosen (to spot new proposals). */
@@ -51,9 +52,6 @@ export interface ChoiceOptions {
   /** Party id the voter bets the chosen card is from. Not allowed with NINGUNA. */
   guess?: string;
 }
-
-/** Topics that can be marked as important (they count double). */
-export const MAX_PRIORITIES = 3;
 
 export interface GameOptions {
   /** 'public' (default) only uses official programmes; 'private' adds provisional sources. */
@@ -143,7 +141,7 @@ export type Journey =
 
 export interface RankingRow {
   party: ZoneParty;
-  /** 1 per choice, 2 in a priority topic. */
+  /** 1 per choice. */
   points: number;
   /** Rounded share of the points possible over every done topic ("Ninguna" included). */
   percent: number;
@@ -244,11 +242,7 @@ export interface Game extends ThemeGame<Game> {
   chooseAgain(topicId: string): Game;
   /** Re-shuffle a topic not chosen yet. */
   reshuffle(topicId: string): Game;
-  /** Mark (or unmark) a done topic as important; throws on a 4th one. */
-  markPriority(topicId: string, marked: boolean): Game;
-  /** Priority topics that are done here. */
-  priorities(): string[];
-  /** Affinity result: full ranking in percentages. */
+  /** v1 affinity result by topic (still read by the share card until #30); v2: `affinity()`. */
   result(): Result;
   /** What changed since the last visit. */
   news(): News;
@@ -278,7 +272,7 @@ export interface Game extends ThemeGame<Game> {
   revealSuggestedQuestion(question: string | SuggestedQuestionSummary, answers?: SuggestedAnswer[]): SuggestedQuestionReveal;
 }
 
-type ProposingPosition = Extract<Position, { state: 'proposes' }>;
+type ProposingPosition = Extract<TopicPosition, { state: 'proposes' }>;
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 export function createGame(
@@ -296,7 +290,7 @@ export function createGame(
   const byId = new Map(published.map((p) => [p.id, p]));
   const isCanaryIslands = province !== null && CANARY_PROVINCES.includes(province);
   const proposalsIn = (topicId: string) =>
-    dataset.positions.filter((p) => p.topic === topicId && p.state === 'proposes' && byId.has(p.party)).length;
+    dataset.topicPositions.filter((p) => p.topic === topicId && p.state === 'proposes' && byId.has(p.party)).length;
   const inZone = dataset.topics.filter((t) => t.scope === 'national' || isCanaryIslands).sort((a, b) => a.order - b.order);
   const topics = inZone.filter((t) => proposalsIn(t.id) >= MIN_PROPOSALS);
   const hidden = inZone.filter((t) => !topics.includes(t));
@@ -306,7 +300,7 @@ export function createGame(
     if (!topic) throw new Error(`Tema no disponible: ${topicId}`);
     return topic;
   };
-  const positionsOf = (topicId: string) => dataset.positions.filter((p) => p.topic === topicId && byId.has(p.party));
+  const positionsOf = (topicId: string) => dataset.topicPositions.filter((p) => p.topic === topicId && byId.has(p.party));
 
   /** "4F2A", then "4F2A-1", "4F2A-2"… after each re-shuffle of the topic. */
   const shuffleId = (topicId: string) => {
@@ -431,22 +425,12 @@ export function createGame(
       if (state.choices[topicId] !== undefined) throw new Error(`Ya has elegido en ${topicId}: usa «Volver a elegir»`);
       return withChanges({ reshuffles: { ...state.reshuffles, [topicId]: (state.reshuffles?.[topicId] ?? 0) + 1 } });
     },
-    markPriority(topicId, marked) {
-      findTopic(topicId);
-      const currentOnes = priorities();
-      if (!marked) return withChanges({ priorities: (state.priorities ?? []).filter((t) => t !== topicId) });
-      if (currentOnes.includes(topicId)) return withChanges({});
-      if (!done().includes(topicId)) throw new Error(`Solo se pueden marcar temas hechos: ${topicId}`);
-      if (currentOnes.length >= MAX_PRIORITIES) throw new Error(`Ya tienes ${MAX_PRIORITIES}. Quita uno.`);
-      return withChanges({ priorities: [...currentOnes, topicId] });
-    },
-    priorities,
     reveal(topicId) {
       const topic = findTopic(topicId);
       const choice = state.choices[topicId];
       if (choice === undefined) return null;
       const list = shuffledCards(topicId);
-      const withState = (e: Position['state']) =>
+      const withState = (e: TopicPosition['state']) =>
         positionsOf(topicId).filter((p) => p.state === e).map((p) => revealParty(byId.get(p.party)!));
       const guessed = state.guesses?.[topicId];
       return {
@@ -520,8 +504,7 @@ export function createGame(
     },
     result() {
       const doneIds = done();
-      const weight = (t: string) => (priorities().includes(t) ? 2 : 1);
-      const possible = doneIds.reduce((s, t) => s + weight(t), 0);
+      const possible = doneIds.length;
       const points = new Map<string, { points: number; topics: number }>();
       let none = 0;
       for (const t of doneIds) {
@@ -529,7 +512,7 @@ export function createGame(
         if (e === NONE) none++;
         else if (byId.has(e)) {
           const p = points.get(e) ?? { points: 0, topics: 0 };
-          points.set(e, { points: p.points + weight(t), topics: p.topics + 1 });
+          points.set(e, { points: p.points + 1, topics: p.topics + 1 });
         }
       }
       const allNone = doneIds.length > 0 && none === doneIds.length;
@@ -596,11 +579,6 @@ export function createGame(
 
   function done(): string[] {
     return Object.keys(state.choices).filter((id) => topics.some((t) => t.id === id));
-  }
-
-  function priorities(): string[] {
-    const h = done();
-    return (state.priorities ?? []).filter((t) => h.includes(t));
   }
 
   /** Label for the topic as it was when chosen: only choices made up to it count. */

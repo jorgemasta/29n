@@ -11,6 +11,9 @@ type None = typeof NONE;
 const LETTERS = 'ABC';
 const ALL = 'all' as const;
 
+/** The overall ranking appears from this many revealed themes (one theme is too thin a base). */
+export const MIN_THEMES_FOR_RANKING = 2;
+
 /** Rough reading-and-choosing time of one question, for "3 preguntas · unos 3 min". */
 export const MINUTES_PER_QUESTION = 1;
 
@@ -132,6 +135,41 @@ export interface ThemeReveal {
   questions: QuestionReveal[];
 }
 
+/** How much one party in play coincided with the voter's choices. */
+export interface AffinityRow {
+  party: RevealedParty;
+  /** Sum of its stances on the approaches chosen: 1 full, 0.5 partial. */
+  points: number;
+  /** Rounded share of the questions counted ("Ninguna" included): 100 = behind every choice. */
+  percent: number;
+  /** Same place for ties (1, 2, 2, 4). */
+  rank: number;
+  tie: boolean;
+}
+
+/** "Con quién coincidiste" in one revealed theme. */
+export interface ThemeAffinity {
+  theme: Theme;
+  /** Answered questions counted (base and follow-up). */
+  questions: number;
+  /** Of those, answered "Ninguna me convence". */
+  none: number;
+  /** Every party in play with a published manifesto, also at 0 %; most points first, then by name. */
+  rows: AffinityRow[];
+}
+
+/** The result. Only revealed themes count: an unrevealed choice can still change and must stay blind. */
+export interface Affinity {
+  /** Revealed themes, in their order. */
+  themes: ThemeAffinity[];
+  /** Every counted question of every revealed theme; null with fewer than MIN_THEMES_FOR_RANKING themes. */
+  ranking: AffinityRow[] | null;
+  /** Parties in play whose manifesto is not published yet: the result is partial without them. */
+  missingManifestos: RevealedParty[];
+  /** No province given: only national parties are in play. */
+  noProvince: boolean;
+}
+
 /** The v2 methods of a Game. `G` is the Game type (actions return a new one). */
 export interface ThemeGame<G> {
   /** Themes playable in this province, in their order: national ones plus its regionalTheme. */
@@ -169,6 +207,8 @@ export interface ThemeGame<G> {
   revealTheme(themeId: string): G;
   /** Null until the theme is revealed. */
   themeReveal(themeId: string): ThemeReveal | null;
+  /** The result, per revealed theme and overall. Computed only here, on the voter's device. */
+  affinity(): Affinity;
 }
 
 /** What the v2 engine needs from createGame. */
@@ -250,6 +290,28 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
       return g ? [[q.id, g.correct] as const] : [];
     }));
   const offered = () => [...ctx.published.values()].map(revealParty).sort(byName);
+  /** Rows for these answered questions: the stances of the parties in play on each chosen approach. */
+  const affinityRows = (list: Question[]): AffinityRow[] => {
+    const points = new Map([...ctx.published.keys()].map((id) => [id, 0]));
+    for (const q of list) {
+      const chosen = q.approaches.find((a) => a.id === choices[q.id]);
+      // "Ninguna" and fillers add nothing; parties running elsewhere are not in `points`.
+      if (!chosen || chosen.filler) continue;
+      for (const s of chosen.stances)
+        if (points.has(s.party) && s.stance !== 'none') points.set(s.party, points.get(s.party)! + STANCE_POINTS[s.stance]);
+    }
+    const sorted = [...ctx.published.values()]
+      .map((p) => ({ party: revealParty(p), points: points.get(p.id)! }))
+      .sort((a, b) => b.points - a.points || byName(a.party, b.party));
+    return sorted.map((r) => ({
+      ...r,
+      percent: list.length ? Math.round((100 * r.points) / list.length) : 0,
+      rank: 1 + sorted.filter((x) => x.points > r.points).length,
+      tie: sorted.filter((x) => x.points === r.points).length > 1,
+    }));
+  };
+  /** Questions of a revealed theme that count: every answered one, base and follow-up. */
+  const counted = (themeId: string) => questionsOf(themeId).filter((q) => choices[q.id] !== undefined);
 
   const revealQuestion = (q: Question): QuestionReveal => {
     const inPlay = <T extends { party: string }>(list: T[]) => list.filter((x) => ctx.published.has(x.party));
@@ -385,6 +447,21 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
       const answered = questionsOf(themeId).filter((q) => choices[q.id] !== undefined);
       return { theme, questions: [...answered.filter((q) => !q.followUp), ...answered.filter((q) => q.followUp)].map(revealQuestion) };
     },
+    affinity() {
+      const done = themes.filter((t) => revealed.has(t.id));
+      return {
+        themes: done.map((theme) => {
+          const list = counted(theme.id);
+          return { theme, questions: list.length, none: list.filter((q) => choices[q.id] === NONE).length, rows: affinityRows(list) };
+        }),
+        ranking: done.length >= MIN_THEMES_FOR_RANKING ? affinityRows(done.flatMap((t) => counted(t.id))) : null,
+        missingManifestos: dataset.parties
+          .filter((p) => runsHere(p) && p.manifesto.state === 'pending')
+          .map(revealParty)
+          .sort(byName),
+        noProvince: ctx.province === null,
+      };
+    },
     question(questionId) {
       const q = findQuestion(questionId);
       const siblings = questionsOf(q.theme).filter((x) => x.followUp === q.followUp);
@@ -396,6 +473,8 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
     },
   };
 }
+
+const STANCE_POINTS = { full: 1, partial: 0.5 } as const;
 
 const summary = (q: Question): QuestionSummary => ({ id: q.id, theme: q.theme, text: q.text, followUp: q.followUp });
 

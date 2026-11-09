@@ -57,7 +57,7 @@ describe('production build', () => {
   });
 
   it('an invalid dataset fails the build', () => {
-    const c = prod({ ...real, positions: [...real.positions, real.positions[0]!] });
+    const c = prod({ ...real, topicPositions: [...real.topicPositions, real.topicPositions[0]!] });
     expect(c.errors.length).toBeGreaterThan(0);
   });
 
@@ -103,13 +103,17 @@ describe('no aggregated affinity statistics are published (art. 69 LOREG)', () =
   });
 
   it('the affinity result is only computed on the device: nothing server-side, build-time or scheduled touches it', () => {
-    // The ranking lives in the engine (src/game) and is shown/shared only by client modules.
+    // The result lives in the engine (src/game: Game.affinity, v1 Game.result) and is shown/shared
+    // only by client modules. Nobody else may build a game or read its result.
     const client = ['src/game/', 'src/web/', 'src/share/'];
-    const rest = [...listFiles('src'), ...listFiles('scripts')]
-      .filter((f) => /\.(ts|astro|mjs)$/.test(f))
-      .filter((f) => !client.some((d) => f.startsWith(d)));
-    const offenders = rest.filter((f) => /\.resultado\(\)|\.ranking\b|afinidad\(/.test(readFileSync(f, 'utf8')));
+    const code = [...listFiles('src'), ...listFiles('scripts')].filter((f) => /\.(ts|astro|mjs)$/.test(f));
+    const computesResult = /\.affinity\(\)|\.result\(\)|\.ranking\b|\bcreateGame\(/;
+    const offenders = code.filter((f) => !client.some((d) => f.startsWith(d))).filter((f) => computesResult.test(readFileSync(f, 'utf8')));
     expect(offenders).toEqual([]);
+    // The pattern must match the real API, or this rule silently checks nothing (it once looked
+    // for names that no longer existed).
+    expect(readFileSync('src/web/result.ts', 'utf8')).toMatch(computesResult);
+    expect(readFileSync('src/web/app.ts', 'utf8')).toMatch(computesResult);
   });
 
   it('no page or workflow publishes affinity counts', () => {
