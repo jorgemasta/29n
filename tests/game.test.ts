@@ -912,6 +912,95 @@ describe('createGame: themes, questions and approaches (v2)', () => {
     expect(JSON.stringify(blind)).not.toMatch(PARTY_INFO);
   });
 
+  /**
+   * themesDataset plus each party's position on the question "alquiler" (concrete proposal with
+   * exact figures and feasibility). Positions are keyed by question id: v1 `topic` until #21 renames
+   * it to `question`. "oferta" is defended only by isla (regional, Canary provinces).
+   */
+  const detailed = (): Dataset => {
+    const pos = (party: string, rest: Record<string, unknown>) => ({ party, topic: 'alquiler', versions: { prompt: 'v1' }, ...rest });
+    const proposes = (party: string, figure: string | null, feasibility?: typeof sampleNote) =>
+      pos(party, {
+        state: 'proposes',
+        text: { what: `Propuesta concreta de ${party}`, how: `Cómo lo haría ${party}`, figure },
+        quotes: [{ text: `Cita de la propuesta concreta de ${party}, con más de cuarenta caracteres.`, page: 9 }],
+        ...(feasibility ? { feasibility } : {}),
+      });
+    return {
+      ...themesDataset,
+      positions: [
+        ...themesDataset.positions,
+        proposes('aaa', '120.000 viviendas en 4 años', sampleNote),
+        proposes('bbb', null),
+        proposes('isla', '3.500 viviendas'),
+        proposes('bcn', '2.000 millones de euros'),
+        pos('nada', { state: 'noProposal' }),
+        pos('ccc', { state: 'unverified' }),
+      ] as Dataset['positions'],
+      questions: themesDataset.questions!.map((q) =>
+        q.id !== 'alquiler'
+          ? q
+          : { ...q, approaches: q.approaches.map((a) => (a.id === 'oferta' ? { ...a, stances: a.stances.filter((s) => s.party === 'isla') } : a)) },
+      ),
+    };
+  };
+  const alquilerReveal = (province: string | null = null) =>
+    createGame(detailed(), province, 's').chooseApproach('alquiler', 'A').chooseApproach('compra', NONE).revealTheme('vivienda')
+      .themeReveal('vivienda')!.questions.find((q) => q.question.id === 'alquiler')!;
+  const approachOf = (q: ReturnType<typeof alquilerReveal>, word: string) => q.approaches.find((a) => a.what === `Enfoque ${word}`)!;
+
+  it("the reveal gives each defending party's concrete proposal with exact figures and its feasibility", () => {
+    const control = approachOf(alquilerReveal(), 'uno');
+    const [aaa, bbb] = control.parties;
+    expect(aaa!.proposal).toEqual({
+      what: 'Propuesta concreta de aaa',
+      how: 'Cómo lo haría aaa',
+      figure: '120.000 viviendas en 4 años',
+      feasibility: sampleNote,
+      noSources: true,
+    });
+    expect(bbb!.proposal).toMatchObject({ figure: null, feasibility: null, noSources: false });
+  });
+
+  it('a party without a position on the question still shows its stance and quote, with no proposal', () => {
+    const control = approachOf(alquilerReveal(), 'uno');
+    const game = createGame(themesDataset, null, 's').chooseApproach('alquiler', 'A').chooseApproach('compra', NONE).revealTheme('vivienda');
+    const plain = game.themeReveal('vivienda')!.questions[0]!.approaches.find((a) => a.what === 'Enfoque uno')!;
+    expect(plain.parties.map((p) => p.proposal)).toEqual([null, null]);
+    expect(control.parties[0]!.quote.link).toBe('https://ejemplo.org/aaa.pdf#page=3');
+  });
+
+  it('"propone otra cosa" comes with its proposal and quote', () => {
+    const [other] = alquilerReveal('08').otherProposals;
+    expect(other!.party.id).toBe('bcn');
+    expect(other!.quote).toMatchObject({ page: 5, link: 'https://ejemplo.org/bcn.pdf#page=5' });
+    expect(other!.proposal).toMatchObject({ what: 'Propuesta concreta de bcn', figure: '2.000 millones de euros' });
+  });
+
+  it('lists the parties in play that propose nothing on the question, and those not verified', () => {
+    // ccc defends nothing once "oferta" keeps only isla, and its position was not verified.
+    const q = alquilerReveal();
+    expect(q.noProposal.map((p) => p.id)).toEqual(['nada']);
+    expect(q.unverified.map((p) => p.id)).toEqual(['ccc']);
+    // Pending parties have no manifesto to read: they are not "no propone nada".
+    expect(JSON.stringify(q)).not.toMatch(/"pend"/);
+    const barcelona = alquilerReveal('08');
+    expect(barcelona.noProposal.map((p) => p.id)).toEqual(['nada']);
+    expect(barcelona.otherProposals.map((o) => o.party.id)).toEqual(['bcn']);
+    // A party with no position at all on the question defends nothing either: no proposal.
+    const plain = createGame(themesDataset, null, 's').chooseApproach('listas', 'A').revealTheme('sanidad').themeReveal('sanidad')!;
+    expect(plain.questions[0]!.noProposal.map((p) => p.id)).toEqual(['nada']);
+  });
+
+  it('marks an approach defended only by parties not running in the province', () => {
+    expect(approachOf(alquilerReveal(), 'dos')).toMatchObject({ parties: [], onlyElsewhere: true, filler: false });
+    expect(approachOf(alquilerReveal('08'), 'dos').onlyElsewhere).toBe(true);
+    expect(approachOf(alquilerReveal('35'), 'dos')).toMatchObject({ onlyElsewhere: false });
+    expect(approachOf(alquilerReveal('35'), 'dos').parties.map((p) => p.party.id)).toEqual(['isla']);
+    expect(approachOf(alquilerReveal(), 'uno').onlyElsewhere).toBe(false);
+    expect(approachOf(alquilerReveal(), 'tres')).toMatchObject({ filler: true, onlyElsewhere: false });
+  });
+
   it('a party with only a provisional source is named at the reveal only in private mode', () => {
     const d = publishedDataset as Dataset;
     const q = d.questions![0]!;

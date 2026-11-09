@@ -3,6 +3,7 @@
 import type { Approach, Dataset, Party, Question, Theme } from '../dataset/schema';
 import { provinceByCode } from '../registry/territory';
 import { byName, linkQuote, revealParty, type LinkedQuote, type RevealedParty } from './party';
+import { positionsOf, proposalOf, type PartyProposal } from './proposal';
 import { shuffle } from './random';
 
 const NONE = 'none' as const;
@@ -55,11 +56,22 @@ export interface RevealedStance {
   party: RevealedParty;
   stance: 'full' | 'partial';
   quote: LinkedQuote;
+  /** Its own concrete proposal on the question (exact figures, feasibility); null if none was read. */
+  proposal: PartyProposal | null;
+}
+
+/** A party in play that fits no approach ("propone otra cosa"): its quote and its proposal. */
+export interface OtherProposalReveal {
+  party: RevealedParty;
+  quote: LinkedQuote;
+  proposal: PartyProposal | null;
 }
 
 export interface RevealedApproach extends BlindApproach {
   /** Defended by no party: added to reach 3 (adds to nobody). */
   filler: boolean;
+  /** Not a filler, but every party defending it runs elsewhere: nobody in play here defends it. */
+  onlyElsewhere: boolean;
   chosen: boolean;
   /** Parties in play here, full ones first, then by name. */
   parties: RevealedStance[];
@@ -71,7 +83,11 @@ export interface QuestionReveal {
   /** Same order and letters as the voter saw them. */
   approaches: RevealedApproach[];
   /** Parties in play that fit no approach ("propone otra cosa"). */
-  otherProposals: { party: RevealedParty; quote: LinkedQuote }[];
+  otherProposals: OtherProposalReveal[];
+  /** Parties in play with a published manifesto that propose nothing on the question, by name. */
+  noProposal: RevealedParty[];
+  /** Parties in play whose proposal on the question did not pass the checks, by name. */
+  unverified: RevealedParty[];
 }
 
 export interface ThemeReveal {
@@ -147,26 +163,47 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
   const item = (q: Question): QuestionItem => ({ question: summary(q), choice: choiceOf(q) });
   const isDone = (themeId: string) => questionsOf(themeId).every((q) => q.followUp || choices[q.id] !== undefined);
 
+  /** Runs in the voter's province (national, or regional here). */
+  const runsHere = (p: Party) => p.scope.type === 'national' || (ctx.province !== null && p.scope.provinces.includes(ctx.province));
+
   const revealQuestion = (q: Question): QuestionReveal => {
     const inPlay = <T extends { party: string }>(list: T[]) => list.filter((x) => ctx.published.has(x.party));
     const party = (id: string) => ctx.published.get(id)!;
+    const positions = positionsOf(dataset, q.id);
+    const detail = (id: string) => ({ party: revealParty(party(id)), proposal: proposalOf(positions.get(id)) });
+    const defenders = new Set(q.approaches.flatMap((a) => a.stances.filter((s) => s.stance !== 'none').map((s) => s.party)));
+    const proposingOther = new Set(q.otherProposals.map((o) => o.party));
+    const silent = [...ctx.published.values()]
+      .filter((p) => !defenders.has(p.id) && !proposingOther.has(p.id))
+      .map((p) => ({ party: revealParty(p), unverified: positions.get(p.id)?.state === 'unverified' }));
+    const elsewhere = (id: string) => {
+      const p = dataset.parties.find((x) => x.id === id);
+      return p !== undefined && !runsHere(p);
+    };
     return {
       question: summary(q),
       choice: choiceOf(q)!,
-      approaches: shuffled(q).map(({ approach: a, letter }) => ({
-        letter,
-        what: a.what,
-        how: a.how,
-        figure: a.figure,
-        filler: a.filler,
-        chosen: choices[q.id] === a.id,
-        parties: inPlay(a.stances)
-          .flatMap((s) => (s.stance === 'none' ? [] : [{ party: revealParty(party(s.party)), stance: s.stance, quote: linkQuote(party(s.party), s.quote) }]))
-          .sort((x, y) => (x.stance === y.stance ? byName(x.party, y.party) : x.stance === 'full' ? -1 : 1)),
-      })),
+      approaches: shuffled(q).map(({ approach: a, letter }) => {
+        const parties = inPlay(a.stances)
+          .flatMap((s) => (s.stance === 'none' ? [] : [{ ...detail(s.party), stance: s.stance, quote: linkQuote(party(s.party), s.quote) }]))
+          .sort((x, y) => (x.stance === y.stance ? byName(x.party, y.party) : x.stance === 'full' ? -1 : 1));
+        const defending = a.stances.filter((s) => s.stance !== 'none');
+        return {
+          letter,
+          what: a.what,
+          how: a.how,
+          figure: a.figure,
+          filler: a.filler,
+          onlyElsewhere: !a.filler && parties.length === 0 && defending.length > 0 && defending.every((s) => elsewhere(s.party)),
+          chosen: choices[q.id] === a.id,
+          parties,
+        };
+      }),
       otherProposals: inPlay(q.otherProposals)
-        .map((o) => ({ party: revealParty(party(o.party)), quote: linkQuote(party(o.party), o.quote) }))
+        .map((o) => ({ ...detail(o.party), quote: linkQuote(party(o.party), o.quote) }))
         .sort((x, y) => byName(x.party, y.party)),
+      noProposal: silent.filter((x) => !x.unverified).map((x) => x.party).sort(byName),
+      unverified: silent.filter((x) => x.unverified).map((x) => x.party).sort(byName),
     };
   };
 

@@ -40,7 +40,9 @@ export function simulatedThemes(positions: Position[]): { themes: Theme[]; quest
     themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
     questions: [
       {
-        id: 'vivienda-asequible',
+        // Same id as the v1 topic: until #21 keys positions by question, each party's "vivienda" position
+        // is its concrete proposal here (exact figures and feasibility, shown at the reveal).
+        id: 'vivienda',
         theme: 'vivienda',
         text: '¿Qué harían para que la vivienda sea asequible?',
         followUp: false,
