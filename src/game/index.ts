@@ -135,44 +135,6 @@ export type Journey =
   | { type: 'newParty'; party: RevealedParty }
   | { type: 'different'; topics: number; parties: number };
 
-export interface RankingRow {
-  party: ZoneParty;
-  /** 1 per choice. */
-  points: number;
-  /** Rounded share of the points possible over every done topic ("Ninguna" included). */
-  percent: number;
-  /** Topics where this party's card was chosen. */
-  topics: number;
-  /** Same place for ties (1, 2, 2, 4). */
-  rank: number;
-  tie: boolean;
-}
-
-export interface Result {
-  /** True from GOAL_TOPICS done topics. */
-  available: boolean;
-  topics: number;
-  /** Topics where nothing convinced the voter (they add to no party). */
-  none: number;
-  allNone: boolean;
-  distinctParties: number;
-  /** Every party in play with a programme, also at 0 %. Empty if every choice was "Ninguna". */
-  ranking: RankingRow[];
-  /** "⏳ Falta [Partido]": parties in play without a published programme. */
-  pending: ZoneParty[];
-  /** "Solo partidos nacionales…": the voter did not give a province. */
-  noProvince: boolean;
-  /** Done topics with proposals the voter has not seen yet. */
-  topicsWithNews: number;
-  guesses: {
-    total: number;
-    /** Bets where the chosen card was not from the party guessed. */
-    wrong: number;
-    /** Failed bets grouped by the party actually chosen, by name. */
-    surprises: { party: RevealedParty; topics: Topic[] }[];
-  };
-}
-
 export interface News {
   /** Parties that published their programme since they were last announced. */
   parties: ZoneParty[];
@@ -238,8 +200,6 @@ export interface Game extends ThemeGame<Game> {
   chooseAgain(topicId: string): Game;
   /** Re-shuffle a topic not chosen yet. */
   reshuffle(topicId: string): Game;
-  /** v1 affinity result by topic (still read by the share card until #30); v2: `affinity()`. */
-  result(): Result;
   /** What changed since the last visit. */
   news(): News;
   /** The voter has seen the published-programme news. */
@@ -496,60 +456,6 @@ export function createGame(
         unverified: withState('unverified'),
         pending: zonePending(),
         noneAtAll: shuffledCards.length === 0 && withState('unverified').length === 0,
-      };
-    },
-    result() {
-      const doneIds = done();
-      const possible = doneIds.length;
-      const points = new Map<string, { points: number; topics: number }>();
-      let none = 0;
-      for (const t of doneIds) {
-        const e = state.choices[t]!;
-        if (e === NONE) none++;
-        else if (byId.has(e)) {
-          const p = points.get(e) ?? { points: 0, topics: 0 };
-          points.set(e, { points: p.points + 1, topics: p.topics + 1 });
-        }
-      }
-      const allNone = doneIds.length > 0 && none === doneIds.length;
-      const rows = published
-        .map(zone)
-        .map((party) => {
-          const p = points.get(party.id) ?? { points: 0, topics: 0 };
-          return { party, ...p, percent: possible ? Math.round((100 * p.points) / possible) : 0 };
-        })
-        .sort((a, b) => b.points - a.points || byName(a.party, b.party));
-      const ranking: RankingRow[] = allNone
-        ? []
-        : rows.map((f) => {
-            const equal = rows.filter((g) => g.points === f.points).length;
-            return { ...f, rank: 1 + rows.filter((g) => g.points > f.points).length, tie: equal > 1 };
-          });
-
-      const guessedTopics = doneIds.filter((t) => state.guesses?.[t] !== undefined);
-      const wrong = guessedTopics.filter((t) => state.guesses![t] !== state.choices[t]);
-      const surprises = new Map<string, Topic[]>();
-      for (const t of wrong) {
-        const e = state.choices[t]!;
-        if (byId.has(e)) surprises.set(e, [...(surprises.get(e) ?? []), findTopic(t)]);
-      }
-      return {
-        available: doneIds.length >= GOAL_TOPICS,
-        topics: doneIds.length,
-        none,
-        allNone,
-        distinctParties: [...points.keys()].length,
-        ranking,
-        pending: zonePending(),
-        noProvince: province === null,
-        topicsWithNews: doneIds.filter((t) => newIn(t) > 0).length,
-        guesses: {
-          total: guessedTopics.length,
-          wrong: wrong.length,
-          surprises: [...surprises]
-            .map(([id, topics]) => ({ party: revealParty(byId.get(id)!), topics }))
-            .sort((a, b) => byName(a.party, b.party)),
-        },
       };
     },
     news() {

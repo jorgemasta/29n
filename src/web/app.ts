@@ -1,10 +1,10 @@
 // Client app: first-visit home → province → pick themes → theme (questions with 3 approaches,
 // confirmed in a sheet → summary → reveal → optional follow-up questions) → next picked theme. All
 // logic lives in the game engine; this file only routes (#portada, #provincia, #elegir, #tematicas,
-// #tematica/<theme>[/<question>], #resultado, #preguntar[/<id>], #datos) and keeps the header chip
+// #tematica/<theme>[/<question>], #resultado, #compartir, #preguntar[/<id>], #datos) and keeps the header chip
 // "Temáticas · n/N" up to date. Screens: src/web/themes.ts. Choices never
 // leave the browser.
-// Not here yet: guess in the sheet (#26), share (#30).
+// Not here yet: guess in the sheet (#26).
 import type { Dataset, Mode } from '../dataset/schema';
 import { challengeHomeText } from '../share';
 import { createGame, type GameState, type Game } from '../game';
@@ -16,7 +16,7 @@ import { dataView, resultView, startOver } from './result';
 import { homeView } from './home';
 import { TEXT_SIZE_KEY, largeText } from './text-size';
 import { setupAnalytics, trackResult, trackStarted } from './analytics';
-import { challengeNotice } from './share';
+import { challengeNotice, shareView } from './share';
 import { h } from './dom';
 import { pickThemesView, questionView, revealView, summaryView, themeHref, themesListView, themesProgress } from './themes';
 
@@ -129,7 +129,8 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
     else if (path === 'resultado') {
       trackResult(game);
       screen = resultView(game, { nextTheme: () => goToNext(), clearAll });
-    } else if (path === 'preguntar') screen = questionsView(game);
+    } else if (path === 'compartir') screen = shareView(game);
+    else if (path === 'preguntar') screen = questionsView(game);
     else if (route === 'preguntar' && game.suggestedQuestions().some((p) => p.id === rest[0])) screen = answerView(game, rest[0]!);
     if (!screen) return goToNext(); // start: the next theme not revealed yet, or the list
     root.replaceChildren(screen);

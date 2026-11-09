@@ -76,8 +76,7 @@ describe('analytics events', () => {
       p = r.after;
     }
     noParties(all);
-    // the ranking is now available but no event carries it
-    expect(p.result().available).toBe(true);
+    // no event carries the result
     noParties([sawResultEvent()]);
   });
 
