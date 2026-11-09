@@ -72,10 +72,10 @@ Nada de esto lo hace el código ni un agente. Detalle de cada paso en las seccio
     las candidaturas proclamadas, corregir las provincias de cada partido, añadir los que entren por representación
     autonómica y poner `state: 'proclaimed'` con la fuente.
 11. **Desplegar**: `UMAMI_WEBSITE_ID=<id> npm run deploy`; comprobar la web, `/privacidad/`, `robots.txt` (`Allow`) y
-    la vista previa del enlace (`/?r=reto`). Ejecutar a mano el workflow «Vigilante de programas» y ver llegar el aviso.
-12. **Pregunta libre (~18-nov)**: KV `QUESTIONS`, AI Gateway con registros desactivados (`AI_GATEWAY_URL`,
-    `CF_AIG_TOKEN`), *workspace* de Anthropic con límite de gasto, secretos del Worker (`ANTHROPIC_API_KEY`,
-    `AI_GATEWAY_URL`, `CF_AIG_TOKEN`, `GITHUB_TOKEN` con Issues read/write), `FREE_QUESTION = "1"` y variable del repo
+    la vista previa del enlace (`/?r=reto`). Reactivar el vigilante (desactivado hasta tener datos reales):
+    `gh workflow enable "Manifesto watcher"`, ejecutarlo a mano y ver llegar el issue `vigilante`.
+12. **Pregunta libre (~18-nov)**: KV, AI Gateway y secretos del Worker ya están (`scripts/setup-wizard.sh`). Falta
+    `FREE_QUESTION = "1"` y variable del repo
     `PUBLIC_FREE_QUESTION=1` (para que los despliegues del watcher no cierren la caja); desplegar con
     `PUBLIC_FREE_QUESTION=1 npm run deploy`. Opcional: pedir retención cero a Anthropic y, si se concede, actualizar
     `src/pages/privacidad.astro`.
