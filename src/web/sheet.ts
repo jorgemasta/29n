@@ -26,6 +26,10 @@ export function openSheet(options: { title: string; content: Child[]; onClose?: 
       dialog.close();
       dialog.remove();
       options.onClose?.();
+      // A screen rendered while the modal sheet was open could not take the focus (the page behind a
+      // modal is inert): give it to the new screen's headline now.
+      const active = document.activeElement;
+      if (!active || active === document.body || !active.isConnected) document.querySelector<HTMLElement>('main h1')?.focus();
     }, reduced ? 160 : CLOSE_MS);
   };
   // A click on the dialog itself (not its body) is a click on the backdrop.

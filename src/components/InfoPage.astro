@@ -10,8 +10,9 @@ import Robots from './Robots.astro';
 import Footer from './Footer.astro';
 import SiteHeader from './SiteHeader.astro';
 import TestRibbon from './TestRibbon.astro';
+import Icon from './Icon.astro';
 interface Props { title: string; description: string; back?: { href: string; text: string } }
-const { title, description, back = { href: '/', text: '← Volver' } } = Astro.props;
+const { title, description, back = { href: '/', text: 'Volver' } } = Astro.props;
 ---
 <!doctype html>
 <html lang="es">
@@ -30,7 +31,7 @@ const { title, description, back = { href: '/', text: '← Volver' } } = Astro.p
     <SiteHeader />
     <TestRibbon />
     <main class="info">
-      <a href={back.href} class="back-link">{back.text}</a>
+      <a href={back.href} class="back-link"><Icon name="arrowLeft" />{back.text}</a>
       <slot />
     </main>
     <Footer />

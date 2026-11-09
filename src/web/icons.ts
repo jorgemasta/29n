@@ -6,9 +6,16 @@ const PATHS = {
   speaker: 'M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11',
   stop: 'M7 7h10v10H7z',
   external: 'M14 5h5v5M19 5l-8 8M17 14v5H5V7h5',
+  arrowLeft: 'M19 12H5M11 6l-6 6 6 6',
+  clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5V12l3 2',
 } as const;
 
 export type IconName = keyof typeof PATHS;
+
+/** The same icon as markup, for the static Astro pages (src/components/Icon.astro). */
+export function iconMarkup(name: IconName): string {
+  return `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false" class="icon icon-${name}"><path d="${PATHS[name]}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
 
 /** A decorative 24×24 stroke icon (aria-hidden: the text next to it says what it does). */
 export function icon(name: IconName): SVGSVGElement {

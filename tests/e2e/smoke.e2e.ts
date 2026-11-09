@@ -1,8 +1,12 @@
-// End-to-end smoke test (tickets #12, #16): home → province → 5 topics → result → share →
-// ask → your data → privacy page and footers, on a phone and a desktop viewport, plus basic
-// accessibility checks (axe contrast and serious violations, focus on the heading, touch targets,
-// 'Aa', reflow at 320 px, reduced motion). Drives a real Chrome through agent-browser against the
-// static build in dist/. Run with `npm run e2e` (builds first). Not part of `npm test`.
+// End-to-end smoke test, v2 flow (#31): home → province → pick themes → 3 questions each, confirmed
+// in the sheet → summary → reveal → the next theme → result → go on with another theme; then ask,
+// your data and the information pages. Runs on a phone (390×844) and a desktop (1280×800), with
+// accessibility checks on every screen: axe (no contrast failures, nothing serious or critical) in
+// light and dark, focus on the headline after each screen change, touch targets ≥ 48 px, no emoji or
+// font-dependent glyphs, nothing cut at 320 px (200 % zoom) with the large text, reduced motion, the
+// mobile CSS (tap highlight, touch-action, 16 px inputs) and theme-color matching the header. Drives
+// a real Chrome through agent-browser against the static build in dist/. Run with `npm run e2e`
+// (builds first). Not part of `npm test`.
 //
 // Setup once: `npx agent-browser install`. On Linux without root, Chrome's shared libraries can be
 // unpacked to ~/.agent-browser/libs/root (see docs/e2e.md); this script adds that dir to
@@ -102,9 +106,9 @@ function noViolations(where: string) {
   );
 }
 
-/** Buttons, tabs, rows and other controls (inline links inside text are exempt) are ≥ 48 px tall. */
+/** Buttons, rows, header chips and other controls (inline links inside text are exempt) are ≥ 48 px tall. */
 function touchTargets(where: string) {
-  const small = js<string[]>(`[...document.querySelectorAll('main button, main summary, main .province-chip, main .topic-row, main .link-button, .tabs a, #aa')]
+  const small = js<string[]>(`[...document.querySelectorAll('main button, main summary, main .province-chip, main .topic-row, main .pick-row, main .summary-row, main .link-button, .header-chip, dialog[open] button')]
     .filter((e) => e.offsetParent !== null || getComputedStyle(e).position === 'fixed')
     .filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height < 47.5; })
     .map((e) => e.outerHTML.slice(0, 80) + ' ' + Math.round(e.getBoundingClientRect().height) + 'px')`);
@@ -121,27 +125,122 @@ function noOverflow(where: string) {
   assert.ok(width.doc <= width.view, `overflows on ${where}: ${width.doc} > ${width.view} (${offenders.join(', ')})`);
 }
 
+/** 200 % zoom on a 640 px phone ≈ 320 CSS px, and with the large text ('Aa') on top. */
+function reflow(where: string, v: { width: string; height: string }) {
+  ab('set', 'viewport', '320', '640');
+  noOverflow(`${where}, 320 px`);
+  js(`document.documentElement.dataset.textSize = 'large'; true`);
+  noOverflow(`${where}, 320 px, large text`);
+  js(`delete document.documentElement.dataset.textSize; true`);
+  ab('set', 'viewport', v.width, v.height);
+}
+
+/** No emoji and no arrows, ticks or clocks drawn with the system font: icons are inline SVG. */
+function noGlyphs(where: string) {
+  const found = js<string[]>(`(document.body.innerText.match(/[\\u2190-\\u21FF\\u2300-\\u23FF\\u2600-\\u27BF\\u2B00-\\u2BFF\\u{1F000}-\\u{1FAFF}]/gu) ?? [])`);
+  assert.deepEqual(found, [], `glyphs on ${where}`);
+}
+
+/** The status bar (theme-color) matches the header, in light and in dark. */
+function themeColorMatchesHeader(where: string) {
+  for (const scheme of ['light', 'dark']) {
+    ab('set', 'media', scheme);
+    const c = js<{ meta: string; header: string }>(`(() => {
+      const meta = [...document.querySelectorAll('meta[name="theme-color"]')].find((m) => !m.media || matchMedia(m.media).matches);
+      const probe = document.createElement('i');
+      probe.style.color = meta?.content ?? '';
+      document.body.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return { meta: color, header: getComputedStyle(document.querySelector('.site-header')).backgroundColor };
+    })()`);
+    assert.equal(c.meta, c.header, `theme-color on ${where} (${scheme})`);
+  }
+  ab('set', 'media', 'light');
+}
+
+/** Waits for a new screen and checks the focus moved to its headline. */
+function screen(selector: string, what: string, headline?: RegExp) {
+  waitFor(`document.querySelector(${JSON.stringify(selector)})`, what);
+  waitFor(`document.activeElement?.tagName === 'H1'`, `focus on the headline of ${what}`);
+  if (headline) assert.match(focusText(), headline, `headline of ${what}`);
+}
+
+/** Every check that applies to a whole screen. */
+function checkScreen(where: string, v: { width: string; height: string }, options: { dark?: boolean; reflow?: boolean } = {}) {
+  noViolations(where);
+  if (options.dark !== false) {
+    ab('set', 'media', 'dark');
+    noViolations(`${where} (dark)`);
+    ab('set', 'media', 'light');
+  }
+  touchTargets(where);
+  noOverflow(where);
+  noGlyphs(where);
+  if (options.reflow !== false) reflow(where, v);
+}
+
+const click = (selector: string) => js(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({ block: 'center' }); document.querySelector(${JSON.stringify(selector)}).click(); true`);
+const clickText = (selector: string, text: RegExp) =>
+  js(`(() => { const b = [...document.querySelectorAll(${JSON.stringify(selector)})].find((e) => ${text}.test(e.textContent.trim())); if (!b) throw new Error('no ' + ${JSON.stringify(String(text))}); b.click(); return true; })()`);
+
+/**
+ * Answers every question of the current theme until the summary: tap an approach, the sheet opens
+ * with focus on its title, then "No lo sé, siguiente" when the guess (#26) is there, else "Confirmar".
+ */
+function playTheme(where: string, v: { width: string; height: string }, checks: boolean) {
+  for (let n = 0; n < 10; n++) {
+    waitFor(`document.querySelector('.summary h1, .question h1')`, 'a question or the summary');
+    if (js<boolean>(`!!document.querySelector('.summary')`)) return;
+    // The first question may already be on screen (focus back on an approach after "Cambiar"); every
+    // later one is a new screen with focus on its headline.
+    if (n > 0) screen('.question h1', `question ${n + 1}`);
+    const question = js<string>(`document.querySelector('.question h1').textContent`);
+    assert.equal(js<number>(`document.querySelectorAll('.question .option[data-value]').length`), 3, '3 approaches');
+    assert.equal(js<string>(`document.querySelector('.ai-note a.ai-label')?.getAttribute('href')`), '/privacidad/#ia', 'AI label while blind');
+    if (checks && n === 0) checkScreen(`${where}: question`, v);
+    click('.question .option[data-value]');
+    waitFor(`document.querySelector('dialog.sheet[open].open')`, 'the sheet');
+    assert.match(focusText(), /^H2:Te quedas con la [A-C]/, 'focus on the sheet title');
+    if (checks && n === 0) {
+      wait(600);
+      noViolations(`${where}: sheet`);
+      touchTargets(`${where}: sheet`);
+      noOverflow(`${where}: sheet`);
+      noGlyphs(`${where}: sheet`);
+    }
+    const skip = js<boolean>(`[...document.querySelectorAll('dialog.sheet button')].some((b) => /^No lo sé/.test(b.textContent.trim()))`);
+    clickText('dialog.sheet button', skip ? /^No lo sé/ : /^Confirmar/);
+    waitFor(`!document.querySelector('dialog.sheet') && document.querySelector('h1')?.textContent !== ${JSON.stringify(question)}`, 'the next screen');
+    waitFor(`document.activeElement?.tagName === 'H1'`, `focus on the headline after question ${n + 1}`);
+  }
+  throw new Error('Too many questions in one theme');
+}
+
 /** The whole journey, from a first visit, at one viewport size. */
 function journey(v: { name: string; width: string; height: string }) {
   prefix = `[${v.name}] `;
   ab('set', 'viewport', v.width, v.height);
+  ab('set', 'media', 'light');
   ab('open', BASE);
   js('localStorage.clear()');
   ab('open', BASE);
 
-  step('first-visit home', () => {
-    waitFor(`document.querySelector('h1')?.textContent.includes('sin saber de quién es')`, 'home headline');
+  step('first-visit home: focus, axe light and dark, theme-color, mobile CSS', () => {
+    screen('.home h1', 'home', /^H1:Lee lo que proponen sin saber de quién es\./);
     assert.equal(path(), '#portada');
-    assert.match(focusText(), /^H1:Lee lo que proponen sin saber de quién es\./);
-    assert.ok(js<boolean>(`[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Empezar por vivienda')`));
-    assert.ok(js<boolean>(`document.body.textContent.includes('No pedimos nombre, teléfono ni dinero. Nunca.')`));
-    // No tab bar during onboarding.
-    assert.equal(js<boolean>(`document.querySelector('.tabs').hidden`), true);
-    noViolations('home');
-    ab('set', 'media', 'dark');
-    noViolations('home (dark)');
-    ab('set', 'media', 'light');
-    touchTargets('home');
+    assert.equal(js<boolean>(`document.getElementById('themes-chip').hidden`), true, 'no theme chip during onboarding');
+    checkScreen('home', v);
+    themeColorMatchesHeader('home');
+    const css = js<{ tap: string; touch: string; select: string; viewport: string }>(`({
+      tap: getComputedStyle(document.documentElement).webkitTapHighlightColor,
+      touch: getComputedStyle(document.querySelector('.action-bar button')).touchAction,
+      select: getComputedStyle(document.querySelector('.action-bar button')).userSelect,
+      viewport: document.querySelector('meta[name=viewport]').content })`);
+    assert.equal(css.tap, 'rgba(0, 0, 0, 0)', 'no tap highlight');
+    assert.equal(css.touch, 'manipulation', 'touch-action on controls');
+    assert.equal(css.select, 'none', 'no text selection on controls');
+    assert.match(css.viewport, /viewport-fit=cover/);
   });
 
   step('home with ?r=reto: the challenge line sits above the headline', () => {
@@ -159,7 +258,7 @@ function journey(v: { name: string; width: string; height: string }) {
     ab('set', 'media', 'light');
   });
 
-  step("'Aa' button: large text is saved, nothing cut at 320 px", () => {
+  step("'Aa' button: large text is saved", () => {
     assert.equal(js<string>(`getComputedStyle(document.documentElement).fontSize`), '18px');
     ab('click', '#aa');
     assert.equal(js<string>(`getComputedStyle(document.documentElement).fontSize`), '22px');
@@ -167,52 +266,40 @@ function journey(v: { name: string; width: string; height: string }) {
     ab('reload');
     waitFor(`document.querySelector('h1')`, 'reload');
     assert.equal(js<string>(`getComputedStyle(document.documentElement).fontSize`), '22px');
-    // 200 % zoom on a 640 px phone ≈ 320 CSS px; with the big font too.
-    ab('set', 'viewport', '320', '640');
-    noOverflow('home, large text, 320 px');
     ab('click', '#aa');
     assert.equal(js<string>(`getComputedStyle(document.documentElement).fontSize`), '18px');
-    ab('set', 'viewport', v.width, v.height);
   });
 
-  step('province: focus on the headline, search by municipality', () => {
-    ab('find', 'role', 'button', 'click', '--name', 'Empezar por vivienda');
-    waitFor(`location.hash === '#provincia'`, '#provincia');
-    assert.match(focusText(), /^H1:¿Dónde votas\?/);
-    noViolations('province');
-    touchTargets('province');
+  step('province: search by municipality, input ≥ 16 px', () => {
+    clickText('.action-bar button', /^Empezar$/);
+    screen('#place-search', 'province', /^H1:¿Dónde votas\?/);
+    assert.equal(path(), '#provincia');
+    assert.ok(js<number>(`parseFloat(getComputedStyle(document.getElementById('place-search')).fontSize)`) >= 16, 'input ≥ 16px');
+    checkScreen('province', v, { dark: false });
     ab('fill', '#place-search', 'Telde');
-    waitFor(`[...document.querySelectorAll('#place-results button')].some((b) => b.textContent.includes('Telde → Las Palmas'))`, 'Telde → Las Palmas');
-    js(`[...document.querySelectorAll('#place-results button')].find((b) => b.textContent.includes('Telde → Las Palmas')).click()`);
-    waitFor(`location.hash.startsWith('#tema/')`, 'first topic');
+    waitFor(`[...document.querySelectorAll('#place-results button')].some((b) => b.textContent.includes('Telde, Las Palmas'))`, 'Telde, Las Palmas');
+    noGlyphs('province results');
+    js(`[...document.querySelectorAll('#place-results button')].find((b) => b.textContent.includes('Telde, Las Palmas')).click()`);
+    // Once, on the next screen, for ~2 s: who is in play here.
+    waitFor(`document.querySelector('.zone-notice')?.textContent.includes('Las Palmas')`, 'province notice');
   });
 
-  step('topic 1: help the first time, province notice ~2 s, bottom bar', () => {
-    waitFor(`document.querySelector('dialog.help')?.open`, 'help layer');
-    assert.match(js<string>(`document.querySelector('dialog.help').textContent`), /Lee y toca la que más te convenza/);
-    assert.ok(js<boolean>(`document.querySelector('.zone-notice')?.textContent.includes('Las Palmas')`), 'province notice');
-    ab('find', 'role', 'button', 'click', '--name', 'Entendido');
-    assert.equal(js<boolean>(`document.querySelector('dialog.help')?.open ?? false`), false);
-    assert.match(focusText(), /^H1:/);
-    try {
-      waitFor(`!document.querySelector('.zone-notice')`, 'the province notice to go away', 4000);
-    } catch (e) {
-      console.error(js(`({ hover: document.querySelector('.zone-notice')?.matches(':hover'), focus: document.querySelector('.zone-notice')?.matches(':focus-within'), dialogs: document.querySelectorAll('dialog').length, open: !!document.querySelector('dialog[open]'), notices: document.querySelectorAll('.zone-notice').length })`));
-      throw e;
-    }
-    const tabs = js<string[]>(`[...document.querySelectorAll('.tabs a')].map((a) => a.textContent.trim())`);
-    assert.deepEqual(tabs.map((p) => p.replace(/^\S+\s*/u, '')), ['Temas', 'Preguntar', 'Mi resultado']);
-    assert.equal(js<boolean>(`document.querySelector('.tabs').hidden`), false);
-    noViolations('topic');
-    touchTargets('topic');
-    noOverflow('topic');
-    // Help is shown only once.
-    ab('reload');
-    waitFor(`document.querySelector('.card')`, 'cards after reloading');
-    assert.equal(js<boolean>(`!!document.querySelector('dialog.help')`), false);
+  step('pick themes: two of them, province notice goes away', () => {
+    screen('.pick-themes h1', 'theme picker', /^H1:¿Qué temáticas quieres jugar\?/);
+    assert.equal(path(), '#elegir');
+    waitFor(`!document.querySelector('.zone-notice')`, 'the province notice to go away', 4000);
+    assert.equal(js<boolean>(`document.querySelector('.action-bar .primary').disabled`), true, 'nothing picked yet');
+    checkScreen('theme picker', v);
+    click('.pick-row input[value="vivienda"]');
+    click('.pick-row input[value="sanidad-cuidados"]');
+    assert.equal(js<string>(`document.querySelector('.action-bar .primary').textContent`), 'Empezar con 2 temáticas');
+    click('.action-bar .primary');
+    waitFor(`location.hash.startsWith('#tematica/vivienda')`, 'first theme');
+    assert.equal(js<string>(`document.getElementById('themes-chip').textContent`), 'Temáticas · 0/2');
   });
 
-  step("'Escuchar todas' reads in order and highlights the card being read", () => {
+  step("'Escuchar las tres' reads in order and highlights the approach being read", () => {
+    screen('.question h1', 'first question');
     // Fake voice: records what is said; each utterance ends when we tell it to.
     js(`(() => {
       const f = { spoken: [], queue: [], speaking: false,
@@ -223,95 +310,103 @@ function journey(v: { name: string; width: string; height: string }) {
       Object.defineProperty(window, 'speechSynthesis', { value: f, configurable: true });
       window.SpeechSynthesisUtterance ??= function (t) { this.text = t; };
       return true; })()`);
-    ab('find', 'role', 'button', 'click', '--name', 'Escuchar todas');
-    const first = js<string>(`document.querySelector('.card.playing')?.dataset.value`);
-    assert.equal(first, js<string>(`document.querySelector('.card').dataset.value`));
+    // The button is created at render time: render again so it sees the fake voice.
+    js(`dispatchEvent(new HashChangeEvent('hashchange')); true`);
+    screen('.question h1', 'first question again');
+    clickText('.question button.listen', /Escuchar las tres/);
+    const first = js<string>(`document.querySelector('.option.playing')?.dataset.value`);
+    assert.equal(first, js<string>(`document.querySelector('.option[data-value]').dataset.value`));
     assert.match(js<string>(`speechSynthesis.spoken[0]`), new RegExp(`^Propuesta ${first}\\.`));
     js('speechSynthesis.finish()');
-    assert.equal(js<string>(`document.querySelector('.card.playing')?.dataset.value`), js<string>(`document.querySelectorAll('.card')[1].dataset.value`));
-    ab('find', 'role', 'button', 'click', '--name', 'Parar');
-    assert.equal(js<number>(`document.querySelectorAll('.card.playing').length`), 0);
+    assert.equal(js<string>(`document.querySelector('.option.playing')?.dataset.value`), js<string>(`document.querySelectorAll('.option[data-value]')[1].dataset.value`));
+    clickText('.question button.listen', /Parar/);
+    assert.equal(js<number>(`document.querySelectorAll('.option.playing').length`), 0);
   });
 
-  step('choose and reveal (fade with reduced motion), focus on the headline', () => {
-    js(`document.querySelector('.card[data-value]').scrollIntoView({ block: 'center' }); true`);
-    ab('find', 'first', '.card[data-value]', 'click');
-    waitFor(`document.querySelector('.sticky-bar')`, 'confirm bar');
-    touchTargets('confirm');
+  step('the sheet: "Cambiar mi elección" closes it, it fades with reduced motion', () => {
+    click('.question .option[data-value]');
+    waitFor(`document.querySelector('dialog.sheet[open].open')`, 'the sheet');
+    assert.equal(js<string>(`document.querySelector('.question .option[aria-pressed="true"]')?.dataset.value`), js<string>(`document.querySelector('.question .option[data-value]').dataset.value`));
+    clickText('dialog.sheet button', /^Cambiar mi elección/);
+    waitFor(`!document.querySelector('dialog.sheet')`, 'the sheet to close');
+    assert.match(focusText(), /^BUTTON:/, 'focus back on the approach');
+    assert.equal(js<number>(`document.querySelectorAll('.question .option[aria-pressed="true"]').length`), 0);
     ab('set', 'media', 'light', 'reduced-motion');
-    ab('find', 'role', 'button', 'click', '--name', 'Descubrir sin apostar');
-    waitFor(`document.querySelector('.reveal')`, 'reveal');
-    assert.match(focusText(), /^H1:La [A-Z] era de /);
-    assert.equal(js<string>(`getComputedStyle(document.querySelector('.reveal .revealed')).animationName`), 'fade-in');
-    ab('set', 'media', 'light');
-    noViolations('reveal');
-    touchTargets('reveal');
-    noOverflow('reveal');
-  });
-
-  step('reveal in dark mode: AA contrast', () => {
-    ab('set', 'media', 'dark');
-    noViolations('reveal (dark)');
+    click('.question .option[data-value]');
+    waitFor(`document.querySelector('dialog.sheet[open]')`, 'the sheet');
+    assert.equal(js<string>(`getComputedStyle(document.querySelector('dialog.sheet')).transform`), 'none', 'no slide with reduced motion');
+    js(`document.querySelector('dialog.sheet').dispatchEvent(new Event('cancel', { cancelable: true })); true`);
+    waitFor(`!document.querySelector('dialog.sheet')`, 'the sheet to close with Escape');
     ab('set', 'media', 'light');
   });
 
-  step("the 'Temas' tab opens the list with focus on the headline", () => {
-    ab('click', '.tabs a[href="#temas"]');
-    waitFor(`location.hash === '#temas'`, '#temas');
-    assert.match(focusText(), /^H1:Temas/);
-    assert.equal(js<string>(`document.querySelector('.tabs a[href="#temas"]').getAttribute('aria-current')`), 'page');
-    noViolations('topic list');
-    touchTargets('topic list');
+  step('theme 1: three questions through the sheet, then the summary', () => {
+    playTheme('theme 1', v, true);
+    screen('.summary h1', 'summary', /^H1:Esto es lo que has elegido/);
+    assert.ok(js<number>(`document.querySelectorAll('.summary-row').length`) >= 3, 'every question on the summary');
+    checkScreen('summary', v);
   });
 
-  step('five topics: linked AI label while blind and at the reveal', () => {
-    for (let n = 0; n < 4; n++) {
-      ab('click', '.tabs a[href="#temas"]');
-      waitFor(`document.querySelector('a.topic-row.notStarted')`, 'a topic not started');
-      js(`document.querySelector('a.topic-row.notStarted').click(); true`);
-      waitFor(`document.querySelector('.card[data-value]')`, 'cards');
-      assert.equal(js<string>(`document.querySelector('.ai-note a.ai-label')?.getAttribute('href')`), '/privacidad/#ia', 'AI label while blind');
-      js(`document.querySelector('.card[data-value]').click(); true`);
-      waitFor(`document.querySelector('.sticky-bar button.primary')`, 'confirm bar');
-      js(`document.querySelector('.sticky-bar button.primary').click(); true`);
-      waitFor(`document.querySelector('.reveal')`, 'reveal');
-      const labels = js<string[]>(`[...document.querySelectorAll('.reveal a.ai-label')].map((a) => a.getAttribute('href'))`);
-      assert.ok(labels.includes('/privacidad/#ia'), `AI label at the reveal: ${labels}`);
-    }
-    noOverflow('fifth reveal');
+  step('reveal: who defends each approach, linked AI labels, focus on the headline', () => {
+    clickText('.action-bar button', /^Destapar/);
+    screen('.reveal h1', 'reveal', /^H1:Quién defiende cada propuesta/);
+    assert.ok(js<number>(`document.querySelectorAll('.reveal .revealed-question').length`) >= 3);
+    assert.ok(js<boolean>(`!!document.querySelector('.reveal .option.chosen .tag svg')`), 'the chosen approach is tagged with an SVG tick');
+    const labels = js<string[]>(`[...document.querySelectorAll('.reveal a.ai-label')].map((a) => a.getAttribute('href'))`);
+    assert.ok(labels.length > 0 && labels.every((l) => l.startsWith('/')), `AI labels at the reveal: ${labels}`);
+    assert.equal(js<string>(`document.getElementById('themes-chip').textContent`), 'Temáticas · 1/2');
+    checkScreen('reveal', v);
   });
 
-  step('Mi resultado (computed on the phone) and Compartir', () => {
-    ab('click', '.tabs a[href="#resultado"]');
-    waitFor(`location.hash === '#resultado' && document.querySelector('.ranking .ranking-row')`, 'ranking');
-    assert.match(focusText(), /^H1:Mi resultado/);
-    noViolations('result');
-    touchTargets('result');
-    noOverflow('result');
-    js(`location.hash = '#compartir'; true`);
-    waitFor(`document.querySelector('h1')?.textContent === 'Compartir'`, 'share');
-    noViolations('share');
-    touchTargets('share');
-    noOverflow('share');
+  step('theme 2 from the reveal: "Seguir con…", then its reveal', () => {
+    clickText('.action-bar button', /^Seguir con Sanidad/);
+    waitFor(`location.hash.startsWith('#tematica/sanidad-cuidados')`, 'second theme');
+    playTheme('theme 2', v, false);
+    screen('.summary h1', 'summary 2');
+    clickText('.action-bar button', /^Destapar/);
+    screen('.reveal h1', 'reveal 2');
+    assert.equal(js<string>(`document.querySelector('.action-bar a.primary')?.getAttribute('href')`), '#elegir', 'no picked theme left: choose another');
+    assert.equal(js<string>(`document.getElementById('themes-chip').textContent`), 'Temáticas · 2/2');
+  });
+
+  step('Mi resultado from the menu: by theme and overall (2 themes)', () => {
+    click('.site-header button[popovertarget="menu"]');
+    waitFor(`document.getElementById('menu').matches(':popover-open')`, 'the menu');
+    noViolations('menu');
+    clickText('#menu a', /^Mi resultado$/);
+    screen('.result h1', 'result', /^H1:Mi resultado/);
+    assert.equal(js<boolean>(`document.getElementById('menu').matches(':popover-open')`), false, 'the menu closes');
+    assert.ok(js<boolean>(`!!document.querySelector('#r-overall') && document.querySelectorAll('.result .ranking-row').length > 0`), 'overall ranking');
+    assert.equal(js<number>(`document.querySelectorAll('.result [id^="r-theme-"]').length`), 2, 'one block per revealed theme');
+    checkScreen('result', v);
+  });
+
+  step('go on with another theme', () => {
+    clickText('.result button', /^Seguir con otra temática/);
+    screen('.themes h1', 'theme list', /^H1:Temáticas/);
+    checkScreen('theme list', v, { reflow: false });
+    click('a.topic-row:not(.done)');
+    screen('.question h1', 'a question of a third theme');
+    assert.equal(js<number>(`document.querySelectorAll('.question .option[data-value]').length`), 3);
   });
 
   step('Preguntar: AI label and the answer to a suggested question', () => {
-    ab('click', '.tabs a[href="#preguntar"]');
+    js(`location.hash = '#preguntar'; true`);
+    screen('.ask h1', 'ask');
     waitFor(`document.querySelector('a.question-row')`, 'suggested questions');
     assert.equal(js<string>(`document.querySelector('.ask a.ai-label')?.getAttribute('href')`), '/privacidad/#ia');
-    noViolations('ask');
-    touchTargets('ask');
-    js(`document.querySelector('a.question-row').click(); true`);
-    waitFor(`location.hash.startsWith('#preguntar/') && document.querySelector('h1')`, 'answer');
+    checkScreen('ask', v, { reflow: false });
+    click('a.question-row');
+    screen('.answer h1', 'answer');
     noViolations('answer');
     noOverflow('answer');
+    noGlyphs('answer');
   });
 
   step('Tus datos, and nothing has left the browser', () => {
     js(`location.hash = '#datos'; true`);
-    waitFor(`document.querySelector('h1')?.textContent === 'Tus datos'`, 'your data');
-    noViolations('your data');
-    touchTargets('your data');
+    screen('.data h1', 'your data', /^H1:Tus datos/);
+    checkScreen('your data', v, { reflow: false });
     const outside = js<string[]>(`performance.getEntriesByType('resource').map((e) => e.name).filter((u) => new URL(u).origin !== location.origin)`);
     assert.deepEqual(outside, [], 'requests to other domains');
   });
@@ -333,17 +428,22 @@ function journey(v: { name: string; width: string; height: string }) {
     for (const t of ['nunca salen del navegador', 'Umami', 'Anthropic', '30 días', 'retención cero', 'art. 69 de la LOREG'])
       assert.ok(text.includes(t), `the privacy page mentions «${t}»`);
     assert.ok(js<boolean>(`!!document.getElementById('ia')`), '#ia anchor');
-    noViolations('privacy');
-    noOverflow('privacy');
   });
 
-  step("information pages: contrast and 'Aa'", () => {
+  step("information pages: axe light and dark, no glyphs, reflow, theme-color, 'Aa'", () => {
     for (const page of ['metodologia/', 'partidos/', 'rubrica/', 'privacidad/']) {
       ab('open', BASE + page);
       waitFor(`document.querySelector('h1')`, page);
       noViolations(page);
+      ab('set', 'media', 'dark');
+      noViolations(`${page} (dark)`);
+      ab('set', 'media', 'light');
+      noGlyphs(page);
+      reflow(page, v);
     }
     ab('open', BASE + 'metodologia/');
+    waitFor(`document.querySelector('h1')`, 'metodologia/');
+    themeColorMatchesHeader('metodologia/');
     ab('click', '#aa');
     assert.equal(js<string>(`getComputedStyle(document.documentElement).fontSize`), '22px');
     ab('click', '#aa');

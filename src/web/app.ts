@@ -18,6 +18,7 @@ import { TEXT_SIZE_KEY, largeText } from './text-size';
 import { setupAnalytics, trackResult, trackStarted } from './analytics';
 import { challengeNotice } from './share';
 import { h } from './dom';
+import { icon } from './icons';
 import { pickThemesView, questionView, revealView, summaryView, themeHref, themesListView, themesProgress } from './themes';
 
 const SEED_KEY = '29n:seed';
@@ -191,7 +192,7 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
 
   const dataViewApp = () =>
     h('div', {},
-      h('header', { class: 'header' }, h('a', { href: '#tematicas', class: 'back-link' }, '← Temáticas')),
+      h('header', { class: 'header' }, h('a', { href: '#tematicas', class: 'back-link' }, icon('arrowLeft'), 'Temáticas')),
       dataView(game, { chosenProvince: province !== undefined, guessEnabled: !preferences.noGuess, storage: hasStorage, largeText: largeText() }, {
         changeGuess: (enabled) => changePreferences({ noGuess: !enabled }),
         clearAll,

@@ -3,6 +3,7 @@
 import type { Game } from '../game';
 import { createFinder, PROVINCES, provinceByCode, type Finder, type Place, type Municipalities } from '../registry/territory';
 import { h } from './dom';
+import { icon } from './icons';
 
 
 let finder: Finder = createFinder({ municipalities: {} });
@@ -26,12 +27,20 @@ export function provinceChip(code: string | null): HTMLElement {
   return h('a', { href: '#provincia', class: 'province-chip', 'aria-label': `Dónde votas: ${provinceName(code)}. Cambiar` }, `Votas en ${provinceName(code)}`);
 }
 
+/** "Telde → Las Palmas" with an SVG arrow (read as "Telde, Las Palmas"); a province is just its name. */
+function placeName(p: Place): Node | string {
+  if (p.type === 'province') return p.name;
+  const f = document.createDocumentFragment();
+  f.append(p.name, icon('arrowRight'), h('span', { class: 'visually-hidden' }, ', '), provinceByCode(p.province)?.name ?? '');
+  return f;
+}
+
 /** `onChoose(null)` = "Prefiero no decirlo". */
 export function provinceView(current: string | null | undefined, onChoose: (code: string | null) => void): HTMLElement {
-  const row = (text: string, code: string | null, secondary?: string) => {
+  const row = (text: string | Node, code: string | null, secondary?: string) => {
     const b = h('button', { type: 'button', class: `topic-row province-row${code === current ? ' done' : ''}` },
       h('span', { class: 'name' }, text),
-      secondary ? h('span', { class: 'state' }, secondary) : code === current && current !== undefined ? h('span', { class: 'state' }, '✓ Ahora') : null);
+      secondary ? h('span', { class: 'state' }, secondary) : code === current && current !== undefined ? h('span', { class: 'state' }, icon('check'), 'Ahora') : null);
     b.addEventListener('click', () => onChoose(code));
     return h('li', {}, b);
   };
@@ -54,7 +63,7 @@ export function provinceView(current: string | null | undefined, onChoose: (code
     const places: Place[] = finder.search(q);
     if (!places.length)
       return results.replaceChildren(h('li', { class: 'grey' }, 'No lo encontramos. Prueba con el nombre de tu provincia.'));
-    results.replaceChildren(...places.map((l) => row(l.resolution, l.province, l.type === 'island' ? 'Isla' : l.type === 'municipality' ? undefined : 'Provincia')));
+    results.replaceChildren(...places.map((l) => row(placeName(l), l.province, l.type === 'island' ? 'Isla' : l.type === 'municipality' ? undefined : 'Provincia')));
   };
   input.addEventListener('input', renderResults);
   input.addEventListener('focus', () => void loadMunicipalities().then(renderResults), { once: true });

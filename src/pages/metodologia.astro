@@ -2,6 +2,7 @@
 // Screen 14 "Cómo funciona" (story 41/42): data process, the 13 checks, rubric, versioned prompts,
 // feasibility breakdown per party and topic, verification reports and who makes it.
 import InfoPage from '../components/InfoPage.astro';
+import Icon from '../components/Icon.astro';
 import { dataset } from '../transparency/data';
 import { PROMPTS, FREE_QUESTION_PROMPTS, REPO, repoLink, feasibilityDistribution, manifestos } from '../transparency';
 import { CHECKS } from '../registry/checks';
@@ -88,7 +89,7 @@ import { MIN_GUESSES, HIT_THRESHOLD } from '../guesses';
     {HIT_THRESHOLD * 100} % de las veces, sus textos no son lo bastante neutrales y se abre una incidencia para reescribirlos.
     Solo se mira a partir de {MIN_GUESSES} apuestas en el tema: con menos, el porcentaje es ruido.
   </p>
-  <p><a href="/rubrica/">Rúbrica completa, niveles, fuentes permitidas e instrucciones →</a></p>
+  <p><a href="/rubrica/">Rúbrica completa, niveles, fuentes permitidas e instrucciones<Icon name="arrowRight" /></a></p>
 
   <h2 id="prompts">Instrucciones exactas de la IA</h2>
   <p>

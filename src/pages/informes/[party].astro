@@ -1,6 +1,7 @@
 ---
 // Verification report of one programme (story 45): every check the programme and its positions went through.
 import InfoPage from '../../components/InfoPage.astro';
+import Icon from '../../components/Icon.astro';
 import { dataset, dayDate } from '../../transparency/data';
 import { reportSummary, repoLink } from '../../transparency';
 import { CHECKS } from '../../registry/checks';
@@ -16,14 +17,14 @@ const name = party?.name ?? i.party;
 const STATE = { proposes: 'Publicada', noProposal: 'No propone nada', unverified: 'Descartada: no pudimos verificarla' } as const;
 const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite: 'reescribir', discard: 'descartada', block: 'bloqueado', extract: 'encontrada', warning: 'aviso' };
 ---
-<InfoPage title={`Informe de verificación: ${name}`} description={`Qué comprobaciones pasó el programa de ${name} y qué se descartó.`} back={{ href: '/partidos/', text: '← Partidos y programas' }}>
+<InfoPage title={`Informe de verificación: ${name}`} description={`Qué comprobaciones pasó el programa de ${name} y qué se descartó.`} back={{ href: '/partidos/', text: 'Partidos y programas' }}>
   <h1>Informe de verificación: {name}</h1>
   <p>
     Todo lo que hizo el proceso automático con este programa: qué propuestas se publicaron, cuáles se
     reescribieron y qué se descartó y por qué. <a href="/metodologia/#barreras">Qué es cada comprobación</a>.
   </p>
   <ul>
-    {manifesto && <li>Documento: <a href={manifesto.url} target="_blank" rel="noopener">{manifesto.title} (PDF ↗)</a></li>}
+    {manifesto && <li>Documento: <a href={manifesto.url} target="_blank" rel="noopener">{manifesto.title} (PDF)<Icon name="external" /></a></li>}
     {i.url && <li>Descargado de: <code>{i.url}</code>{i.date && ` el ${dayDate(i.date)}`}</li>}
     <li>Huella del PDF (SHA-256): <code class="footprint">{i.hashPdf}</code></li>
     <li>Versión de las instrucciones: <code>{i.promptVersion}</code> (<a href={repoLink('src/pipeline/prompts.ts')}>ver</a>)</li>

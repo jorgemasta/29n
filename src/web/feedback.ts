@@ -5,6 +5,7 @@
 import { sendFeedback } from '../client/api';
 import { MAX_COMMENT, REPORT_REASONS, type ReportReason } from '../transparency';
 import { h } from './dom';
+import { icon } from './icons';
 
 
 let counter = 0;
@@ -48,8 +49,8 @@ export function feedbackButton(data: {
 /** Outcome of a notice: the public issue, or the prefilled GitHub link as fallback. */
 export function feedbackResult(r: Awaited<ReturnType<typeof sendFeedback>>): HTMLElement[] {
   if (r.state === 'created')
-    return [h('p', { class: 'zone-notice' }, 'Enviado, gracias. ', h('a', { href: r.url, target: '_blank', rel: 'noopener' }, 'Ver el aviso ↗'))];
+    return [h('p', { class: 'zone-notice' }, 'Enviado, gracias. ', h('a', { href: r.url, target: '_blank', rel: 'noopener' }, 'Ver el aviso', icon('external')))];
   if (r.state === 'invalid' || r.state === 'network') return [h('p', { class: 'zone-notice' }, r.message)];
   const reason = r.state === 'unavailable' ? 'El envío directo no está disponible ahora.' : r.message;
-  return [h('p', { class: 'zone-notice' }, `${reason} `, h('a', { href: r.fallbackUrl, target: '_blank', rel: 'noopener' }, 'Enviarlo en GitHub ↗'), ' (necesitas una cuenta de GitHub).')];
+  return [h('p', { class: 'zone-notice' }, `${reason} `, h('a', { href: r.fallbackUrl, target: '_blank', rel: 'noopener' }, 'Enviarlo en GitHub', icon('external')), ' (necesitas una cuenta de GitHub).')];
 }

@@ -176,7 +176,7 @@ a { color: var(--petrol); }
 .feasibility { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
 .feasibility h3 { font-size: 1rem; margin: 0 0 0.5rem; }
 .ai-label { font-size: 0.7rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; vertical-align: middle; color: inherit; text-decoration: none; }
-a.ai-label:hover, a.ai-label:focus-visible { text-decoration: underline; }
+a.ai-label:focus-visible { text-decoration: underline; }
 .footer p { margin: 0.25rem 0; }
 .scale { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; list-style: none; padding: 0; margin: 0 0 0.5rem; font-size: 0.7rem; }
 .scale li { border: 2px solid var(--petrol); border-radius: 0.25rem; padding: 0.2rem; text-align: center; color: var(--ink-soft); }
@@ -318,7 +318,7 @@ dialog.help p { margin: 0 0 1rem; }
 /* Share (screen 11) and ?r=reto */
 .challenge-notice { font-weight: 700; color: var(--petrol); background: var(--aqua); border-left: 4px solid var(--petrol); padding: 0.75rem; border-radius: 0.25rem; margin: 0 0 0.5rem; }
 .preview { display: grid; place-items: center; margin: 0 0 1rem; }
-.share-card { display: block; max-width: 100%; height: auto; max-height: 60vh; border: 1px solid var(--border); border-radius: 0.5rem; box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
+.share-card { display: block; max-width: 100%; height: auto; max-height: 60dvh; border: 1px solid var(--border); border-radius: 0.5rem; box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
 .selector { border: none; padding: 0; margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }
 .selector legend { font-weight: 600; margin-bottom: 0.5rem; padding: 0; }
 .selector .option { flex: 1; min-height: 3rem; display: flex; align-items: center; gap: 0.5rem; border: 2px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer; }
@@ -459,3 +459,38 @@ body:has(.action-bar) .footer { padding-bottom: calc(6rem + var(--safe-bottom));
 .pick-row .state { font-size: 0.85rem; color: var(--ink-soft); text-align: right; }
 .pick-row:has(input:checked) { outline: 3px solid var(--petrol); outline-offset: -3px; }
 .primary:disabled { opacity: 0.45; cursor: default; transform: none; }
+
+/* Mobile polish and accessibility (#31). Kept in one block: press feedback on every tappable row,
+   hover only with a real mouse, icons next to text, nothing wider than the screen at 320 px / 200 %. */
+html { overscroll-behavior-y: none; }
+body { overflow-wrap: break-word; }
+img, svg, canvas, video { max-width: 100%; }
+/* Long model names, URLs and codes break instead of widening tables at 320 px. */
+.rubric-table :is(th, td), code, .info a { overflow-wrap: anywhere; }
+.back-link, .list-links a, .method a, .sources a, .topic-row .state, .province-row .state {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+}
+.grey-row { display: flex; align-items: center; gap: 0.35rem; }
+.site-header-inner { flex-wrap: wrap; row-gap: 0.25rem; }
+.header-actions { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.pick-row { grid-template-columns: auto minmax(0, 1fr) minmax(0, 8.5rem); }
+.province-row .name { display: inline-flex; flex-wrap: wrap; align-items: center; column-gap: 0.35rem; }
+.back-link .icon, .grey-row .icon { width: 1.1em; height: 1.1em; }
+a .icon-external { width: 1em; height: 1em; margin-left: 0.2rem; }
+:is(.topic-row, .pick-row, .summary-row, .chip, .text-link, .link-button, .province-chip) {
+  transition: transform 160ms var(--ease-out);
+}
+:is(.topic-row, .pick-row, .summary-row):active { transform: scale(0.985); }
+:is(.chip, .link-button, .province-chip):active { transform: scale(0.97); }
+.text-link:active { opacity: 0.7; }
+@media (hover: hover) and (pointer: fine) {
+  a.ai-label:hover { text-decoration: underline; }
+  :is(.topic-row, .pick-row, .summary-row):hover { background: var(--aqua); }
+  .header-chip:hover, .chip:hover { border-color: var(--petrol); }
+  .secondary:hover { background: var(--aqua); }
+  .primary:not(:disabled):hover { background: var(--petrol-dark); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.topic-row, .pick-row, .summary-row, .chip, .link-button, .province-chip) { transition: none; }
+  :is(.topic-row, .pick-row, .summary-row, .chip, .link-button, .province-chip):active { transform: none; }
+}

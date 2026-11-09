@@ -3,6 +3,7 @@
 import { MIN_THEMES_FOR_RANKING, type AffinityRow, type Game, type ThemeAffinity } from '../game';
 import { provinceName } from './province';
 import { button, h } from './dom';
+import { icon } from './icons';
 
 const link = (text: string, href: string, cls = '') => h('a', { href, class: cls }, text);
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -56,7 +57,7 @@ export function resultView(game: Game, actions: ResultActions): HTMLElement {
       : h('p', { class: 'grey' }, `Desde ${MIN_THEMES_FOR_RANKING} temáticas verás también con quién coincides en conjunto.`),
     ...r.themes.map(themeBlock),
     // #26: "cuántas veces acertaste" (bets in the sheet) goes here, between the themes and the notes.
-    ...r.missingManifestos.map((p) => h('p', { class: 'grey-row' }, `⏳ Falta el programa de ${p.name}: aún no lo ha publicado. Tu resultado puede cambiar.`)),
+    ...r.missingManifestos.map((p) => h('p', { class: 'grey-row' }, icon('clock'), ` Falta el programa de ${p.name}: aún no lo ha publicado. Tu resultado puede cambiar.`)),
     r.noProvince ? h('p', { class: 'grey-row' }, 'Solo partidos nacionales. ', link('Elige provincia', '#provincia'), ' para incluir los de tu zona.') : null,
     h('p', { class: 'grey' },
       'Cómo se calcula: el enfoque que eliges suma 1 a cada partido que lo defiende de lleno y 0,5 a los que lo defienden en parte. ',
