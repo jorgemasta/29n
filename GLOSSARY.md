@@ -38,25 +38,37 @@ modules, endpoints, data fields, storage keys and analytics events.
 | semilla / barajar | `seed` / `shuffle` | Per-voter stable random order of cards and letters. |
 | provincia / municipio | `province` / `municipality` | Where the voter votes; decides regional parties. |
 | registro | `registry` | Static lists: parties, topics, provinces, rubric, domains. |
-| pregunta sugerida | `suggestedQuestion` | Precomputed question with answers from every manifesto. |
+| pregunta sugerida | `suggestedQuestion` | Precomputed question of the Preguntar tab with answers from every manifesto. Type `SuggestedQuestion`, its answers `SuggestedAnswer`, dataset key `suggestedQuestions` (answers stay under `answers`), `ReportEntry.suggestedQuestion`, `Game.suggestedQuestions()` / `suggestedQuestion()` / `revealSuggestedQuestion()`. Never just `question`: that word is the v2 one. |
 | pregunta libre | `freeQuestion` | Voter-typed question answered live from manifestos, always with quotes. Endpoint `/api/ask`. |
 | aviso (reportar error / falta un partido) | `feedback` | A voter notice that becomes a public GitHub issue. Endpoint `/api/feedback`. |
 | compartir / reto | `share` / `challenge` | The share card and the `?r=reto` invite link (the URL param stays Spanish: it is user-facing). |
 | transparencia | `transparency` | Methodology, feasibility distribution and reports pages. |
 | lanzamiento | `launch` | Production-build rules: only real, official data. |
 
-## Coming with spec v2 (#18)
+## v2: three approaches per question (#18)
+
+v2 replaces "one card per party" with "3 approaches per question" (`docs/adr/0001-three-approaches-per-question.md`).
+`topic` (v1) gives way to `theme` + `question`. **`question` always means the v2 question**; the
+Preguntar tab's one is `suggestedQuestion` and the voter-typed one `freeQuestion`.
 
 | UI (es) | Code (en) | Meaning |
 |---|---|---|
-| temática | `theme` | A group of questions the voter picks at the start (Vivienda, Sanidad…). |
-| Tu comunidad | `regionalTheme` | The theme with a region's own questions, shown only there. |
-| pregunta | `question` | One blind choice inside a theme, always with 3 approaches. |
-| pregunta para afinar | `followUpQuestion` | Optional extra question offered after a theme's base questions. |
-| enfoque | `approach` | One of the 3 options of a question; groups several parties. |
-| enfoque inventado | `filler` (flag on `approach`) | An approach no party defends, added to reach 3. Counts as `none`. |
-| de lleno / en parte / no | `stance: 'full' \| 'partial' \| 'none'` | How a party fits an approach (1 / 0.5 / 0), each non-`none` with a quote. |
-| propone otra cosa | `otherProposal` | A party that fits no approach: out of the blind choice, shown at reveal. |
+| temática | `theme` | A group of questions the voter picks at the start (Vivienda, Sanidad…). Type `Theme`, dataset key `themes`. |
+| Tu comunidad | `regionalTheme` | A `theme` with `region` = INE autonomous-community code (CODAUTO), shown only to voters there. |
+| pregunta | `question` | One blind choice inside a theme, always with exactly 3 approaches. Type `Question`, dataset key `questions`. |
+| pregunta para afinar | `followUpQuestion` | Optional extra question offered after a theme's base questions; flag `followUp` on `question`. |
+| origen | `origin` | Why the pulse picked a question: CIS datum (`cis`) and how many manifestos address it (`manifestos`). |
+| enfoque | `approach` | One of the 3 options of a question (`what` / `how` / `figure`, figures rounded); defended by one or more parties. |
+| enfoque inventado | `filler` (flag on `approach`) | An approach no party defends, added to reach 3. Adds to no party. |
+| de lleno / en parte / no | `stance: 'full' \| 'partial' \| 'none'` | How a party fits an approach (1 / 0.5 / 0). Stored as `PartyStance` in `approach.stances`; every non-`none` one carries its `quote`. |
+| clasificación | `classification` | Every party's stances on the approaches of a question, plus its `otherProposals`. What `settleApproaches` produces. |
+| propone otra cosa | `otherProposal` | A party that fits no approach (`question.otherProposals`, with its quote): out of the blind choice, shown at reveal. |
+| postura (en una pregunta) | `position` | What one party says about one question (`proposes` / `noProposal` / `unverified`). Still keyed by `topic` until #21. |
 | pulso | `pulse` | The AI survey (CIS, manifestos, Reddit/web) that produces the frozen theme/question list. |
+| elección | `questionChoices` | `GameState.questionChoices`: approach id (or `none`) per question id. |
+| destapar (temática) | `revealTheme` / `themeReveal` | Reveal every answered question of a theme at once (`GameState.revealedThemes`); after it only follow-up questions can still be answered. |
+| propuesta a ciegas | `BlindApproach` | What the voter sees before the reveal: letter, what, how, figure. No id, party or stance. |
+| apuesta | `guess` | Optional: which party the voter thinks defends the chosen approach. Right if that party is `full` or `partial` there (#26). |
+| afinidad | `affinity` | Sum of the stances (1 / 0.5) of the approaches the voter chose; `none`, `filler` and out-of-province approaches add nothing (#25). |
 
 Test seams named in #18: `createGame`, `processManifesto`, `settleApproaches`, `takePulse`.
