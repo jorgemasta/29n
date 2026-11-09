@@ -67,7 +67,7 @@ Nada de esto lo hace el código ni un agente. Detalle de cada paso en las seccio
    quitar `contrato` del `pattern` y procesarlo a mano con `--source party-document`).
 8. **PDF reales**: descargar a mano los programas que el watcher no alcance y procesarlos (`npm run process`);
    commit de `data/dataset.json`, `data/reports/`, `data/cache/ai/` y `public/texts/`.
-9. **Pasar a datos reales** («Pasar de los datos simulados a los reales», arriba) y `npm run build:produccion` sin errores.
+9. **Pasar a datos reales** («Pasar de los datos simulados a los reales», arriba) y `npm run build:production` sin errores.
 10. **Candidaturas**: las listas de `src/registry/parties.ts` son estimaciones provisionales. Cuando el BOE publique
     las candidaturas proclamadas, corregir las provincias de cada partido, añadir los que entren por representación
     autonómica y poner `state: 'proclaimed'` con la fuente.

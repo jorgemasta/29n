@@ -62,7 +62,7 @@ export async function checkGuesses(
             '(revisar estilo, términos identificativos y el resultado de V11 en los informes) y relanzar el proceso de datos.',
             '',
             'Datos agregados de Umami (eventos `guess-hit` / `guess-miss`): no incluyen qué partido eligió ni apostó nadie.',
-            'Abierto automáticamente por `.github/workflows/apuestas.yml`.',
+            'Abierto automáticamente por `.github/workflows/guesses.yml`.',
           ].join('\n'),
           labels: [LABEL],
         });
