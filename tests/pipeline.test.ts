@@ -604,7 +604,8 @@ describe('processManifesto', () => {
         }),
       });
       const question = { ...housingQuestion, theme: 'vivienda', followUp: false, order: 1, origin: { cis: null, manifestos: 2 } };
-      const settled = await settleApproaches({ question, positions: [...pej.positions, ...otp.positions, ...silent.positions] }, ai);
+      // The approach checks (#22) are tested with settleApproaches: here only the grouping.
+      const settled = await settleApproaches({ question, positions: [...pej.positions, ...otp.positions, ...silent.positions] }, ai, { checks: [] });
 
       expect(settled.publishable).toBe(true);
       expect(settled.question!.approaches[0]!.stances).toContainEqual({ party: 'pej', stance: 'full', quote: { text: QUOTE, page: 2 } });
