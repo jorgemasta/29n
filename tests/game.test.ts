@@ -5,6 +5,7 @@ import { validateDataset } from '../src/dataset';
 import { sampleDataset, sampleNote } from './fixtures/sample-dataset';
 import { topicsDataset } from './fixtures/topics-dataset';
 import { questionsDataset } from './fixtures/questions-dataset';
+import { themesDataset } from './fixtures/themes-dataset';
 import type { Dataset } from '../src/dataset/schema';
 import publishedDataset from '../data/dataset.json';
 
@@ -756,5 +757,170 @@ describe('Preguntar: honest states', () => {
   it('lists the pending parties of the zone by name, like the topics', () => {
     const r = createGame(sampleDataset, '35', 's').revealSuggestedQuestion({ id: 'libre', text: '¿Algo?' }, []);
     expect(r.pending.map((p) => [p.id, p.regional])).toEqual([['pend', false], ['penreg', true]]);
+  });
+});
+
+describe('createGame: themes, questions and approaches (v2)', () => {
+  const PARTY_INFO = /aaa|bbb|ccc|isla|bcn|AAA|BBB|CCC|Cita literal|stance|filler/;
+
+  it('shows a question as exactly 3 anonymous approaches with letters A, B, C', () => {
+    const view = createGame(themesDataset, null, 'semilla').question('alquiler');
+    expect(view.question).toEqual({ id: 'alquiler', theme: 'vivienda', text: '¿Qué harían para que el alquiler sea asequible?', followUp: false });
+    expect(view.approaches.map((a) => a.letter)).toEqual(['A', 'B', 'C']);
+    for (const a of view.approaches) {
+      expect(Object.keys(a).sort()).toEqual(['figure', 'how', 'letter', 'what']);
+    }
+    expect(JSON.stringify(view)).not.toMatch(PARTY_INFO);
+  });
+
+  it('shuffles approaches stably per seed and question', () => {
+    const order = (seed: string, q = 'alquiler') =>
+      createGame(themesDataset, null, seed).question(q).approaches.map((a) => a.what).join('|');
+    expect(order('s1')).toBe(order('s1'));
+    const different = new Set(['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'].map((s) => order(s)));
+    expect(different.size).toBeGreaterThan(1);
+  });
+
+  it('records the chosen approach or "none" and survives a JSON round trip', () => {
+    const game = createGame(themesDataset, null, 's');
+    const letter = game.question('alquiler').approaches[1]!.letter;
+    const after = game.chooseApproach('alquiler', letter).chooseApproach('compra', NONE);
+    const restored = createGame(themesDataset, null, 's', JSON.parse(JSON.stringify(after.state)));
+    expect(restored.theme('vivienda').questions.map((q) => [q.question.id, q.choice])).toEqual([
+      ['alquiler', letter],
+      ['compra', NONE],
+    ]);
+  });
+
+  it('rejects an unknown letter or question', () => {
+    const game = createGame(themesDataset, null, 's');
+    expect(() => game.chooseApproach('alquiler', 'D')).toThrow();
+    expect(() => game.chooseApproach('nope', 'A')).toThrow();
+  });
+
+  it('a choice can be changed before the reveal', () => {
+    const game = createGame(themesDataset, null, 's').chooseApproach('alquiler', 'A').chooseApproach('alquiler', 'C');
+    expect(game.theme('vivienda').questions[0]!.choice).toBe('C');
+  });
+
+  it('lists the themes in their order with their base questions, follow-up questions apart', () => {
+    const game = createGame(themesDataset, null, 's');
+    expect(game.themes().map((t) => t.id)).toEqual(['vivienda', 'sanidad']);
+    const t = game.theme('vivienda');
+    expect(t.theme.title).toBe('Vivienda');
+    expect(t.questions.map((q) => [q.question.id, q.choice])).toEqual([
+      ['alquiler', null],
+      ['compra', null],
+    ]);
+    expect(t.followUps.map((q) => q.question.id)).toEqual(['okupacion']);
+    expect(t.done).toBe(false);
+    expect(t.revealed).toBe(false);
+  });
+
+  it('shows a regional theme only in its autonomous community', () => {
+    expect(createGame(themesDataset, '35', 's').themes().map((t) => t.id)).toEqual(['vivienda', 'sanidad', 'canarias']);
+    expect(createGame(themesDataset, '38', 's').themes().map((t) => t.id)).toContain('canarias');
+    expect(createGame(themesDataset, '08', 's').themes().map((t) => t.id)).not.toContain('canarias');
+    expect(() => createGame(themesDataset, '08', 's').theme('canarias')).toThrow();
+    expect(() => createGame(themesDataset, '08', 's').question('ref')).toThrow();
+  });
+
+  /** Plays every base question of vivienda: A in alquiler, "none" in compra. */
+  const playVivienda = (province: string | null = null) =>
+    createGame(themesDataset, province, 's').chooseApproach('alquiler', 'A').chooseApproach('compra', NONE);
+
+  it('reveals nothing until every base question of the theme is answered', () => {
+    const game = createGame(themesDataset, null, 's').chooseApproach('alquiler', 'A');
+    expect(game.theme('vivienda').done).toBe(false);
+    expect(game.themeReveal('vivienda')).toBeNull();
+    expect(() => game.revealTheme('vivienda')).toThrow();
+    const done = game.chooseApproach('compra', NONE);
+    expect(done.theme('vivienda').done).toBe(true);
+    expect(done.themeReveal('vivienda')).toBeNull();
+  });
+
+  it('the reveal shows which parties defend each approach, fully or in part, with their quote', () => {
+    const game = playVivienda().revealTheme('vivienda');
+    expect(game.theme('vivienda').revealed).toBe(true);
+    const r = game.themeReveal('vivienda')!;
+    expect(r.theme.id).toBe('vivienda');
+    expect(r.questions.map((q) => [q.question.id, q.choice])).toEqual([
+      ['alquiler', 'A'],
+      ['compra', NONE],
+    ]);
+    const alquiler = r.questions[0]!;
+    expect(alquiler.approaches.map((a) => a.letter)).toEqual(['A', 'B', 'C']);
+    expect(alquiler.approaches.map((a) => a.what)).toEqual(game.question('alquiler').approaches.map((a) => a.what));
+    expect(alquiler.approaches.filter((a) => a.chosen)).toEqual([alquiler.approaches[0]]);
+    const byWhat = (w: string) => alquiler.approaches.find((a) => a.what === `Enfoque ${w}`)!;
+    expect(byWhat('uno').parties.map((p) => [p.party.id, p.stance])).toEqual([
+      ['aaa', 'full'],
+      ['bbb', 'partial'],
+    ]);
+    expect(byWhat('uno').parties[0]!.quote).toEqual({
+      text: 'Cita literal número 3 del programa de aaa, con más de cuarenta caracteres.',
+      page: 3,
+      link: 'https://ejemplo.org/aaa.pdf#page=3',
+    });
+    expect(byWhat('tres')).toMatchObject({ filler: true, parties: [] });
+    expect(alquiler.otherProposals).toEqual([]);
+    expect(r.questions[1]!.approaches.every((a) => !a.chosen)).toBe(true);
+  });
+
+  it('the reveal only names parties in play in the province', () => {
+    const national = playVivienda().revealTheme('vivienda').themeReveal('vivienda')!.questions[0]!;
+    const oferta = (q: typeof national) => q.approaches.find((a) => a.what === 'Enfoque dos')!.parties.map((p) => p.party.id);
+    expect(oferta(national)).toEqual(['ccc']);
+    const canary = playVivienda('35').revealTheme('vivienda').themeReveal('vivienda')!.questions[0]!;
+    expect(oferta(canary)).toEqual(['ccc', 'isla']);
+    const barcelona = playVivienda('08').revealTheme('vivienda').themeReveal('vivienda')!.questions[0]!;
+    expect(barcelona.otherProposals.map((p) => p.party.id)).toEqual(['bcn']);
+    expect(national.otherProposals).toEqual([]);
+  });
+
+  it('includes the follow-up questions answered, and only those', () => {
+    const r = playVivienda().chooseApproach('okupacion', 'B').revealTheme('vivienda').themeReveal('vivienda')!;
+    expect(r.questions.map((q) => q.question.id)).toEqual(['alquiler', 'compra', 'okupacion']);
+  });
+
+  it('a follow-up question can still be answered after the reveal, and is revealed with the theme', () => {
+    const game = playVivienda().revealTheme('vivienda').chooseApproach('okupacion', 'C');
+    expect(game.themeReveal('vivienda')!.questions.map((q) => [q.question.id, q.choice])).toEqual([
+      ['alquiler', 'A'],
+      ['compra', NONE],
+      ['okupacion', 'C'],
+    ]);
+  });
+
+  it('no base choice can change once the theme is revealed; other themes stay blind', () => {
+    const game = playVivienda().revealTheme('vivienda');
+    expect(() => game.chooseApproach('alquiler', 'B')).toThrow();
+    expect(game.theme('sanidad').revealed).toBe(false);
+    expect(game.themeReveal('sanidad')).toBeNull();
+    const restored = createGame(themesDataset, null, 's', JSON.parse(JSON.stringify(game.state)));
+    expect(restored.themeReveal('vivienda')).toEqual(game.themeReveal('vivienda'));
+  });
+
+  it('nothing about parties is exposed before the reveal', () => {
+    const game = playVivienda('35').chooseApproach('okupacion', 'A');
+    const blind = [
+      game.themes(),
+      game.theme('vivienda'),
+      ...['alquiler', 'compra', 'okupacion', 'listas', 'ref'].map((q) => game.question(q)),
+      game.state,
+    ];
+    expect(JSON.stringify(blind)).not.toMatch(PARTY_INFO);
+  });
+
+  it('a party with only a provisional source is named at the reveal only in private mode', () => {
+    const d = publishedDataset as Dataset;
+    const q = d.questions![0]!;
+    const named = (mode: 'public' | 'private') => {
+      const game = createGame(d, null, 's', undefined, { mode });
+      const played = game.theme(q.theme).questions.reduce((g, x) => g.chooseApproach(x.question.id, NONE), game).revealTheme(q.theme);
+      return played.themeReveal(q.theme)!.questions.flatMap((x) => x.approaches.flatMap((a) => a.parties.map((p) => p.party.id)));
+    };
+    expect(named('public')).not.toContain('prueba-d');
+    expect(named('private')).toContain('prueba-d');
   });
 });

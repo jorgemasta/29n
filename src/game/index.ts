@@ -3,6 +3,20 @@
 import { applyMode, isPrivateOnly, sourceOf } from '../dataset';
 import type { Dataset, Mode, FeasibilityNote, Party, Position, SuggestedQuestion, SuggestedAnswer, Topic, SourceType } from '../dataset/schema';
 import { shuffle } from './random';
+import { themeGame, type ThemeGame, type ThemeState } from './themes';
+import { byName, linkQuote, revealParty, type RevealedParty } from './party';
+
+export type {
+  BlindApproach,
+  QuestionItem,
+  QuestionReveal,
+  QuestionSummary,
+  QuestionView,
+  RevealedApproach,
+  RevealedStance,
+  ThemeReveal,
+  ThemeView,
+} from './themes';
 
 export const NONE = 'none' as const;
 export type None = typeof NONE;
@@ -11,7 +25,7 @@ export type None = typeof NONE;
 export const CANARY_PROVINCES = ['35', '38'];
 
 /** Serializable state: what the voter chose per topic (party id, never leaves the browser). */
-export interface GameState {
+export interface GameState extends ThemeState {
   /** Insertion order = order in which topics were done. */
   choices: Record<string, string | None>;
   /** Optional bet per topic: the party the voter thought their card was from. */
@@ -79,12 +93,7 @@ export interface TopicView {
   noProposal: number;
 }
 
-export interface RevealedParty {
-  id: string;
-  name: string;
-  acronym: string;
-  test: boolean;
-}
+export type { RevealedParty, LinkedQuote } from './party';
 
 /** Who wrote a card, with its quotes linked to the PDF page (topics and questions alike). */
 export interface PartyCard extends Card {
@@ -209,7 +218,7 @@ export interface SuggestedQuestionReveal {
   noneAtAll: boolean;
 }
 
-export interface Game {
+export interface Game extends ThemeGame<Game> {
   readonly state: GameState;
   /** INE province code, or null for "Prefiero no decirlo" (national parties only). */
   readonly province: string | null;
@@ -342,11 +351,10 @@ export function createGame(
       ...card,
       party: revealParty(party),
       manifestoTitle: manifesto?.title ?? '',
-      quotes: quotes.map((c) => ({ ...c, link: `${manifesto?.url ?? ''}#page=${c.page}` })),
+      quotes: quotes.map((c) => linkQuote(party, c)),
       source: { type, privateOnly: isPrivateOnly(type) },
     };
   };
-  const byName = (a: RevealedParty, b: RevealedParty) => a.name.localeCompare(b.name, 'es');
   const zonePending = () => pending.map(zone).sort(byName);
   /** Same dataset, province and options; new state. */
   const withChanges = (changes: Partial<GameState>) => createGame(dataset, province, seed, { ...state, ...changes }, options);
@@ -361,6 +369,7 @@ export function createGame(
   };
 
   return {
+    ...themeGame<Game>({ dataset, province, seed, state, published: byId, withChanges }),
     state,
     province,
     parties: () => ({ withManifesto: published.map(zone).sort(byName), pending: zonePending() }),
@@ -618,8 +627,4 @@ function noSources(note: FeasibilityNote): boolean {
   if (note.result === 'notConcrete') return false;
   if (note.result === 'noConsensus') return note.assessments.some((e) => e.level !== 'notConcrete' && e.sources.length === 0);
   return note.sources.length === 0;
-}
-
-function revealParty(p: Party): RevealedParty {
-  return { id: p.id, name: p.name, acronym: p.acronym, test: p.test === true };
 }
