@@ -6,9 +6,12 @@ import { shuffle } from './random';
 import { themeGame, type ThemeGame, type ThemeState } from './themes';
 export { MINUTES_PER_QUESTION } from './themes';
 import { byName, linkQuote, revealParty, type RevealedParty } from './party';
+import { noSources } from './proposal';
 
+export type { PartyProposal } from './proposal';
 export type {
   BlindApproach,
+  OtherProposalReveal,
   QuestionItem,
   QuestionProgress,
   QuestionReveal,
@@ -618,15 +621,4 @@ function toCard(p: { text: ProposingPosition['text'] }, letter: string): Card {
     headline: p.text.what,
     detail: p.text.figure ? `${p.text.how} Cifra: ${p.text.figure}.` : p.text.how,
   };
-}
-
-/**
- * The published argument lacks verifiable sources: V8 gave up after its repeats. With consensus,
- * the published argument has none; without it, one of the two evaluations has none.
- * "Sin concreción" never needs sources.
- */
-function noSources(note: FeasibilityNote): boolean {
-  if (note.result === 'notConcrete') return false;
-  if (note.result === 'noConsensus') return note.assessments.some((e) => e.level !== 'notConcrete' && e.sources.length === 0);
-  return note.sources.length === 0;
 }

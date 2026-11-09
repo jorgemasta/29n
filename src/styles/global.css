@@ -420,15 +420,21 @@ dialog.sheet.open::backdrop { background: rgb(4 49 62 / 0.38); }
 .your-choice { margin: 0 0 0.75rem; color: var(--ink-soft); }
 .option.revealed { cursor: default; }
 .option .tag { display: inline-flex; align-items: center; gap: 0.25rem; justify-self: start; font-size: 0.8rem; font-weight: 700; color: var(--petrol); }
-.defenders { margin: 0.4rem 0 0; display: grid; gap: 0.25rem; }
-.defenders div { display: flex; flex-wrap: wrap; gap: 0 0.5rem; }
-.defenders dt { font-weight: 700; }
-.defenders dt::after { content: ':'; }
-.defenders dd { margin: 0; }
-.quotes summary { min-height: 2.75rem; display: flex; align-items: center; color: var(--petrol); font-weight: 700; cursor: pointer; }
-.quotes blockquote { background: var(--cream); }
+/* Reveal detail (#27): who defends each approach, quote, concrete proposal, feasibility. */
+.defenders { margin: 0.75rem 0 0; }
+.defenders h3, .other-proposals h3 { font-size: 0.95rem; margin: 0 0 0.25rem; }
+.defenders ul, .other-proposals ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.defenders-none { margin: 0.5rem 0 0; color: var(--ink-soft); font-style: italic; }
+.party-stance { min-width: 0; }
+.party-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; margin: 0; }
+.stance { font-size: 0.8rem; font-weight: 700; border-radius: 999px; padding: 0.05rem 0.55rem; }
+.stance-full { background: var(--petrol); color: var(--on-petrol); }
+.stance-partial { background: var(--aqua); color: var(--petrol-dark); }
+.party-stance blockquote { margin-top: 0.4rem; overflow-wrap: anywhere; }
+.proposal summary { min-height: 2.75rem; display: flex; align-items: center; color: var(--petrol); font-weight: 700; cursor: pointer; }
+.proposal-text p { margin: 0.25rem 0; }
 .other-proposals { margin-top: 0.75rem; padding: 0.75rem 1rem; border: 2px dashed var(--aqua-2); border-radius: 0.5rem; }
-.other-proposals p { margin: 0; }
+.silent { margin: 0.75rem 0 0; color: var(--ink-soft); }
 .follow-ups { margin: 2rem 0 1rem; padding: 1rem; background: var(--surface); border-radius: 0.5rem; }
 .follow-ups h2 { margin-top: 0; }
 .list-links { margin: 1.5rem 0; display: grid; gap: 0.25rem; justify-items: start; }

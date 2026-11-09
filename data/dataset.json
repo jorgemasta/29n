@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-11-09T22:23:05.883Z",
+  "generated": "2026-11-09T22:26:07.040Z",
   "origin": "simulated",
   "note": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso, también las respuestas de Preguntar. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.",
   "parties": [
@@ -11637,7 +11637,7 @@
   ],
   "questions": [
     {
-      "id": "canarias-fiscal",
+      "id": "ref-canarias",
       "theme": "canarias",
       "text": "¿Qué harían con las reglas fiscales especiales de Canarias?",
       "followUp": false,
@@ -11710,7 +11710,7 @@
       "otherProposals": []
     },
     {
-      "id": "canarias-migracion",
+      "id": "migracion-atlantica",
       "theme": "canarias",
       "text": "¿Qué harían ante la llegada de migrantes por mar a Canarias?",
       "followUp": false,
@@ -11775,7 +11775,7 @@
       "otherProposals": []
     },
     {
-      "id": "canarias-transporte",
+      "id": "transporte",
       "theme": "canarias",
       "text": "¿Qué harían con el transporte entre islas y con la Península?",
       "followUp": false,
@@ -11943,7 +11943,7 @@
       "otherProposals": []
     },
     {
-      "id": "impuestos-quien-paga",
+      "id": "impuestos",
       "theme": "impuestos-precios",
       "text": "¿Cómo cambiarían los impuestos?",
       "followUp": false,
@@ -12008,7 +12008,7 @@
       "otherProposals": []
     },
     {
-      "id": "precios-comida",
+      "id": "coste-vida",
       "theme": "impuestos-precios",
       "text": "¿Qué harían para que la compra sea más barata?",
       "followUp": false,
@@ -12250,7 +12250,7 @@
       "otherProposals": []
     },
     {
-      "id": "sanidad-esperas",
+      "id": "sanidad",
       "theme": "sanidad-cuidados",
       "text": "¿Qué harían con las listas de espera para operarse?",
       "followUp": false,
@@ -12314,7 +12314,7 @@
       ]
     },
     {
-      "id": "cuidados-mayores",
+      "id": "cuidados",
       "theme": "sanidad-cuidados",
       "text": "¿Cómo cuidarían a las personas mayores que dependen de otros?",
       "followUp": false,
@@ -12379,7 +12379,7 @@
       "otherProposals": []
     },
     {
-      "id": "educacion-escuela",
+      "id": "educacion",
       "theme": "sanidad-cuidados",
       "text": "¿Qué cambiarían en la escuela?",
       "followUp": false,
@@ -12556,7 +12556,7 @@
       "otherProposals": []
     },
     {
-      "id": "trabajo-condiciones",
+      "id": "empleo",
       "theme": "trabajo-pensiones",
       "text": "¿Qué harían para mejorar el trabajo?",
       "followUp": false,
@@ -12629,7 +12629,7 @@
       "otherProposals": []
     },
     {
-      "id": "pensiones-cuantia",
+      "id": "pensiones",
       "theme": "trabajo-pensiones",
       "text": "¿Qué harían con las pensiones?",
       "followUp": false,
@@ -12887,7 +12887,7 @@
       "otherProposals": []
     },
     {
-      "id": "vivienda-asequible",
+      "id": "vivienda",
       "theme": "vivienda",
       "text": "¿Qué harían para que la vivienda sea asequible?",
       "followUp": false,

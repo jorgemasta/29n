@@ -2,6 +2,9 @@
 // ("Tu comunidad: Canarias"), each with 3 base questions and 2 follow-up ones, and 3 approaches per
 // question, written by hand over the fictional v1 proposals. Each stance quotes the party's literal
 // text, taken from its processed v1 position on the given topic (so the quote is in its fictional PDF).
+// The first question on each topic takes the topic's id: until #21 keys positions by question, each
+// party's position on that topic is its concrete proposal there (exact figures and feasibility, shown
+// at the reveal). Other questions show no concrete proposal yet.
 // #20/#21 replace this with processManifesto per question + settleApproaches on the fake AI.
 import type { Approach, PartyStance, Position, Question, Theme } from '../src/dataset/schema';
 
@@ -41,7 +44,7 @@ const THEMES: ThemeDraft[] = [
     theme: { id: 'vivienda', title: 'Vivienda', order: 1 },
     questions: [
       {
-        id: 'vivienda-asequible',
+        id: 'vivienda',
         text: '¿Qué harían para que la vivienda sea asequible?',
         topic: 'vivienda',
         cis: 'La vivienda es el primer problema para una parte importante de la población (dato simulado).',
@@ -182,7 +185,7 @@ const THEMES: ThemeDraft[] = [
     theme: { id: 'trabajo-pensiones', title: 'Trabajo y pensiones', order: 2 },
     questions: [
       {
-        id: 'trabajo-condiciones',
+        id: 'empleo',
         text: '¿Qué harían para mejorar el trabajo?',
         topic: 'empleo',
         cis: 'El paro y la calidad del empleo están entre las primeras preocupaciones (dato simulado).',
@@ -210,7 +213,7 @@ const THEMES: ThemeDraft[] = [
         ],
       },
       {
-        id: 'pensiones-cuantia',
+        id: 'pensiones',
         text: '¿Qué harían con las pensiones?',
         topic: 'pensiones',
         approaches: [
@@ -319,7 +322,7 @@ const THEMES: ThemeDraft[] = [
     theme: { id: 'impuestos-precios', title: 'Impuestos y precios', order: 3 },
     questions: [
       {
-        id: 'impuestos-quien-paga',
+        id: 'impuestos',
         text: '¿Cómo cambiarían los impuestos?',
         topic: 'impuestos',
         approaches: [
@@ -345,7 +348,7 @@ const THEMES: ThemeDraft[] = [
         ],
       },
       {
-        id: 'precios-comida',
+        id: 'coste-vida',
         text: '¿Qué harían para que la compra sea más barata?',
         topic: 'coste-vida',
         cis: 'La subida de precios preocupa a buena parte de los hogares (dato simulado).',
@@ -454,7 +457,7 @@ const THEMES: ThemeDraft[] = [
     theme: { id: 'sanidad-cuidados', title: 'Sanidad, cuidados y educación', order: 4 },
     questions: [
       {
-        id: 'sanidad-esperas',
+        id: 'sanidad',
         text: '¿Qué harían con las listas de espera para operarse?',
         topic: 'sanidad',
         cis: 'La sanidad aparece entre los cinco primeros problemas (dato simulado).',
@@ -482,7 +485,7 @@ const THEMES: ThemeDraft[] = [
         other: ['c'],
       },
       {
-        id: 'cuidados-mayores',
+        id: 'cuidados',
         text: '¿Cómo cuidarían a las personas mayores que dependen de otros?',
         topic: 'cuidados',
         approaches: [
@@ -507,7 +510,7 @@ const THEMES: ThemeDraft[] = [
         ],
       },
       {
-        id: 'educacion-escuela',
+        id: 'educacion',
         text: '¿Qué cambiarían en la escuela?',
         topic: 'educacion',
         approaches: [
@@ -591,7 +594,7 @@ const THEMES: ThemeDraft[] = [
     theme: { id: 'canarias', title: 'Tu comunidad: Canarias', order: 9, region: '05' },
     questions: [
       {
-        id: 'canarias-fiscal',
+        id: 'ref-canarias',
         text: '¿Qué harían con las reglas fiscales especiales de Canarias?',
         topic: 'ref-canarias',
         approaches: [
@@ -617,7 +620,7 @@ const THEMES: ThemeDraft[] = [
         ],
       },
       {
-        id: 'canarias-migracion',
+        id: 'migracion-atlantica',
         text: '¿Qué harían ante la llegada de migrantes por mar a Canarias?',
         topic: 'migracion-atlantica',
         approaches: [
@@ -642,7 +645,7 @@ const THEMES: ThemeDraft[] = [
         ],
       },
       {
-        id: 'canarias-transporte',
+        id: 'transporte',
         text: '¿Qué harían con el transporte entre islas y con la Península?',
         topic: 'transporte',
         approaches: [
