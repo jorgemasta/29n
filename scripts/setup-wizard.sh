@@ -211,6 +211,11 @@ TOTAL_STAGES=8
 # ./scripts/setup-wizard.sh 4 → start at stage 4 (earlier ones are skipped).
 FROM_STAGE="${1:-1}"
 [[ "$FROM_STAGE" =~ ^[1-8]$ ]] || { printf 'Uso: %s [paso 1-8]\n' "$0"; exit 1; }
+# Values saved by earlier runs, so any stage works when started with a later FROM_STAGE.
+for _k in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID ANTHROPIC_API_KEY UMAMI_WEBSITE_ID UMAMI_API_KEY AI_GATEWAY_URL CF_AIG_TOKEN GITHUB_TOKEN DO_FREE; do
+  _v=$(_existing "$_k") && [[ -n "$_v" ]] && printf -v "$_k" '%s' "$_v"  || true
+done
+unset _k _v
 
 # done_already KEY…: true when every KEY is in .env; loads them so later stages can use them.
 done_already() {
