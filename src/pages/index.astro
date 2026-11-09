@@ -1,18 +1,18 @@
 ---
 import '../styles/global.css';
-import { dataset, modo } from '../transparencia/datos';
-import LetraInicial from '../components/LetraInicial.astro';
+import { dataset, mode } from '../transparency/data';
+import TextSizeInit from '../components/TextSizeInit.astro';
 import Umami from '../components/Umami.astro';
 import Robots from '../components/Robots.astro';
-import Pie from '../components/Pie.astro';
-import { OG } from '../compartir';
+import Footer from '../components/Footer.astro';
+import { OG } from '../share';
 
-// Mode switch, at build time (src/lanzamiento): `MODO=privado` (private prototype) also ships provisional
+// Mode switch, at build time (src/launch): `SITE_MODE=private` (private prototype) also ships provisional
 // sources (2023 programmes, party documents, public statements). Anything else ships only official
-// programmes, so provisional data never reaches the public site; PRODUCCION=1 also refuses test data.
-const esPrueba = dataset.origen !== 'real';
+// programmes, so provisional data never reaches the public site; PRODUCTION=1 also refuses test data.
+const isTest = dataset.origin !== 'real';
 // Safe to inline in a <script type="application/json">: escape "<" so no "</script>" can close it.
-const imagenOg = new URL(OG.imagen.ruta, Astro.site).href;
+const ogImage = new URL(OG.image.path, Astro.site).href;
 const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
 ---
 <!doctype html>
@@ -23,61 +23,61 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
     <Robots />
     <title>29N · Elige a ciegas</title>
     <meta name="description" content="Lee lo que proponen los partidos sin saber de quién es." />
-    <LetraInicial />
+    <TextSizeInit />
     <Umami />
-    <!-- Link preview. /?r=reto gets OG.tituloReto: the Worker (worker/index.ts) rewrites these titles. -->
+    <!-- Link preview. /?r=reto gets OG.challengeTitle: the Worker (worker/index.ts) rewrites these titles. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="29N" />
     <meta property="og:locale" content="es_ES" />
     <meta property="og:url" content={Astro.site?.href} />
-    <meta property="og:title" content={OG.titulo} />
-    <meta property="og:description" content={OG.descripcion} />
-    <meta property="og:image" content={imagenOg} />
+    <meta property="og:title" content={OG.title} />
+    <meta property="og:description" content={OG.description} />
+    <meta property="og:image" content={ogImage} />
     <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content={String(OG.imagen.ancho)} />
-    <meta property="og:image:height" content={String(OG.imagen.alto)} />
+    <meta property="og:image:width" content={String(OG.image.width)} />
+    <meta property="og:image:height" content={String(OG.image.height)} />
     <meta property="og:image:alt" content="Tres tarjetas boca abajo con las letras A, B y C. Elecciones generales · 29 de noviembre." />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={OG.titulo} />
-    <meta name="twitter:description" content={OG.descripcion} />
-    <meta name="twitter:image" content={imagenOg} />
+    <meta name="twitter:title" content={OG.title} />
+    <meta name="twitter:description" content={OG.description} />
+    <meta name="twitter:image" content={ogImage} />
   </head>
   <body>
-    <header class="barra-sup">
-      <a href="/" class="marca">29N</a>
-      <button type="button" id="aa" class="boton-aa" aria-pressed="false" aria-label="Letra grande">Aa</button>
+    <header class="top-bar">
+      <a href="/" class="brand">29N</a>
+      <button type="button" id="aa" class="text-size-button" aria-pressed="false" aria-label="Letra grande">Aa</button>
     </header>
-    <main id="app" data-modo={modo}>
-      {esPrueba && (
-        <p class="aviso-prueba" role="note">
-          <strong>Prototipo con datos de prueba.</strong> {dataset.nota}
+    <main id="app" data-mode={mode}>
+      {isTest && (
+        <p class="test-notice" role="note">
+          <strong>Prototipo con datos de prueba.</strong> {dataset.note}
         </p>
       )}
-      {modo === 'privado' && (
-        <p class="aviso-prueba" role="note">
+      {mode === 'private' && (
+        <p class="test-notice" role="note">
           <strong>Modo privado:</strong> incluye fuentes provisionales (programas de 2023, documentos y declaraciones), marcadas como «solo privado» al revelar.
         </p>
       )}
-      <div id="vista">
-        <p class="gris">Cargando los temas…</p>
+      <div id="view">
+        <p class="grey">Cargando los temas…</p>
         <noscript><p>Esta página necesita JavaScript para barajar las propuestas en tu móvil.</p></noscript>
       </div>
     </main>
-    <nav class="pestanas" aria-label="Secciones" hidden>
+    <nav class="tabs" aria-label="Secciones" hidden>
       <a href="#temas"><span aria-hidden="true">☰</span> Temas</a>
       <a href="#preguntar"><span aria-hidden="true">💬</span> Preguntar</a>
       <a href="#resultado"><span aria-hidden="true">📊</span> Mi resultado</a>
     </nav>
-    <Pie nota="Nada de lo que eliges sale de tu móvil." />
-    <script is:inline type="application/json" id="datos" set:html={json} />
+    <Footer note="Nada de lo que eliges sale de tu móvil." />
+    <script is:inline type="application/json" id="dataset" set:html={json} />
     <script>
-      import { montarApp } from '../web/app';
-      import { montarBotonLetra } from '../web/letra';
-      import type { Dataset, Modo } from '../dataset/esquema';
-      montarBotonLetra(document.getElementById('aa') as HTMLButtonElement);
+      import { mountApp } from '../web/app';
+      import { mountTextSizeButton } from '../web/text-size';
+      import type { Dataset, Mode } from '../dataset/schema';
+      mountTextSizeButton(document.getElementById('aa') as HTMLButtonElement);
       const app = document.getElementById('app')!;
-      const dataset = JSON.parse(document.getElementById('datos')!.textContent!) as Dataset;
-      montarApp(document.getElementById('vista')!, dataset, app.dataset.modo as Modo);
+      const dataset = JSON.parse(document.getElementById('dataset')!.textContent!) as Dataset;
+      mountApp(document.getElementById('view')!, dataset, app.dataset.mode as Mode);
     </script>
   </body>
 </html>

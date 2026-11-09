@@ -1,31 +1,31 @@
 ---
-// Screen 14 "Cómo funciona" (story 41/42): data process, the 13 barriers, rubric, versioned prompts,
+// Screen 14 "Cómo funciona" (story 41/42): data process, the 13 checks, rubric, versioned prompts,
 // feasibility breakdown per party and topic, verification reports and who makes it.
-import PaginaInfo from '../components/PaginaInfo.astro';
-import { dataset } from '../transparencia/datos';
-import { PROMPTS, PROMPTS_PREGUNTA_LIBRE, REPO, enlaceRepo, repartoViabilidad, programas } from '../transparencia';
-import { BARRERAS } from '../registro/barreras';
-import { nombreNivel } from '../registro/rubrica';
-import { MODELOS, MODELOS_PREGUNTA_LIBRE } from '../ia/claude';
+import InfoPage from '../components/InfoPage.astro';
+import { dataset } from '../transparency/data';
+import { PROMPTS, FREE_QUESTION_PROMPTS, REPO, repoLink, feasibilityDistribution, manifestos } from '../transparency';
+import { CHECKS } from '../registry/checks';
+import { levelName } from '../registry/rubric';
+import { MODELS, FREE_QUESTION_MODELS } from '../ai/claude';
 import { VERSION_PROMPT } from '../pipeline/prompts';
-import { VERSION_PROMPT_VIABILIDAD } from '../pipeline/prompts-viabilidad';
-import { VERSION_RUBRICA } from '../registro/rubrica';
-import { MAX_DESCARTE } from '../pipeline';
-import { Barrera } from '../dataset/esquema';
+import { FEASIBILITY_PROMPT_VERSION } from '../pipeline/prompts-feasibility';
+import { RUBRIC_VERSION } from '../registry/rubric';
+import { MAX_DISCARD } from '../pipeline';
+import { Check } from '../dataset/schema';
 
-const reparto = repartoViabilidad(dataset);
-const conInforme = programas(dataset).conPrograma.filter((p) => p.informe);
-const CORTO: Record<string, string> = {
-  viable: 'Viable', viable_con_matices: 'Con matices', dificil: 'Difícil', muy_dificil: 'Muy difícil',
-  sin_concrecion: 'Sin concreción', sin_consenso: 'Sin consenso', sin_nota: 'Sin nota', no_propone: '—', sin_verificar: 'No verificada', sin_dato: '·',
+const distribution = feasibilityDistribution(dataset);
+const withReport = manifestos(dataset).withManifesto.filter((p) => p.report);
+const SHORT: Record<string, string> = {
+  viable: 'Viable', viableWithCaveats: 'Con matices', difficult: 'Difícil', veryDifficult: 'Muy difícil',
+  notConcrete: 'Sin concreción', noConsensus: 'Sin consenso', noNote: 'Sin nota', noProposal: '—', unverified: 'No verificada', noData: '·',
 };
-const temasConDatos = reparto.porTema.filter((t) => t.celdas.some((c) => c !== 'sin_dato'));
-import { MAX_REPETICIONES_VIABILIDAD } from '../pipeline/viabilidad';
-import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
+const topicsWithData = distribution.byTopic.filter((t) => t.cells.some((c) => c !== 'noData'));
+import { MAX_FEASIBILITY_REPEATS } from '../pipeline/feasibility';
+import { MIN_GUESSES, HIT_THRESHOLD } from '../guesses';
 ---
-<PaginaInfo titulo="Cómo funciona" descripcion="Metodología de 29N: de dónde salen las propuestas, cómo se verifican y cómo se valora la viabilidad.">
+<InfoPage title="Cómo funciona" description="Metodología de 29N: de dónde salen las propuestas, cómo se verifican y cómo se valora la viabilidad.">
   <h1>Cómo funciona</h1>
-  <p class="aviso-zona">
+  <p class="zone-notice">
     <strong>Todo lo hace una IA, sin revisión humana.</strong> Reescribir las propuestas y valorar su viabilidad lo
     hace Claude (de Anthropic). Puede equivocarse: por eso publicamos cada paso y puedes avisarnos de cualquier error.
   </p>
@@ -51,7 +51,7 @@ import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
     <li>Otra pasada de IA la <strong>reescribe en un estilo común</strong> («qué / cómo / cifra»), sin nombres, siglas ni lemas, para que no se sepa de quién es.</li>
     <li>La reescritura pasa las comprobaciones de abajo. Si falla, se reescribe hasta 2 veces; si sigue fallando, se descarta.</li>
     <li>Se valora su viabilidad a ciegas, dos veces.</li>
-    <li>Si se descarta más del {Math.round(MAX_DESCARTE * 100)} % de las propuestas, el programa no se publica y se avisa al responsable.</li>
+    <li>Si se descarta más del {Math.round(MAX_DISCARD * 100)} % de las propuestas, el programa no se publica y se avisa al responsable.</li>
   </ol>
   <p>
     Qué partidos entran y con qué criterio: <a href="/partidos/#criterio">Partidos y programas</a>. Lo que eliges
@@ -60,13 +60,13 @@ import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
 
   <h2 id="barreras">Las 13 comprobaciones</h2>
   <p>Cada programa tiene un <a href="#informes">informe público</a> con el resultado de cada una.</p>
-  <table class="tabla-rubrica">
+  <table class="rubric-table">
     <thead><tr><th scope="col">Comprobación</th><th scope="col">Qué mira</th></tr></thead>
     <tbody>
-      {Barrera.options.map((b) => (
+      {Check.options.map((b) => (
         <tr>
-          <th scope="row">{b} · {BARRERAS[b].nombre}<br /><span class="gris">{BARRERAS[b].tipo === 'ia' ? 'IA' : 'Script, sin IA'}</span></th>
-          <td>{BARRERAS[b].descripcion}</td>
+          <th scope="row">{b} · {CHECKS[b].name}<br /><span class="grey">{CHECKS[b].type === 'ai' ? 'IA' : 'Script, sin IA'}</span></th>
+          <td>{CHECKS[b].description}</td>
         </tr>
       ))}
     </tbody>
@@ -80,13 +80,13 @@ import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
   </p>
   <p>
     Cada fuente del «por qué» debe ser de un dominio institucional y responder al comprobarla (V8); si no, se quita.
-    Una evaluación que se queda sin fuentes se repite hasta {MAX_REPETICIONES_VIABILIDAD} veces. Si sigue sin ellas, se publica igualmente
+    Una evaluación que se queda sin fuentes se repite hasta {MAX_FEASIBILITY_REPEATS} veces. Si sigue sin ellas, se publica igualmente
     (la valoración sigue siendo útil) y la tarjeta lo dice: «Sin fuentes verificables».
   </p>
   <p id="apuestas">
     La apuesta opcional («¿de quién crees que es?») se cuenta de forma anónima por tema. Si en un tema se acierta más del
-    {UMBRAL_ACIERTO * 100} % de las veces, sus textos no son lo bastante neutrales y se abre una incidencia para reescribirlos.
-    Solo se mira a partir de {MINIMO_APUESTAS} apuestas en el tema: con menos, el porcentaje es ruido.
+    {HIT_THRESHOLD * 100} % de las veces, sus textos no son lo bastante neutrales y se abre una incidencia para reescribirlos.
+    Solo se mira a partir de {MIN_GUESSES} apuestas en el tema: con menos, el porcentaje es ruido.
   </p>
   <p><a href="/rubrica/">Rúbrica completa, niveles, fuentes permitidas e instrucciones →</a></p>
 
@@ -94,21 +94,21 @@ import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
   <p>
     Las instrucciones están versionadas en el <a href={REPO}>repositorio público</a>. Cada propuesta guarda la
     versión con la que se generó. Versiones actuales: propuestas <code>{VERSION_PROMPT}</code>, viabilidad
-    <code>{VERSION_PROMPT_VIABILIDAD}</code>, rúbrica <code>{VERSION_RUBRICA}</code>.
+    <code>{FEASIBILITY_PROMPT_VERSION}</code>, rúbrica <code>{RUBRIC_VERSION}</code>.
   </p>
-  <table class="tabla-rubrica">
+  <table class="rubric-table">
     <thead><tr><th scope="col">Tarea</th><th scope="col">Modelo</th></tr></thead>
     <tbody>
       {PROMPTS.map((p) => (
         <tr>
-          <th scope="row"><a href={enlaceRepo(p.archivo)}>{p.que}</a></th>
-          <td><code>{MODELOS[p.tarea]}</code></td>
+          <th scope="row"><a href={repoLink(p.file)}>{p.what}</a></th>
+          <td><code>{MODELS[p.task]}</code></td>
         </tr>
       ))}
-      {PROMPTS_PREGUNTA_LIBRE.map((p) => (
+      {FREE_QUESTION_PROMPTS.map((p) => (
         <tr>
-          <th scope="row"><a href={enlaceRepo(p.archivo)}>{p.que}</a></th>
-          <td><code>{MODELOS_PREGUNTA_LIBRE[p.tarea]?.modelo}</code></td>
+          <th scope="row"><a href={repoLink(p.file)}>{p.what}</a></th>
+          <td><code>{FREE_QUESTION_MODELS[p.task]?.model}</code></td>
         </tr>
       ))}
     </tbody>
@@ -122,22 +122,22 @@ import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
     Los partidos que dan menos cifras, plazos o instrumentos reciben más «sin concreción». La IA nunca sabe de
     qué partido es lo que evalúa.
   </p>
-  <div class="tabla-ancha" tabindex="0" role="region" aria-label="Reparto por partido">
-    <table class="tabla-reparto">
+  <div class="wide-table" tabindex="0" role="region" aria-label="Reparto por partido">
+    <table class="distribution-table">
       <thead>
         <tr>
           <th scope="col">Partido</th>
-          {reparto.categorias.map((c) => <th scope="col">{nombreNivel(c)}</th>)}
-          {reparto.porPartido.some((f) => f.sinNota > 0) && <th scope="col">Sin nota</th>}
+          {distribution.categories.map((c) => <th scope="col">{levelName(c)}</th>)}
+          {distribution.byParty.some((f) => f.noNote > 0) && <th scope="col">Sin nota</th>}
           <th scope="col">Propuestas</th>
         </tr>
       </thead>
       <tbody>
-        {reparto.porPartido.map((f) => (
+        {distribution.byParty.map((f) => (
           <tr>
-            <th scope="row">{f.partido.nombre}</th>
-            {reparto.categorias.map((c) => <td>{f.conteos[c]}</td>)}
-            {reparto.porPartido.some((g) => g.sinNota > 0) && <td>{f.sinNota}</td>}
+            <th scope="row">{f.party.name}</th>
+            {distribution.categories.map((c) => <td>{f.counts[c]}</td>)}
+            {distribution.byParty.some((g) => g.noNote > 0) && <td>{f.noNote}</td>}
             <td>{f.total}</td>
           </tr>
         ))}
@@ -146,15 +146,15 @@ import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
   </div>
   <details>
     <summary>Por partido y por tema</summary>
-    <p class="gris">«—»: no propone nada sobre el tema. «No verificada»: su propuesta no pasó las comprobaciones.</p>
-    <div class="tabla-ancha" tabindex="0" role="region" aria-label="Reparto por partido y tema">
-      <table class="tabla-reparto">
+    <p class="grey">«—»: no propone nada sobre el tema. «No verificada»: su propuesta no pasó las comprobaciones.</p>
+    <div class="wide-table" tabindex="0" role="region" aria-label="Reparto por partido y tema">
+      <table class="distribution-table">
         <thead>
-          <tr><th scope="col">Tema</th>{reparto.porPartido.map((f) => <th scope="col">{f.partido.siglas}</th>)}</tr>
+          <tr><th scope="col">Tema</th>{distribution.byParty.map((f) => <th scope="col">{f.party.acronym}</th>)}</tr>
         </thead>
         <tbody>
-          {temasConDatos.map((t) => (
-            <tr><th scope="row">{t.tema.titulo}</th>{t.celdas.map((c) => <td>{CORTO[c]}</td>)}</tr>
+          {topicsWithData.map((t) => (
+            <tr><th scope="row">{t.topic.title}</th>{t.cells.map((c) => <td>{SHORT[c]}</td>)}</tr>
           ))}
         </tbody>
       </table>
@@ -163,12 +163,12 @@ import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
 
   <h2 id="informes">Informes de verificación</h2>
   <p>Qué se comprobó en cada programa, qué se reescribió y qué se descartó y por qué.</p>
-  {conInforme.length === 0 ? <p class="gris">Aún no hay programas procesados.</p> : (
-    <ul>{conInforme.map((p) => <li><a href={`/informes/${p.id}/`}>{p.nombre}</a></li>)}</ul>
+  {withReport.length === 0 ? <p class="grey">Aún no hay programas procesados.</p> : (
+    <ul>{withReport.map((p) => <li><a href={`/informes/${p.id}/`}>{p.name}</a></li>)}</ul>
   )}
   <p>
-    Todo está en el <a href={enlaceRepo('data/dataset.json')}>dataset publicado</a> (CC BY 4.0), con su
-    <a href={enlaceRepo('data/dataset.schema.json')}>esquema</a>. Avisos y correcciones:
+    Todo está en el <a href={repoLink('data/dataset.json')}>dataset publicado</a> (CC BY 4.0), con su
+    <a href={repoLink('data/dataset.schema.json')}>esquema</a>. Avisos y correcciones:
     <a href={`${REPO}/issues`}>incidencias abiertas</a> y <a href={`${REPO}/commits/main/data/dataset.json`}>historial de cambios</a>.
   </p>
 
@@ -194,4 +194,4 @@ import { MINIMO_APUESTAS, UMBRAL_ACIERTO } from '../apuestas';
     hace Anthropic con ella) está en <a href="/privacidad/">Privacidad</a>; qué contenido está generado por IA, en
     <a href="/privacidad/#ia">Contenido generado por IA</a>.
   </p>
-</PaginaInfo>
+</InfoPage>

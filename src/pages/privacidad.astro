@@ -1,14 +1,14 @@
 ---
 // Privacy policy and AI-generated content notice (#16). Every "IA" label of the app lands on #ia.
-// Keep in sync with: src/analitica/eventos.ts (events), src/cliente/api.ts (what the client sends),
-// src/pregunta/libre.ts (free question), docs/deploy.md (Anthropic retention, AI Gateway, logs).
-import PaginaInfo from '../components/PaginaInfo.astro';
-import { REPO, enlaceRepo } from '../transparencia';
-import { MODELOS_PREGUNTA_LIBRE } from '../ia/claude';
+// Keep in sync with: src/analytics/events.ts (events), src/client/api.ts (what the client sends),
+// src/questions/free.ts (free question), docs/deploy.md (Anthropic retention, AI Gateway, logs).
+import InfoPage from '../components/InfoPage.astro';
+import { REPO, repoLink } from '../transparency';
+import { FREE_QUESTION_MODELS } from '../ai/claude';
 ---
-<PaginaInfo titulo="Privacidad y contenido generado por IA" descripcion="Qué datos usa 29N (ninguno personal), qué sale de tu móvil y qué contenido está generado por IA.">
+<InfoPage title="Privacidad y contenido generado por IA" description="Qué datos usa 29N (ninguno personal), qué sale de tu móvil y qué contenido está generado por IA.">
   <h1>Privacidad</h1>
-  <p class="aviso-zona">
+  <p class="zone-notice">
     <strong>No pedimos ni guardamos datos personales.</strong> No hay cuentas ni registro. Lo que eliges, tus apuestas,
     tu provincia y tu resultado se quedan en tu móvil y <strong>nunca salen del navegador</strong>.
   </p>
@@ -51,7 +51,7 @@ import { MODELOS_PREGUNTA_LIBRE } from '../ia/claude';
   <p>
     <strong>Nunca</strong> qué propuesta o partido eliges, a quién apuestas, tu provincia ni tu resultado. No se registra
     la dirección completa de la página (ni <code>?provincia=</code> ni lo que va tras <code>#</code>) y se respeta
-    «No rastrear» (Do Not Track). <a href={enlaceRepo('src/analitica/eventos.ts')}>Ver la lista exacta de eventos</a>.
+    «No rastrear» (Do Not Track). <a href={repoLink('src/analytics/events.ts')}>Ver la lista exacta de eventos</a>.
   </p>
 
   <h2 id="afinidad">Sin estadísticas de afinidad</h2>
@@ -73,8 +73,8 @@ import { MODELOS_PREGUNTA_LIBRE } from '../ia/claude';
   <ul>
     <li>
       El texto de tu pregunta se envía, sin ningún dato tuyo, a <strong>Anthropic</strong> (el modelo
-      <code>{MODELOS_PREGUNTA_LIBRE['responder-pregunta']?.modelo}</code> la responde y
-      <code>{MODELOS_PREGUNTA_LIBRE['verificar-fidelidad']?.modelo}</code> la comprueba) junto con las páginas de los programas que hablan del tema. Pasa por Cloudflare AI
+      <code>{FREE_QUESTION_MODELS['answer-question']?.model}</code> la responde y
+      <code>{FREE_QUESTION_MODELS['verify-fidelity']?.model}</code> la comprueba) junto con las páginas de los programas que hablan del tema. Pasa por Cloudflare AI
       Gateway con el registro de peticiones desactivado. Nuestra función no lee tu IP ni guarda registros.
     </li>
     <li>
@@ -113,7 +113,7 @@ import { MODELOS_PREGUNTA_LIBRE } from '../ia/claude';
   <h2 id="ia">Contenido generado por IA</h2>
   <p>
     Por transparencia (y como pide el Reglamento europeo de Inteligencia Artificial), todo lo que escribe una IA lleva la
-    etiqueta <span class="etiqueta-ia">IA</span>. Lo genera Claude, de Anthropic, <strong>sin revisión humana</strong>:
+    etiqueta <span class="ai-label">IA</span>. Lo genera Claude, de Anthropic, <strong>sin revisión humana</strong>:
   </p>
   <ul>
     <li><strong>Las propuestas</strong> que ves a ciegas: reescritas por IA en un estilo común a partir del programa. La
@@ -132,9 +132,9 @@ import { MODELOS_PREGUNTA_LIBRE } from '../ia/claude';
     sobre privacidad, abre un <a href={`${REPO}/issues`}>aviso en GitHub</a>.
   </p>
   <p>
-    El código es abierto bajo <a href={enlaceRepo('LICENSE')} rel="license">licencia MIT</a>. Los datos
-    (<a href={enlaceRepo('data/dataset.json')}>data/dataset.json</a>, con los textos reescritos, las citas y las notas)
+    El código es abierto bajo <a href={repoLink('LICENSE')} rel="license">licencia MIT</a>. Los datos
+    (<a href={repoLink('data/dataset.json')}>data/dataset.json</a>, con los textos reescritos, las citas y las notas)
     se publican bajo <a href="https://creativecommons.org/licenses/by/4.0/deed.es" rel="license">CC BY 4.0</a>
-    (<a href={enlaceRepo('data/LICENSE.md')}>cómo citarlos</a>). Los programas originales son de cada partido.
+    (<a href={repoLink('data/LICENSE.md')}>cómo citarlos</a>). Los programas originales son de cada partido.
   </p>
-</PaginaInfo>
+</InfoPage>

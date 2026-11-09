@@ -2,527 +2,527 @@
 // logic lives in the game engine; this file only renders and routes (#portada, #provincia, #inicio,
 // #temas, #tema/<id>, #resultado, #compartir, #preguntar[/<id>], #datos) and drives the bottom tab bar
 // (static in index.astro). Choices, bets and the result never leave the browser.
-import type { Dataset, Modo } from '../dataset/esquema';
-import { textoPortadaReto } from '../compartir';
+import type { Dataset, Mode } from '../dataset/schema';
+import { challengeHomeText } from '../share';
 import {
-  crearPartida,
-  META_TEMAS,
-  MAX_PRIORITARIOS,
-  NINGUNA,
-  type EstadoPartida,
-  type ItemTema,
-  type Partida,
-  type Recorrido,
-  type Revelacion,
-  type TarjetaRevelada,
-} from '../juego';
-import { nuevaSemilla } from '../juego/azar';
-import { almacenamientoDisponible, borrar, guardar, leer } from './almacen';
-import { vistaPreguntas, vistaRespuesta } from './preguntar';
-import { avisoZona, bloquePartidos, chipProvincia, vistaProvincia } from './provincia';
-import { empezarDeCero, papeleta, unir, vistaDatos, vistaResultado, vistaVuelta } from './resultado';
-import { chipViabilidad, notaViabilidad } from './viabilidad';
-import { etiquetaIA } from './ia';
-import { botonReportar } from './reportar';
-import { vistaPortada } from './portada';
-import { crearLector } from './escuchar';
-import { CLAVE_LETRA, letraGrande } from './letra';
-import { analiticaConfirmar, analiticaResultado, analiticaVerTema, configurarAnalitica } from './analitica';
-import { avisoReto, vistaCompartir } from './compartir';
-import { boton, h, type Hijo } from './dom';
-import { ETIQUETA_FUENTE } from './etiquetas';
-import { tarjetaGris, tarjetaRevelada } from './tarjeta';
+  createGame,
+  GOAL_TOPICS,
+  MAX_PRIORITIES,
+  NONE,
+  type GameState,
+  type TopicItem,
+  type Game,
+  type Journey,
+  type Reveal,
+  type RevealedCard,
+} from '../game';
+import { newSeed } from '../game/random';
+import { storageAvailable, remove, save, read } from './storage';
+import { questionsView, answerView } from './ask';
+import { zoneNotice, partiesBlock, provinceChip, provinceView } from './province';
+import { startOver, ballot, joinList, dataView, resultView, returnView } from './result';
+import { feasibilityChip, feasibilityNote } from './feasibility';
+import { aiLabel } from './ai';
+import { feedbackButton } from './feedback';
+import { homeView } from './home';
+import { createReader } from './listen';
+import { TEXT_SIZE_KEY, largeText } from './text-size';
+import { trackConfirm, trackResult, trackViewTopic, setupAnalytics } from './analytics';
+import { challengeNotice, shareView } from './share';
+import { button, h, type Child } from './dom';
+import { SOURCE_LABEL } from './labels';
+import { greyCard, revealedCard } from './card';
 
-const CLAVE_SEMILLA = '29n:semilla';
-const CLAVE_ESTADO = '29n:estado';
+const SEED_KEY = '29n:seed';
+const STATE_KEY = '29n:state';
 /** { codigo: "35" } or { codigo: null } ("Prefiero no decirlo"); absent = not asked yet. */
-const CLAVE_PROVINCIA = '29n:provincia';
-/** { sinApuesta: true } after "No preguntarme más" (reactivated in Tus datos); { ayudaVista: true } after
+const PROVINCE_KEY = '29n:province';
+/** { noGuess: true } after "No preguntarme más" (reactivated in Tus datos); { helpSeen: true } after
  * the first-time help layer of topic 1. */
-const CLAVE_PREFERENCIAS = '29n:preferencias';
-const CLAVES = [CLAVE_SEMILLA, CLAVE_ESTADO, CLAVE_PROVINCIA, CLAVE_PREFERENCIAS, CLAVE_LETRA];
+const PREFERENCES_KEY = '29n:preferences';
+const KEYS = [SEED_KEY, STATE_KEY, PROVINCE_KEY, PREFERENCES_KEY, TEXT_SIZE_KEY];
 /** The province summary shows ~2 s on the screen after choosing (ux-spec screen 3). */
-const DURACION_AVISO_ZONA = 2000;
+const ZONE_NOTICE_DURATION = 2000;
 /** Routes without the bottom tab bar (onboarding). */
-const SIN_PESTANAS = new Set(['portada', 'provincia']);
-type Preferencias = { sinApuesta?: boolean; ayudaVista?: boolean };
+const NO_TABS = new Set(['portada', 'provincia']);
+type Preferences = { noGuess?: boolean; helpSeen?: boolean };
 
 
-const irA = (ruta: string) => {
-  location.hash = ruta;
+const goTo = (path: string) => {
+  location.hash = path;
 };
 
-export function montarApp(raiz: HTMLElement, dataset: Dataset, modo: Modo): void {
+export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void {
   // ?provincia=08 overrides the saved one (handy for testing and shared links).
-  const forzada = new URLSearchParams(location.search).get('provincia');
-  const guardada = leer<{ codigo: string | null }>(CLAVE_PROVINCIA);
-  let provincia: string | null | undefined = forzada ?? (guardada ? guardada.codigo : undefined);
-  let mostrarAviso = false;
+  const forced = new URLSearchParams(location.search).get('provincia');
+  const saved = read<{ code: string | null }>(PROVINCE_KEY);
+  let province: string | null | undefined = forced ?? (saved ? saved.code : undefined);
+  let showNotice = false;
   // Without storage (private mode…) everything works in memory; we say so once.
-  const hayAlmacen = almacenamientoDisponible();
-  let avisoAlmacen = !hayAlmacen;
-  let reto = textoPortadaReto(location.search);
-  let semilla = leer<string>(CLAVE_SEMILLA);
-  if (!semilla) {
-    semilla = nuevaSemilla();
-    guardar(CLAVE_SEMILLA, semilla);
+  const hasStorage = storageAvailable();
+  let storageNotice = !hasStorage;
+  let challenge = challengeHomeText(location.search);
+  let seed = read<string>(SEED_KEY);
+  if (!seed) {
+    seed = newSeed();
+    save(SEED_KEY, seed);
   }
-  let preferencias = leer<Preferencias>(CLAVE_PREFERENCIAS) ?? {};
-  const cambiarPreferencias = (cambios: Preferencias) => {
-    preferencias = { ...preferencias, ...cambios };
-    guardar(CLAVE_PREFERENCIAS, preferencias);
+  let preferences = read<Preferences>(PREFERENCES_KEY) ?? {};
+  const changePreferences = (changes: Preferences) => {
+    preferences = { ...preferences, ...changes };
+    save(PREFERENCES_KEY, preferences);
   };
-  const nueva = (estado?: EstadoPartida) => crearPartida(dataset, provincia ?? null, semilla!, estado, { modo });
-  let partida: Partida = nueva(leer<EstadoPartida>(CLAVE_ESTADO) ?? undefined);
-  configurarAnalitica(dataset.partidos.map((p) => p.id));
+  const newGame = (state?: GameState) => createGame(dataset, province ?? null, seed!, state, { mode });
+  let game: Game = newGame(read<GameState>(STATE_KEY) ?? undefined);
+  setupAnalytics(dataset.parties.map((p) => p.id));
   /** Saved on every confirmed action; an unconfirmed round is never saved. */
-  const actualizar = (p: Partida) => {
-    partida = p;
-    guardar(CLAVE_ESTADO, partida.estado);
+  const update = (p: Game) => {
+    game = p;
+    save(STATE_KEY, game.state);
   };
   // Returning visit: parties published since the last one are announced once, then marked as known.
-  const nuevosPartidos = partida.estado.conocidos ? partida.novedades().partidos : [];
-  actualizar(partida.marcarConocidos());
-  let inicioMostrado = false;
-  let seleccion: string | null = null;
-  let avisoPrioridad: string | null = null;
+  const newParties = game.state.known ? game.news().parties : [];
+  update(game.markKnown());
+  let homeShown = false;
+  let selection: string | null = null;
+  let priorityNotice: string | null = null;
   /** Only right after confirming: the reveal flips (or fades, with reduced motion) once. */
-  let animarRevelacion = false;
-  let leyendo = false;
-  const lector = crearLector((id) => {
-    leyendo = id !== null;
-    marcarLectura();
+  let animateReveal = false;
+  let reading = false;
+  const reader = createReader((id) => {
+    reading = id !== null;
+    markReading();
   });
   /** Highlights the card being read and keeps the button label in sync (survives re-renders). */
-  const marcarLectura = () => {
-    for (const t of raiz.querySelectorAll<HTMLElement>('.tarjeta[data-valor]')) t.classList.toggle('sonando', t.dataset.valor === lector.actual);
-    const b = raiz.querySelector<HTMLElement>('.escuchar');
-    if (b) b.replaceChildren(...etiquetaEscuchar(leyendo));
+  const markReading = () => {
+    for (const t of root.querySelectorAll<HTMLElement>('.card[data-value]')) t.classList.toggle('playing', t.dataset.value === reader.current);
+    const b = root.querySelector<HTMLElement>('.listen');
+    if (b) b.replaceChildren(...listenLabel(reading));
   };
 
   /** The next pending topic, or the list when every topic is done. */
-  const irASiguiente = () => {
-    const s = partida.siguiente();
-    irA(s ? `tema/${s.id}` : 'temas');
+  const goToNext = () => {
+    const s = game.next();
+    goTo(s ? `tema/${s.id}` : 'temas');
   };
 
-  const pintar = (enfocar: string | null = 'h1') => {
-    const ruta = location.hash.slice(1);
-    const temaId = ruta.startsWith('tema/') ? decodeURIComponent(ruta.slice(5)) : null;
-    const existe = temaId !== null && partida.temas().some((t) => t.id === temaId);
-    if (ruta === 'provincia') raiz.replaceChildren(vistaProvincia(provincia, elegirProvincia));
-    else if (ruta === 'datos') raiz.replaceChildren(vistaDatosApp());
-    else if (ruta === 'portada') raiz.replaceChildren(vistaPortada(() => (provincia === undefined ? irA('provincia') : irASiguiente())));
-    else if (provincia === undefined) return irA('portada'); // first visit: the home page, then the province
-    else if (ruta === 'inicio') raiz.replaceChildren(vistaVueltaApp());
-    else if (ruta === 'temas') raiz.replaceChildren(vistaLista());
-    else if (ruta === 'preguntar') raiz.replaceChildren(vistaPreguntas(partida));
-    else if (ruta.startsWith('preguntar/') && partida.preguntas().some((p) => p.id === decodeURIComponent(ruta.slice(10))))
-      raiz.replaceChildren(vistaRespuesta(partida, decodeURIComponent(ruta.slice(10))));
-    else if (ruta === 'resultado') raiz.replaceChildren(vistaResultadoApp()), analiticaResultado(partida);
-    else if (ruta === 'compartir') raiz.replaceChildren(vistaCompartirApp());
-    else if (existe) raiz.replaceChildren(vistaTema(temaId!)), analiticaVerTema(partida);
-    else if (!inicioMostrado && partida.hechos().length > 0) {
-      inicioMostrado = true;
-      return irA('inicio');
-    } else return irASiguiente(); // start: the next pending topic (vivienda first), or the list if all are done
-    if (mostrarAviso && ruta !== 'provincia') {
+  const render = (focus: string | null = 'h1') => {
+    const path = location.hash.slice(1);
+    const topicId = path.startsWith('tema/') ? decodeURIComponent(path.slice(5)) : null;
+    const exists = topicId !== null && game.topics().some((t) => t.id === topicId);
+    if (path === 'provincia') root.replaceChildren(provinceView(province, chooseProvince));
+    else if (path === 'datos') root.replaceChildren(dataViewApp());
+    else if (path === 'portada') root.replaceChildren(homeView(() => (province === undefined ? goTo('provincia') : goToNext())));
+    else if (province === undefined) return goTo('portada'); // first visit: the home page, then the province
+    else if (path === 'inicio') root.replaceChildren(returnViewApp());
+    else if (path === 'temas') root.replaceChildren(listView());
+    else if (path === 'preguntar') root.replaceChildren(questionsView(game));
+    else if (path.startsWith('preguntar/') && game.questions().some((p) => p.id === decodeURIComponent(path.slice(10))))
+      root.replaceChildren(answerView(game, decodeURIComponent(path.slice(10))));
+    else if (path === 'resultado') root.replaceChildren(resultViewApp()), trackResult(game);
+    else if (path === 'compartir') root.replaceChildren(shareViewApp());
+    else if (exists) root.replaceChildren(topicView(topicId!)), trackViewTopic(game);
+    else if (!homeShown && game.done().length > 0) {
+      homeShown = true;
+      return goTo('inicio');
+    } else return goToNext(); // start: the next pending topic (vivienda first), or the list if all are done
+    if (showNotice && path !== 'provincia') {
       // Once, on the screen after choosing: who is in play here. It goes away after ~2 s.
-      const aviso = avisoZona(partida);
-      raiz.prepend(aviso);
-      retirarTras(aviso, DURACION_AVISO_ZONA);
-      mostrarAviso = false;
+      const warning = zoneNotice(game);
+      root.prepend(warning);
+      removeAfter(warning, ZONE_NOTICE_DURATION);
+      showNotice = false;
     }
-    if (reto) {
+    if (challenge) {
       // ?r=reto: once, on the first screen shown; on the first-visit home, above its headline.
-      const linea = avisoReto(reto);
-      const titular = ruta === 'portada' ? raiz.querySelector('h1') : null;
-      if (titular) titular.before(linea);
-      else raiz.prepend(linea);
-      reto = null;
+      const line = challengeNotice(challenge);
+      const headline = path === 'portada' ? root.querySelector('h1') : null;
+      if (headline) headline.before(line);
+      else root.prepend(line);
+      challenge = null;
     }
-    pintarPestanas(ruta);
-    if (avisoAlmacen) {
-      raiz.prepend(h('p', { class: 'aviso-zona', role: 'status' }, 'En este modo no podemos recordar tu progreso si cierras.'));
-      avisoAlmacen = false;
+    renderTabs(path);
+    if (storageNotice) {
+      root.prepend(h('p', { class: 'zone-notice', role: 'status' }, 'En este modo no podemos recordar tu progreso si cierras.'));
+      storageNotice = false;
     }
-    if (enfocar) raiz.querySelector<HTMLElement>(enfocar)?.focus();
+    if (focus) root.querySelector<HTMLElement>(focus)?.focus();
   };
 
-  const elegirProvincia = (codigo: string | null) => {
-    provincia = codigo;
-    guardar(CLAVE_PROVINCIA, { codigo });
+  const chooseProvince = (code: string | null) => {
+    province = code;
+    save(PROVINCE_KEY, { code });
     // Choices are kept; topics not available in the new province simply stop counting.
-    // Parties of the new zone are shown right away (avisoZona), so they are not "news" later.
-    actualizar(nueva(partida.estado).marcarConocidos());
-    mostrarAviso = true;
-    irASiguiente();
+    // Parties of the new zone are shown right away (zoneNotice), so they are not "news" later.
+    update(newGame(game.state).markKnown());
+    showNotice = true;
+    goToNext();
   };
-  const borrarTodo = () => {
-    for (const c of CLAVES) borrar(c);
+  const clearAll = () => {
+    for (const c of KEYS) remove(c);
     location.hash = '';
     location.reload();
   };
 
-  const vistaVueltaApp = () =>
-    vistaVuelta(partida, nuevosPartidos, {
-      seguir: irASiguiente,
-      verNovedades: () => {
-        const t = partida.novedades().temas[0];
-        irA(t ? `tema/${t.tema.id}` : 'temas');
+  const returnViewApp = () =>
+    returnView(game, newParties, {
+      proceed: goToNext,
+      seeNews: () => {
+        const t = game.news().topics[0];
+        goTo(t ? `tema/${t.topic.id}` : 'temas');
       },
-      mantenerElecciones: () => {
-        actualizar(partida.mantenerElecciones());
-        pintar();
+      keepChoices: () => {
+        update(game.keepChoices());
+        render();
       },
-      borrarTodo,
+      clearAll,
     });
 
-  const vistaResultadoApp = () =>
+  const resultViewApp = () =>
     h('div', {},
-      h('header', { class: 'cabecera' }, h('a', { href: '#temas', class: 'volver' }, '← Temas'), chipProvincia(partida.provincia)),
-      vistaResultado(partida, {
-        marcarPrioritario: (id, marcado) => {
-          if (marcado && partida.prioritarios().length >= MAX_PRIORITARIOS) avisoPrioridad = `Ya tienes ${MAX_PRIORITARIOS}. Quita uno.`;
+      h('header', { class: 'header' }, h('a', { href: '#temas', class: 'back-link' }, '← Temas'), provinceChip(game.province)),
+      resultView(game, {
+        markPriority: (id, marked) => {
+          if (marked && game.priorities().length >= MAX_PRIORITIES) priorityNotice = `Ya tienes ${MAX_PRIORITIES}. Quita uno.`;
           else {
-            avisoPrioridad = null;
-            actualizar(partida.marcarPrioritario(id, marcado));
+            priorityNotice = null;
+            update(game.markPriority(id, marked));
           }
-          pintar(`[aria-pressed][data-tema="${id}"]`);
-          avisoPrioridad = null;
+          render(`[aria-pressed][data-topic="${id}"]`);
+          priorityNotice = null;
         },
-        siguienteTema: irASiguiente,
-      }, avisoPrioridad),
+        nextTopic: goToNext,
+      }, priorityNotice),
     );
 
-  const vistaCompartirApp = () =>
+  const shareViewApp = () =>
     h('div', {},
-      h('header', { class: 'cabecera' }, h('a', { href: '#resultado', class: 'volver' }, '← Mi resultado')),
-      vistaCompartir(partida),
+      h('header', { class: 'header' }, h('a', { href: '#resultado', class: 'back-link' }, '← Mi resultado')),
+      shareView(game),
     );
 
-  const vistaDatosApp = () =>
+  const dataViewApp = () =>
     h('div', {},
-      h('header', { class: 'cabecera' }, h('a', { href: '#temas', class: 'volver' }, '← Temas')),
-      vistaDatos(partida, { provinciaElegida: provincia !== undefined, apuestaActiva: !preferencias.sinApuesta, almacenamiento: hayAlmacen, letraGrande: letraGrande() }, {
-        cambiarApuesta: (activa) => cambiarPreferencias({ sinApuesta: !activa }),
-        borrarTodo,
+      h('header', { class: 'header' }, h('a', { href: '#temas', class: 'back-link' }, '← Temas')),
+      dataView(game, { chosenProvince: province !== undefined, guessEnabled: !preferences.noGuess, storage: hasStorage, largeText: largeText() }, {
+        changeGuess: (enabled) => changePreferences({ noGuess: !enabled }),
+        clearAll,
       }),
     );
 
   window.addEventListener('hashchange', () => {
-    seleccion = null;
-    lector.parar();
-    pintar();
+    selection = null;
+    reader.stop();
+    render();
     window.scrollTo(0, 0);
   });
 
-  const vistaLista = (): HTMLElement => {
-    const lista = partida.lista();
-    const hechos = partida.hechos().length;
-    const fila = (i: ItemTema) => {
-      const estado = i.nuevas
-        ? `Nuevo: ${i.nuevas} ${i.nuevas === 1 ? 'propuesta' : 'propuestas'}`
-        : i.estado === 'hecho' ? '✓ Hecho' : i.estado === 'ninguna' ? '— Ninguna me convenció' : 'Sin empezar';
-      const a = h('a', { href: `#tema/${i.tema.id}`, class: `fila-tema ${i.estado}` },
-        h('span', { class: 'nombre' }, i.tema.titulo, i.tema.ambito === 'canarias' ? h('span', { class: 'etiqueta-canarias' }, 'Solo Canarias') : null),
-        h('span', { class: 'estado' }, estado),
+  const listView = (): HTMLElement => {
+    const list = game.list();
+    const done = game.done().length;
+    const row = (i: TopicItem) => {
+      const state = i.newOnes
+        ? `Nuevo: ${i.newOnes} ${i.newOnes === 1 ? 'propuesta' : 'propuestas'}`
+        : i.state === 'done' ? '✓ Hecho' : i.state === 'none' ? '— Ninguna me convenció' : 'Sin empezar';
+      const a = h('a', { href: `#tema/${i.topic.id}`, class: `topic-row ${i.state}` },
+        h('span', { class: 'name' }, i.topic.title, i.topic.scope === 'canarias' ? h('span', { class: 'canary-label' }, 'Solo Canarias') : null),
+        h('span', { class: 'state' }, state),
       );
       return h('li', {}, a);
     };
-    return h('section', { class: 'lista' },
-      h('header', { class: 'cabecera' }, h('span', {}), chipProvincia(partida.provincia)),
+    return h('section', { class: 'list' },
+      h('header', { class: 'header' }, h('span', {}), provinceChip(game.province)),
       h('h1', { tabindex: '-1' }, 'Temas'),
-      papeleta(partida),
-      h('p', { class: 'gris' }, hechos < META_TEMAS
-        ? `Tu papeleta · ${hechos} de ${META_TEMAS}. Te ${META_TEMAS - hechos === 1 ? 'falta 1 tema' : `faltan ${META_TEMAS - hechos} temas`} para ver tu resultado.`
-        : `${hechos} hechos · Haz más para afinar tu resultado.`),
-      hechos >= META_TEMAS ? h('a', { href: '#resultado', class: 'secundario boton-enlace' }, 'Ver mi resultado') : null,
-      h('ol', { class: 'filas', role: 'list' }, ...lista.sugeridos.map(fila)),
-      lista.extra.length ? h('h2', {}, 'Temas extra') : null,
-      lista.extra.length ? h('ul', { class: 'filas', role: 'list' }, ...lista.extra.map(fila)) : null,
-      lista.ocultos.length
-        ? h('div', { class: 'temas-ocultos' },
+      ballot(game),
+      h('p', { class: 'grey' }, done < GOAL_TOPICS
+        ? `Tu papeleta · ${done} de ${GOAL_TOPICS}. Te ${GOAL_TOPICS - done === 1 ? 'falta 1 tema' : `faltan ${GOAL_TOPICS - done} temas`} para ver tu resultado.`
+        : `${done} hechos · Haz más para afinar tu resultado.`),
+      done >= GOAL_TOPICS ? h('a', { href: '#resultado', class: 'secondary link-button' }, 'Ver mi resultado') : null,
+      h('ol', { class: 'rows', role: 'list' }, ...list.suggested.map(row)),
+      list.extra.length ? h('h2', {}, 'Temas extra') : null,
+      list.extra.length ? h('ul', { class: 'rows', role: 'list' }, ...list.extra.map(row)) : null,
+      list.hidden.length
+        ? h('div', { class: 'hidden-topics' },
             h('h2', {}, 'Pocos partidos hablan de esto'),
-            h('p', { class: 'gris' }, 'Menos de dos partidos de tu zona hacen una propuesta sobre estos temas, así que no hay nada que elegir a ciegas.'),
-            h('ul', { class: 'filas', role: 'list' },
-              ...lista.ocultos.map((t) => h('li', { class: 'fila-tema oculto' }, h('span', { class: 'nombre' }, t.titulo)))))
+            h('p', { class: 'grey' }, 'Menos de dos partidos de tu zona hacen una propuesta sobre estos temas, así que no hay nada que elegir a ciegas.'),
+            h('ul', { class: 'rows', role: 'list' },
+              ...list.hidden.map((t) => h('li', { class: 'topic-row hidden-item' }, h('span', { class: 'name' }, t.title)))))
         : null,
-      bloquePartidos(partida),
-      partida.preguntas().length
-        ? h('p', {}, h('a', { href: '#preguntar', class: 'fila-tema' }, h('span', { class: 'nombre' }, 'Pregunta a los programas'), h('span', { class: 'estado' }, '→')))
+      partiesBlock(game),
+      game.questions().length
+        ? h('p', {}, h('a', { href: '#preguntar', class: 'topic-row' }, h('span', { class: 'name' }, 'Pregunta a los programas'), h('span', { class: 'state' }, '→')))
         : null,
       h('p', {}, h('a', { href: '#datos' }, 'Tus datos')),
-      hechos ? empezarDeCero(borrarTodo) : null,
+      done ? startOver(clearAll) : null,
     );
   };
 
-  const vistaTema = (temaId: string): HTMLElement => {
-    const revelacion = partida.revelar(temaId);
-    return revelacion ? vistaRevelacion(revelacion) : vistaElegir(temaId);
+  const topicView = (topicId: string): HTMLElement => {
+    const reveal = game.reveal(topicId);
+    return reveal ? revealView(reveal) : chooseView(topicId);
   };
 
-  const vistaElegir = (temaId: string): HTMLElement => {
-    const vista = partida.tema(temaId);
-    const lista = h('ol', { class: 'tarjetas', role: 'list' });
-    const opciones = [...vista.tarjetas.map((t) => t.letra), NINGUNA];
-    const tarjeta = (valor: string, ...contenido: Hijo[]) => {
+  const chooseView = (topicId: string): HTMLElement => {
+    const view = game.topic(topicId);
+    const list = h('ol', { class: 'cards', role: 'list' });
+    const options = [...view.cards.map((t) => t.letter), NONE];
+    const card = (value: string, ...content: Child[]) => {
       const b = h('button', {
         type: 'button',
-        class: valor === NINGUNA ? 'tarjeta ninguna' : 'tarjeta',
-        'aria-pressed': String(seleccion === valor),
-        'aria-label': valor === NINGUNA ? 'Ninguna me convence' : `Propuesta ${valor}`,
-        'data-valor': valor,
-      }, ...contenido);
+        class: value === NONE ? 'card none' : 'card',
+        'aria-pressed': String(selection === value),
+        'aria-label': value === NONE ? 'Ninguna me convence' : `Propuesta ${value}`,
+        'data-value': value,
+      }, ...content);
       b.addEventListener('click', () => {
-        seleccion = valor;
+        selection = value;
         navigator.vibrate?.(10); // short haptic tap where supported
-        pintar(`[data-valor="${valor}"]`);
-        marcarLectura();
+        render(`[data-value="${value}"]`);
+        markReading();
       });
       return b;
     };
-    for (const t of vista.tarjetas) {
-      lista.append(h('li', {}, tarjeta(t.letra, h('span', { class: 'letra', 'aria-hidden': 'true' }, t.letra),
-        h('span', { class: 'texto' }, h('strong', { class: 'titular' }, t.titular), h('span', { class: 'detalle' }, t.detalle)))));
+    for (const t of view.cards) {
+      list.append(h('li', {}, card(t.letter, h('span', { class: 'letter', 'aria-hidden': 'true' }, t.letter),
+        h('span', { class: 'text' }, h('strong', { class: 'headline' }, t.headline), h('span', { class: 'detail' }, t.detail)))));
     }
-    lista.append(h('li', {}, tarjeta(NINGUNA, h('span', { class: 'texto' }, h('strong', { class: 'titular' }, 'Ninguna me convence')))));
+    list.append(h('li', {}, card(NONE, h('span', { class: 'text' }, h('strong', { class: 'headline' }, 'Ninguna me convence')))));
 
-    const sinPropuesta = vista.sinPropuesta
-      ? ` ${vista.sinPropuesta} ${vista.sinPropuesta === 1 ? 'partido no propone' : 'partidos no proponen'} nada sobre esto (los verás al final).`
+    const noProposal = view.noProposal
+      ? ` ${view.noProposal} ${view.noProposal === 1 ? 'partido no propone' : 'partidos no proponen'} nada sobre esto (los verás al final).`
       : '';
-    const confirmar = seleccion && opciones.includes(seleccion) ? hojaConfirmar(temaId, seleccion) : null;
+    const confirm = selection && options.includes(selection) ? confirmSheet(topicId, selection) : null;
 
-    return h('section', { class: 'elegir' },
-      cabecera(partida, temaId),
-      h('h1', { tabindex: '-1' }, vista.tema.pregunta),
-      vista.tema.explicacion ? h('p', { class: 'explicacion' }, vista.tema.explicacion) : null,
-      utilidades(vista.tarjetas),
-      lista,
-      h('p', { class: 'gris' }, `Hay ${vista.tarjetas.length} propuestas.${sinPropuesta}`),
-      h('p', { class: 'gris nota-ia' }, etiquetaIA(), ' Reescritas con IA en el mismo estilo y largo parecido. El texto original lo verás después de elegir.'),
-      ayudaPrimeraVez(temaId),
-      h('p', { class: 'gris' }, `El orden y las letras se barajan para ti en cada tema. Tu barajado: #${vista.barajado} `,
-        boton('Barajar otra vez', 'enlace', () => {
-          actualizar(partida.barajarOtraVez(temaId));
-          seleccion = null;
-          pintar();
+    return h('section', { class: 'choose' },
+      header(game, topicId),
+      h('h1', { tabindex: '-1' }, view.topic.question),
+      view.topic.explanation ? h('p', { class: 'explanation' }, view.topic.explanation) : null,
+      utilities(view.cards),
+      list,
+      h('p', { class: 'grey' }, `Hay ${view.cards.length} propuestas.${noProposal}`),
+      h('p', { class: 'grey ai-note' }, aiLabel(), ' Reescritas con IA en el mismo estilo y largo parecido. El texto original lo verás después de elegir.'),
+      firstTimeHelp(topicId),
+      h('p', { class: 'grey' }, `El orden y las letras se barajan para ti en cada tema. Tu barajado: #${view.shuffleId} `,
+        button('Barajar otra vez', 'text-link', () => {
+          update(game.reshuffle(topicId));
+          selection = null;
+          render();
         })),
-      confirmar,
+      confirm,
     );
   };
 
   /** Confirm + optional bet in one tap: a chip reveals with that bet, the big button without. */
-  const hojaConfirmar = (temaId: string, valor: string): HTMLElement => {
-    const confirmar = (apuesta?: string) => {
-      const antes = partida;
-      actualizar(partida.elegir(temaId, valor, apuesta ? { apuesta } : undefined));
-      analiticaConfirmar(antes, partida, temaId);
-      seleccion = null;
-      lector.parar();
-      animarRevelacion = true;
-      pintar();
+  const confirmSheet = (topicId: string, value: string): HTMLElement => {
+    const confirm = (guess?: string) => {
+      const before = game;
+      update(game.choose(topicId, value, guess ? { guess } : undefined));
+      trackConfirm(before, game, topicId);
+      selection = null;
+      reader.stop();
+      animateReveal = true;
+      render();
     };
-    if (valor === NINGUNA)
-      return h('div', { class: 'barra-fija', role: 'region', 'aria-label': 'Confirmar elección' },
+    if (value === NONE)
+      return h('div', { class: 'sticky-bar', role: 'region', 'aria-label': 'Confirmar elección' },
         h('p', {}, 'No te convence ninguna.'),
-        boton('Ver de quién era cada una', 'principal', () => confirmar()),
+        button('Ver de quién era cada una', 'primary', () => confirm()),
       );
-    const apostar = !preferencias.sinApuesta;
-    return h('div', { class: 'barra-fija hoja', role: 'region', 'aria-label': 'Confirmar elección' },
-      h('p', {}, `Has elegido la ${valor}.`),
-      apostar ? h('p', { class: 'pregunta-apuesta', id: 'pregunta-apuesta' }, '¿De quién crees que es? ', h('span', { class: 'gris' }, '(opcional, solo lo ves tú)')) : null,
-      apostar
-        ? h('div', { class: 'chips', role: 'group', 'aria-labelledby': 'pregunta-apuesta' },
-            ...partida.opcionesApuesta(temaId).map((p) => boton(p.nombre, 'chip', () => confirmar(p.id))))
+    const guessParty = !preferences.noGuess;
+    return h('div', { class: 'sticky-bar sheet', role: 'region', 'aria-label': 'Confirmar elección' },
+      h('p', {}, `Has elegido la ${value}.`),
+      guessParty ? h('p', { class: 'guess-question', id: 'guess-question' }, '¿De quién crees que es? ', h('span', { class: 'grey' }, '(opcional, solo lo ves tú)')) : null,
+      guessParty
+        ? h('div', { class: 'chips', role: 'group', 'aria-labelledby': 'guess-question' },
+            ...game.guessOptions(topicId).map((p) => button(p.name, 'chip', () => confirm(p.id))))
         : null,
-      boton(apostar ? 'Descubrir sin apostar' : 'Descubrir de quién es', 'principal', () => confirmar()),
-      h('div', { class: 'fila-botones' },
-        boton('Cambiar', 'enlace', () => {
-          seleccion = null;
-          pintar(`[data-valor="${valor}"]`);
+      button(guessParty ? 'Descubrir sin apostar' : 'Descubrir de quién es', 'primary', () => confirm()),
+      h('div', { class: 'button-row' },
+        button('Cambiar', 'text-link', () => {
+          selection = null;
+          render(`[data-value="${value}"]`);
         }),
-        apostar
-          ? boton('No preguntarme más', 'enlace', () => {
-              cambiarPreferencias({ sinApuesta: true });
-              pintar('.barra-fija .principal');
+        guessParty
+          ? button('No preguntarme más', 'text-link', () => {
+              changePreferences({ noGuess: true });
+              render('.sticky-bar .primary');
             })
           : null,
       ),
     );
   };
 
-  const vistaRevelacion = (r: Revelacion): HTMLElement => {
-    const mia = r.tarjetas.find((t) => t.elegida);
-    const banner = !mia
+  const revealView = (r: Reveal): HTMLElement => {
+    const mine = r.cards.find((t) => t.chosen);
+    const banner = !mine
       ? 'No te convenció ninguna. Esto proponía cada uno:'
-      : r.apuesta?.acertada
-        ? `Era de ${mia.partido.nombre}. Lo pensabas.`
-        : r.apuesta
-          ? `Era de ${mia.partido.nombre}. Tu apuesta: ${r.apuesta.partido.nombre}.`
-          : `La ${mia.letra} era de ${mia.partido.nombre}.`;
-    const otras = r.tarjetas.filter((t) => !t.elegida);
-    const siguiente = partida.siguiente(r.tema.id);
-    const pos = partida.posicion(r.tema.id);
-    const alResultado = pos.tipo === 'meta' && pos.numero === META_TEMAS;
-    const nuevas = partida.lista().sugeridos.concat(partida.lista().extra).find((i) => i.tema.id === r.tema.id)?.nuevas ?? 0;
-    const volverAElegir = () => {
-      actualizar(partida.volverAElegir(r.tema.id));
-      pintar();
+      : r.guess?.correct
+        ? `Era de ${mine.party.name}. Lo pensabas.`
+        : r.guess
+          ? `Era de ${mine.party.name}. Tu apuesta: ${r.guess.party.name}.`
+          : `La ${mine.letter} era de ${mine.party.name}.`;
+    const others = r.cards.filter((t) => !t.chosen);
+    const next = game.next(r.topic.id);
+    const slot = game.slot(r.topic.id);
+    const onResult = slot.type === 'goal' && slot.number === GOAL_TOPICS;
+    const newOnes = game.list().suggested.concat(game.list().extra).find((i) => i.topic.id === r.topic.id)?.newOnes ?? 0;
+    const chooseAgain = () => {
+      update(game.chooseAgain(r.topic.id));
+      render();
     };
-    const animar = animarRevelacion;
-    animarRevelacion = false;
-    let orden = 0;
-    const enCascada = (el: HTMLElement) => {
-      el.style.setProperty('--i', String(orden++));
+    const animate = animateReveal;
+    animateReveal = false;
+    let order = 0;
+    const cascade = (el: HTMLElement) => {
+      el.style.setProperty('--i', String(order++));
       return el;
     };
-    const seccion = h('section', { class: animar ? 'revelacion animar' : 'revelacion' },
-      cabecera(partida, r.tema.id),
-      h('p', { class: 'antetitulo' }, '¿De quién era?'),
+    const section = h('section', { class: animate ? 'reveal animate' : 'reveal' },
+      header(game, r.topic.id),
+      h('p', { class: 'kicker' }, '¿De quién era?'),
       h('h1', { tabindex: '-1' }, banner),
-      r.recorrido ? h('p', { class: 'recorrido' }, textoRecorrido(r.recorrido)) : null,
-      nuevas
-        ? h('div', { class: 'aviso-zona', role: 'status' },
-            h('p', {}, nuevas === 1 ? 'Hay una propuesta nueva. ¿Sigues prefiriendo la misma?' : `Hay ${nuevas} propuestas nuevas. ¿Sigues prefiriendo la misma?`),
-            boton('Volver a elegir', 'secundario', volverAElegir))
+      r.journey ? h('p', { class: 'journey' }, journeyText(r.journey)) : null,
+      newOnes
+        ? h('div', { class: 'zone-notice', role: 'status' },
+            h('p', {}, newOnes === 1 ? 'Hay una propuesta nueva. ¿Sigues prefiriendo la misma?' : `Hay ${newOnes} propuestas nuevas. ¿Sigues prefiriendo la misma?`),
+            button('Volver a elegir', 'secondary', chooseAgain))
         : null,
-      mia ? h('div', { class: 'mia' }, h('h2', {}, 'Tu elección'), enCascada(tarjetaTema(mia, true, r.tema))) : null,
-      otras.length ? h('h2', {}, mia ? 'Las demás' : 'Todas las propuestas') : null,
-      ...otras.map((t) => enCascada(tarjetaTema(t, false, r.tema))),
-      ...r.sinPropuesta.map((p) => enCascada(tarjetaGris(p, 'Este partido no propone nada sobre esto'))),
-      ...r.sinVerificar.map((p) => enCascada(tarjetaGris(p, 'No pudimos verificar su propuesta'))),
-      r.pendientes.length
-        ? h('p', { class: 'fila-gris' }, `⏳ Sin programa todavía: ${unir(r.pendientes.map((p) => p.nombre))}. `,
+      mine ? h('div', { class: 'mine' }, h('h2', {}, 'Tu elección'), cascade(topicCard(mine, true, r.topic))) : null,
+      others.length ? h('h2', {}, mine ? 'Las demás' : 'Todas las propuestas') : null,
+      ...others.map((t) => cascade(topicCard(t, false, r.topic))),
+      ...r.noProposal.map((p) => cascade(greyCard(p, 'Este partido no propone nada sobre esto'))),
+      ...r.unverified.map((p) => cascade(greyCard(p, 'No pudimos verificar su propuesta'))),
+      r.pending.length
+        ? h('p', { class: 'grey-row' }, `⏳ Sin programa todavía: ${joinList(r.pending.map((p) => p.name))}. `,
             'Mientras falte, no aparece en los temas ni en tu resultado. ', h('a', { href: '/partidos/' }, 'Partidos y programas'))
         : null,
-      h('p', { class: 'nota' }, etiquetaIA(), ' Las propuestas están reescritas con IA en un estilo común. La cita es el texto literal del documento.'),
-      r.tarjetas.some((t) => t.viabilidad)
-        ? h('p', { class: 'nota' }, 'La viabilidad dice qué haría falta para aplicarla, no si es buena idea.')
+      h('p', { class: 'note' }, aiLabel(), ' Las propuestas están reescritas con IA en un estilo común. La cita es el texto literal del documento.'),
+      r.cards.some((t) => t.feasibility)
+        ? h('p', { class: 'note' }, 'La viabilidad dice qué haría falta para aplicarla, no si es buena idea.')
         : null,
-      nuevas ? null : boton('Volver a elegir', 'enlace', volverAElegir),
-      h('div', { class: 'barra-fija' },
-        alResultado
-          ? boton('Ver mi resultado', 'principal', () => irA('resultado'))
-          : siguiente
-            ? boton(`Siguiente: ${siguiente.titulo}`, 'principal', () => irA(`tema/${siguiente.id}`))
+      newOnes ? null : button('Volver a elegir', 'text-link', chooseAgain),
+      h('div', { class: 'sticky-bar' },
+        onResult
+          ? button('Ver mi resultado', 'primary', () => goTo('resultado'))
+          : next
+            ? button(`Siguiente: ${next.title}`, 'primary', () => goTo(`tema/${next.id}`))
             : h('p', {}, 'Has hecho todos los temas.'),
-        boton('Elegir otro tema', 'secundario', () => irA('temas')),
+        button('Elegir otro tema', 'secondary', () => goTo('temas')),
       ),
     );
     // One tap skips the flip.
-    if (animar) seccion.addEventListener('pointerdown', () => seccion.classList.remove('animar'), { once: true });
-    return seccion;
+    if (animate) section.addEventListener('pointerdown', () => section.classList.remove('animate'), { once: true });
+    return section;
   };
 
   /** "🔊 Escuchar todas" (only if the browser has a voice). Reads the cards in their order. */
-  const utilidades = (tarjetas: { letra: string; titular: string; detalle: string }[]): HTMLElement | null => {
-    if (!lector.disponible || !tarjetas.length) return null;
-    const frase = (t: string) => `${t.trim().replace(/[.\s]+$/, '')}.`;
-    const b = boton('', 'secundario escuchar', () => {
-      if (leyendo) return lector.parar();
-      leyendo = true;
-      marcarLectura();
-      lector.leer(tarjetas.map((t) => ({ id: t.letra, texto: `Propuesta ${t.letra}. ${frase(t.titular)} ${frase(t.detalle)}` })));
+  const utilities = (cards: { letter: string; headline: string; detail: string }[]): HTMLElement | null => {
+    if (!reader.available || !cards.length) return null;
+    const sentence = (t: string) => `${t.trim().replace(/[.\s]+$/, '')}.`;
+    const b = button('', 'secondary listen', () => {
+      if (reading) return reader.stop();
+      reading = true;
+      markReading();
+      reader.read(cards.map((t) => ({ id: t.letter, text: `Propuesta ${t.letter}. ${sentence(t.headline)} ${sentence(t.detail)}` })));
     });
-    b.replaceChildren(...etiquetaEscuchar(leyendo));
-    return h('div', { class: 'utilidades' }, b);
+    b.replaceChildren(...listenLabel(reading));
+    return h('div', { class: 'utilities' }, b);
   };
 
   /** First time only, on topic 1: a layer closed with one tap (anywhere) or Escape. */
-  const ayudaPrimeraVez = (temaId: string): HTMLElement | null => {
-    const pos = partida.posicion(temaId);
-    if (preferencias.ayudaVista || pos.tipo !== 'meta' || pos.numero !== 1) return null;
-    const capa = h('dialog', { class: 'ayuda', 'aria-labelledby': 'ayuda-texto' },
-      h('p', { id: 'ayuda-texto' }, 'Lee y toca la que más te convenza. No pone de quién es: lo verás después.'),
-      h('button', { type: 'button', class: 'principal', autofocus: '' }, 'Entendido'),
+  const firstTimeHelp = (topicId: string): HTMLElement | null => {
+    const slot = game.slot(topicId);
+    if (preferences.helpSeen || slot.type !== 'goal' || slot.number !== 1) return null;
+    const layer = h('dialog', { class: 'help', 'aria-labelledby': 'help-text' },
+      h('p', { id: 'help-text' }, 'Lee y toca la que más te convenza. No pone de quién es: lo verás después.'),
+      h('button', { type: 'button', class: 'primary', autofocus: '' }, 'Entendido'),
     ) as HTMLDialogElement;
-    capa.addEventListener('click', () => capa.close());
-    capa.addEventListener('close', () => {
-      cambiarPreferencias({ ayudaVista: true });
-      capa.remove();
+    layer.addEventListener('click', () => layer.close());
+    layer.addEventListener('close', () => {
+      changePreferences({ helpSeen: true });
+      layer.remove();
     });
     // Opened once it is in the document (pintar has already focused the heading, which gets the
     // focus back when the layer closes).
     queueMicrotask(() => {
-      if (capa.isConnected && !capa.open) capa.showModal();
+      if (layer.isConnected && !layer.open) layer.showModal();
     });
-    return capa;
+    return layer;
   };
 
-  pintar();
+  render();
 }
 
-const etiquetaEscuchar = (leyendo: boolean): (Node | string)[] => [
-  h('span', { 'aria-hidden': 'true' }, leyendo ? '⏹ ' : '🔊 '),
-  leyendo ? 'Parar' : 'Escuchar todas',
+const listenLabel = (reading: boolean): (Node | string)[] => [
+  h('span', { 'aria-hidden': 'true' }, reading ? '⏹ ' : '🔊 '),
+  reading ? 'Parar' : 'Escuchar todas',
 ];
 
-let observada = false;
+let observed = false;
 /** Bottom tab bar (Temas · Preguntar · Mi resultado): hidden during onboarding, current tab marked. */
-function pintarPestanas(ruta: string): void {
-  const nav = document.querySelector<HTMLElement>('.pestanas');
+function renderTabs(path: string): void {
+  const nav = document.querySelector<HTMLElement>('.tabs');
   if (!nav) return;
-  const visible = !SIN_PESTANAS.has(ruta);
+  const visible = !NO_TABS.has(path);
   nav.hidden = !visible;
-  document.body.dataset.pestanas = visible ? 'si' : 'no';
+  document.body.dataset.tabs = visible ? 'yes' : 'no';
   // Fixed bars stack above the tabs, whatever their height (large text, 200 % zoom…).
-  if (!observada) {
-    observada = true;
-    new ResizeObserver(() => document.documentElement.style.setProperty('--alto-pestanas', `${nav.offsetHeight}px`)).observe(nav);
+  if (!observed) {
+    observed = true;
+    new ResizeObserver(() => document.documentElement.style.setProperty('--tabs-height', `${nav.offsetHeight}px`)).observe(nav);
   }
-  const actual = ruta.startsWith('tema/') ? null : ruta.split('/')[0];
+  const current = path.startsWith('tema/') ? null : path.split('/')[0];
   for (const a of nav.querySelectorAll('a')) {
-    if (a.getAttribute('href') === `#${actual}`) a.setAttribute('aria-current', 'page');
+    if (a.getAttribute('href') === `#${current}`) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   }
 }
 
 /** Removes a transient notice after `ms`, but not while it is focused or covered by a layer. */
-function retirarTras(el: HTMLElement, ms: number): void {
+function removeAfter(el: HTMLElement, ms: number): void {
   setTimeout(() => {
     if (!el.isConnected) return;
     // Behind the help layer nobody has seen it yet: start again once the layer is closed.
-    if (document.querySelector('dialog[open]')) return retirarTras(el, ms);
+    if (document.querySelector('dialog[open]')) return removeAfter(el, ms);
     // Not while a keyboard/screen-reader user is on its "Cambiar" link. (No :hover check: on phones
     // hover sticks after a tap and the notice would never go.)
-    if (el.matches(':focus-within')) return retirarTras(el, 1000);
-    el.classList.add('saliendo');
+    if (el.matches(':focus-within')) return removeAfter(el, 1000);
+    el.classList.add('leaving');
     setTimeout(() => el.remove(), 300);
   }, ms);
 }
 
 /** Factual, never a judgement: "Tu primera elección." / "Primera vez que eliges a X." / "3 temas, 2 partidos distintos." */
-function textoRecorrido(r: Recorrido): string {
-  if (r.tipo === 'primera') return 'Tu primera elección.';
-  if (r.tipo === 'partido_nuevo') return `Primera vez que eliges a ${r.partido.nombre}.`;
-  return `${r.temas} temas, ${r.partidos} ${r.partidos === 1 ? 'partido' : 'partidos distintos'}.`;
+function journeyText(r: Journey): string {
+  if (r.type === 'first') return 'Tu primera elección.';
+  if (r.type === 'newParty') return `Primera vez que eliges a ${r.party.name}.`;
+  return `${r.topics} temas, ${r.parties} ${r.parties === 1 ? 'partido' : 'partidos distintos'}.`;
 }
 
-function cabecera(partida: Partida, temaId: string): HTMLElement {
-  const tema = partida.temas().find((t) => t.id === temaId)!;
-  const pos = partida.posicion(temaId);
-  const hechos = partida.hechos().length;
-  return h('header', { class: 'cabecera' },
-    h('div', { class: 'cabecera-fila' }, h('a', { href: '#temas', class: 'volver' }, '← Temas'), chipProvincia(partida.provincia)),
-    h('p', {}, pos.tipo === 'meta' ? `Tema ${pos.numero} de ${pos.meta} · ${tema.titulo}` : `Tema extra · ${tema.titulo}`),
-    pos.tipo === 'meta'
-      ? h('ol', { class: 'progreso', 'aria-hidden': 'true' },
-          ...Array.from({ length: pos.meta }, (_, i) => h('li', { class: i + 1 === pos.numero ? 'actual' : i < hechos ? 'hecho' : '' })))
+function header(game: Game, topicId: string): HTMLElement {
+  const topic = game.topics().find((t) => t.id === topicId)!;
+  const slot = game.slot(topicId);
+  const done = game.done().length;
+  return h('header', { class: 'header' },
+    h('div', { class: 'header-row' }, h('a', { href: '#temas', class: 'back-link' }, '← Temas'), provinceChip(game.province)),
+    h('p', {}, slot.type === 'goal' ? `Tema ${slot.number} de ${slot.goal} · ${topic.title}` : `Tema extra · ${topic.title}`),
+    slot.type === 'goal'
+      ? h('ol', { class: 'progress', 'aria-hidden': 'true' },
+          ...Array.from({ length: slot.goal }, (_, i) => h('li', { class: i + 1 === slot.number ? 'current' : i < done ? 'done' : '' })))
       : null,
   );
 }
 
 /** A topic's revealed card: source line, feasibility note and "¿Algo no cuadra?" under the quotes. */
-function tarjetaTema(t: TarjetaRevelada, abierta: boolean, tema: { id: string; titulo: string }): HTMLElement {
-  const fuente = `${ETIQUETA_FUENTE[t.fuente.tipo]}${t.fuente.soloPrivado ? ' · solo privado' : ''}`;
-  return tarjetaRevelada(t, {
-    abierta,
-    chips: [chipViabilidad(t.viabilidad)],
+function topicCard(t: RevealedCard, open: boolean, topic: { id: string; title: string }): HTMLElement {
+  const source = `${SOURCE_LABEL[t.source.type]}${t.source.privateOnly ? ' · solo privado' : ''}`;
+  return revealedCard(t, {
+    open,
+    chips: [feasibilityChip(t.feasibility)],
     extra: [
-      h('p', { class: `fuente${t.fuente.soloPrivado ? ' provisional' : ''}` }, `Fuente: ${fuente}`),
-      notaViabilidad(t.viabilidad, t.sinFuentes),
-      botonReportar({ tema, partido: t.partido, letra: t.letra, paginas: t.citas.map((c) => c.pagina) }),
+      h('p', { class: `source${t.source.privateOnly ? ' provisional' : ''}` }, `Fuente: ${source}`),
+      feasibilityNote(t.feasibility, t.noSources),
+      feedbackButton({ topic, party: t.party, letter: t.letter, pages: t.quotes.map((c) => c.page) }),
     ],
   });
 }

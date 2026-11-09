@@ -1,472 +1,472 @@
 // Data pipeline (test point A). Single entry point:
-//   procesarPrograma(pdf, partido, ia) → { posturas, informe, publicable }
-// Stages: V7 (source) → PDF text by page → per topic (`procesarTema`): extract postura (V12 confirms
-// absences) → V1/V2 → neutralise with V3–V6 + V10 (`neutralizar`, rewrite loop) → V11 over every
-// posture of the topic (`rebajarReconocibilidad`) → V13/V8 → V9 → publication decision.
-// Then the answers to the suggested questions (src/pregunta: V1, V3–V6, V10), which never block.
+//   processManifesto(pdf, party, ai) → { positions, report, publishable }
+// Stages: V7 (source) → PDF text by page → per topic (`processTopic`): extract position (V12 confirms
+// absences) → V1/V2 → neutralise with V3–V6 + V10 (`neutralize`, rewrite loop) → V11 over every
+// position of the topic (`lowerRecognizability`) → V13/V8 → V9 → publication decision.
+// Then the answers to the suggested questions (src/questions: V1, V3–V6, V10), which never block.
 import type {
-  Cita,
-  EntradaInforme,
-  Informe,
-  Partido,
-  Postura,
-  Pregunta,
-  RespuestaPregunta,
-  ResumenPostura,
-  Tema,
-  TextoNeutral,
-} from '../dataset/esquema';
-import { Postura as EsquemaPostura, RespuestaPregunta as EsquemaRespuesta } from '../dataset/esquema';
-import { responderPregunta, VERSION_PROMPT_PREGUNTA } from '../pregunta';
-import { PREGUNTAS_SUGERIDAS } from '../registro/preguntas';
-import type { AdaptadorIA } from '../ia/adaptador';
-import { comprobacionConCache, conCache, type AlmacenCache } from '../ia/cache';
-import { TEMAS } from '../registro/temas';
-import { PARTIDOS } from '../registro/partidos';
-import { PALABRAS_CLAVE, type PalabrasClave } from '../registro/palabras-clave';
-import { TERMINOS, type TerminosIdentificativos } from '../registro/terminos';
-import { DOMINIOS_OFICIALES, type DominiosOficiales } from '../registro/dominios';
-import { confirmarAusencia } from './ausencia';
-import { verificarCita } from './barreras';
-import { verificarFidelidad } from './fidelidad';
-import { verificarFuente } from './fuente';
-import { contarPalabras, limpiarTexto, mediana, revisarTexto, TOLERANCIA_MEDIANA, type BarreraTexto } from './texto';
-import { extraerPaginas, hashPdf } from './pdf';
-import type { TextoPrograma } from '../pregunta/textos';
+  Quote,
+  ReportEntry,
+  Report,
+  Party,
+  Position,
+  Question,
+  QuestionAnswer,
+  PositionSummary,
+  Topic,
+  NeutralText,
+} from '../dataset/schema';
+import { Position as PositionSchema, QuestionAnswer as AnswerSchema } from '../dataset/schema';
+import { answerQuestion, QUESTION_PROMPT_VERSION } from '../questions';
+import { SUGGESTED_QUESTIONS } from '../registry/questions';
+import type { AIAdapter } from '../ai/adapter';
+import { cachedCheck, withCache, type CacheStore } from '../ai/cache';
+import { TOPICS } from '../registry/topics';
+import { PARTIES } from '../registry/parties';
+import { KEYWORDS, type Keywords } from '../registry/keywords';
+import { TERMS, type IdentifyingTerms } from '../registry/terms';
+import { OFFICIAL_DOMAINS, type OfficialDomains } from '../registry/domains';
+import { confirmAbsence } from './absence';
+import { verifyQuote } from './checks';
+import { verifyFidelity } from './fidelity';
+import { verifySource } from './source';
+import { countWords, cleanText, median, reviewText, MEDIAN_TOLERANCE, type TextCheck } from './text';
+import { extractPages, hashPdf } from './pdf';
+import type { ManifestoText } from '../questions/texts';
 import {
-  INSTRUCCIONES_EXTRAER,
-  INSTRUCCIONES_NEUTRALIZAR,
-  RespuestaExtraer,
-  RespuestaNeutralizar,
+  EXTRACT_INSTRUCTIONS,
+  NEUTRALIZE_INSTRUCTIONS,
+  ExtractResponse,
+  NeutralizeResponse,
   VERSION_PROMPT,
 } from './prompts';
-import { comprobarReconocibilidad, type ResultadoReconocibilidad } from './reconocibilidad';
-import { comprobarUrlHttp, evaluarViabilidad, type ComprobarUrl } from './viabilidad';
+import { checkRecognizability, type RecognizabilityResult } from './recognizability';
+import { checkUrlHttp, assessFeasibility, type CheckUrl } from './feasibility';
 
-export interface OpcionesProceso {
-  temas?: Tema[];
-  terminos?: TerminosIdentificativos;
-  cache?: AlmacenCache;
-  versionPrompt?: string;
-  /** V12: keywords per topic for the second pass (default: registro/palabras-clave). */
-  palabrasClave?: PalabrasClave;
+export interface ProcessOptions {
+  topics?: Topic[];
+  terms?: IdentifyingTerms;
+  cache?: CacheStore;
+  promptVersion?: string;
+  /** V12: keywords per topic for the second pass (default: registry/keywords). */
+  keywords?: Keywords;
   /**
-   * Already-published parties and posturas (e.g. the current dataset). Their posturas on each topic
+   * Already-published parties and positions (e.g. the current dataset). Their positions on each topic
    * go to the guesser with this one (V11) and set the topic median (V5); they are re-checked too,
-   * and their findings come back in `revisiones` (never rewritten here).
+   * and their findings come back in `revisions` (never rewritten here).
    */
-  publicado?: { partidos: Partido[]; posturas: Postura[] };
-  /** V11: parties the guesser chooses from (default: the registry, plus `publicado`'s parties). */
-  partidos?: Pick<Partido, 'id' | 'nombre' | 'siglas'>[];
+  published?: { parties: Party[]; positions: Position[] };
+  /** V11: parties the guesser chooses from (default: the registry, plus `published`'s parties). */
+  parties?: Pick<Party, 'id' | 'name' | 'acronym'>[];
   /** V8 HTTP 200 check for feasibility sources (default: real fetch). */
-  comprobarUrl?: ComprobarUrl;
+  checkUrl?: CheckUrl;
   /** Official domains per party (V7). */
-  dominios?: DominiosOficiales;
+  domains?: OfficialDomains;
   /** Capture date of the PDF, recorded with its hash (V7). Defaults to the programme's date. */
-  fecha?: string;
-  /** Suggested questions to precompute answers for (default: registro/preguntas). */
-  preguntas?: Pregunta[];
+  date?: string;
+  /** Suggested questions to precompute answers for (default: registry/questions). */
+  questions?: Question[];
 }
 
-export interface ResultadoProceso {
-  posturas: Postura[];
-  informe: Informe;
-  publicable: boolean;
+export interface ProcessResult {
+  positions: Position[];
+  report: Report;
+  publishable: boolean;
   /** One answer per suggested question (anonymous until revealed in the Preguntar tab). */
-  respuestas: RespuestaPregunta[];
+  answers: QuestionAnswer[];
   /**
-   * Page text of the programme, published next to the site (public/textos/<partido>.json) so the
+   * Page text of the programme, published next to the site (public/texts/<party>.json) so the
    * live free question can answer and run V1/V2 on it. Null when blocked before reading the PDF (V7).
    */
-  texto: TextoPrograma | null;
+  text: ManifestoText | null;
   /**
-   * Findings on OTHER parties' published posturas when this one joins the topic (V11 recognisable,
-   * V5 outside the new median). `fusionarPrograma` writes them into those parties' reports as warnings.
+   * Findings on OTHER parties' published positions when this one joins the topic (V11 recognisable,
+   * V5 outside the new median). `mergeManifesto` writes them into those parties' reports as warnings.
    */
-  revisiones: Revision[];
+  revisions: Revision[];
 }
 
-/** A warning about another party's published postura, triggered by this programme. */
+/** A warning about another party's published position, triggered by this programme. */
 export interface Revision {
-  partido: string;
-  tema: string;
-  barrera: 'V5' | 'V11';
-  detalle: string;
+  party: string;
+  topic: string;
+  check: 'V5' | 'V11';
+  detail: string;
 }
 
-/** Max rewrites after a failed rewrite-barrier before the postura is discarded. */
-export const MAX_REINTENTOS = 2;
-/** A programme with more than this share of extracted posturas discarded is blocked. */
-export const MAX_DESCARTE = 0.3;
+/** Max rewrites after a failed rewrite-check before the position is discarded. */
+export const MAX_RETRIES = 2;
+/** A programme with more than this share of extracted positions discarded is blocked. */
+export const MAX_DISCARD = 0.3;
 
-export async function procesarPrograma(
+export async function processManifesto(
   pdf: Uint8Array,
-  partido: Partido,
-  iaBase: AdaptadorIA,
-  opciones: OpcionesProceso = {},
-): Promise<ResultadoProceso> {
-  const versionPrompt = opciones.versionPrompt ?? VERSION_PROMPT;
+  party: Party,
+  baseAi: AIAdapter,
+  options: ProcessOptions = {},
+): Promise<ProcessResult> {
+  const promptVersion = options.promptVersion ?? VERSION_PROMPT;
   const hash = hashPdf(pdf);
-  const contextoCache = { hashPdf: hash, versionPrompt };
-  const comprobarBase = opciones.comprobarUrl ?? comprobarUrlHttp;
-  const fecha = opciones.fecha ?? (partido.programa.estado === 'publicado' ? partido.programa.fecha : undefined);
-  const entradas: EntradaInforme[] = [];
+  const cacheContext = { hashPdf: hash, promptVersion };
+  const baseCheck = options.checkUrl ?? checkUrlHttp;
+  const date = options.date ?? (party.manifesto.state === 'published' ? party.manifesto.date : undefined);
+  const entries: ReportEntry[] = [];
 
-  const informe = (resumen: ResumenPostura[], cuenta: { extraidas: number; descartadas: number }, motivos: string[], url?: string): Informe => ({
-    partido: partido.id,
+  const report = (summary: PositionSummary[], tally: { extracted: number; discarded: number }, reasons: string[], url?: string): Report => ({
+    party: party.id,
     hashPdf: hash,
     ...(url ? { url } : {}),
-    ...(fecha ? { fecha } : {}),
-    versionPrompt,
-    ...cuenta,
-    publicable: motivos.length === 0,
-    ...(motivos.length ? { motivo: motivos.join('; ') } : {}),
-    posturas: resumen,
-    entradas,
+    ...(date ? { date } : {}),
+    promptVersion,
+    ...tally,
+    publishable: reasons.length === 0,
+    ...(reasons.length ? { reason: reasons.join('; ') } : {}),
+    positions: summary,
+    entries,
   });
 
   // V7: official source. A non-official PDF blocks the programme before any AI call.
-  const fuente = verificarFuente(partido, opciones.dominios ?? DOMINIOS_OFICIALES);
-  entradas.push({ barrera: 'V7', resultado: fuente.ok ? 'pasa' : 'bloquear', detalle: fuente.detalle });
-  if (!fuente.ok)
+  const source = verifySource(party, options.domains ?? OFFICIAL_DOMAINS);
+  entries.push({ check: 'V7', result: source.ok ? 'pass' : 'block', detail: source.detail });
+  if (!source.ok)
     return {
-      posturas: [],
-      respuestas: [],
-      texto: null,
-      revisiones: [],
-      publicable: false,
-      informe: informe([], { extraidas: 0, descartadas: 0 }, [`V7: ${fuente.detalle}`], fuente.url),
+      positions: [],
+      answers: [],
+      text: null,
+      revisions: [],
+      publishable: false,
+      report: report([], { extracted: 0, discarded: 0 }, [`V7: ${source.detail}`], source.url),
     };
 
-  const publicado = opciones.publicado ?? { partidos: [], posturas: [] };
-  const ctx: Contexto = {
-    ia: opciones.cache ? conCache(iaBase, opciones.cache, contextoCache) : iaBase,
-    partido,
+  const published = options.published ?? { parties: [], positions: [] };
+  const ctx: Context = {
+    ai: options.cache ? withCache(baseAi, options.cache, cacheContext) : baseAi,
+    party,
     hash,
-    versionPrompt,
-    terminos: opciones.terminos ?? TERMINOS,
-    palabrasClave: opciones.palabrasClave ?? PALABRAS_CLAVE,
-    paginas: await extraerPaginas(pdf),
-    comprobarUrl: opciones.cache ? comprobacionConCache(comprobarBase, opciones.cache, contextoCache) : comprobarBase,
-    otras: publicado.posturas.filter((p): p is PosturaPropone => p.partido !== partido.id && p.estado === 'propone'),
-    candidatos: candidatosV11(partido, opciones.partidos ?? Object.values(PARTIDOS), publicado.partidos),
-    entradas,
+    promptVersion,
+    terms: options.terms ?? TERMS,
+    keywords: options.keywords ?? KEYWORDS,
+    pages: await extractPages(pdf),
+    checkUrl: options.cache ? cachedCheck(baseCheck, options.cache, cacheContext) : baseCheck,
+    others: published.positions.filter((p): p is ProposingPosition => p.party !== party.id && p.state === 'proposes'),
+    candidates: v11Candidates(party, options.parties ?? Object.values(PARTIES), published.parties),
+    entries,
   };
 
-  const temas: ResultadoTema[] = [];
-  for (const tema of opciones.temas ?? TEMAS) temas.push(await procesarTema(ctx, tema));
-  const posturas = temas.map((t) => t.postura);
-  const cuenta = { extraidas: temas.filter((t) => t.extraida).length, descartadas: temas.filter((t) => t.descartada).length };
+  const topics: TopicResult[] = [];
+  for (const topic of options.topics ?? TOPICS) topics.push(await processTopic(ctx, topic));
+  const positions = topics.map((t) => t.position);
+  const tally = { extracted: topics.filter((t) => t.extracted).length, discarded: topics.filter((t) => t.discarded).length };
 
-  // Suggested questions: one answer per question, with the same quote/marks/fidelity barriers.
+  // Suggested questions: one answer per question, with the same quote/marks/fidelity checks.
   // They never count towards the publication rule (a programme is not about our questions).
-  const respuestas: RespuestaPregunta[] = [];
-  for (const pregunta of opciones.preguntas ?? PREGUNTAS_SUGERIDAS) {
-    const r = await responderPregunta(ctx.ia, pregunta, ctx.paginas, {
-      terminos: ctx.terminos,
-      anotar: (barrera, resultado, detalle) => entradas.push({ pregunta: pregunta.id, barrera, resultado, detalle }),
+  const answers: QuestionAnswer[] = [];
+  for (const question of options.questions ?? SUGGESTED_QUESTIONS) {
+    const r = await answerQuestion(ctx.ai, question, ctx.pages, {
+      terms: ctx.terms,
+      annotate: (check, result, detail) => entries.push({ question: question.id, check, result, detail }),
     });
-    const base = { partido: partido.id, pregunta: pregunta.id, versiones: { prompt: VERSION_PROMPT_PREGUNTA } };
-    if (r.estado === 'responde') respuestas.push({ ...base, estado: 'responde', texto: r.texto, citas: r.citas });
+    const base = { party: party.id, question: question.id, versions: { prompt: QUESTION_PROMPT_VERSION } };
+    if (r.state === 'answers') answers.push({ ...base, state: 'answers', text: r.text, quotes: r.quotes });
     else {
-      if (r.estado === 'no_menciona') entradas.push({ pregunta: pregunta.id, barrera: 'V12', resultado: 'pasa', detalle: `no lo menciona: ${r.detalle}` });
-      respuestas.push({ ...base, estado: r.estado });
+      if (r.state === 'notMentioned') entries.push({ question: question.id, check: 'V12', result: 'pass', detail: `no lo menciona: ${r.detail}` });
+      answers.push({ ...base, state: r.state });
     }
   }
 
-  // V9: every postura validates against the schema (an invalid answer is just not published).
-  const invalidas = posturas.filter((p) => !EsquemaPostura.safeParse(p).success);
-  for (const p of invalidas) entradas.push({ tema: p.tema, barrera: 'V9', resultado: 'descartar', detalle: 'no valida contra el esquema' });
-  const respuestasValidas = respuestas.filter((r) => {
-    const ok = EsquemaRespuesta.safeParse(r).success;
-    if (!ok) entradas.push({ pregunta: r.pregunta, barrera: 'V9', resultado: 'descartar', detalle: 'la respuesta no valida contra el esquema' });
+  // V9: every position validates against the schema (an invalid answer is just not published).
+  const invalid = positions.filter((p) => !PositionSchema.safeParse(p).success);
+  for (const p of invalid) entries.push({ topic: p.topic, check: 'V9', result: 'discard', detail: 'no valida contra el esquema' });
+  const validAnswers = answers.filter((r) => {
+    const ok = AnswerSchema.safeParse(r).success;
+    if (!ok) entries.push({ question: r.question, check: 'V9', result: 'discard', detail: 'la respuesta no valida contra el esquema' });
     return ok;
   });
 
-  // Publication rule: blocked if more than MAX_DESCARTE of the extracted posturas were discarded.
-  const motivos: string[] = [];
-  if (invalidas.length) motivos.push(`${invalidas.length} postura(s) no validan contra el esquema`);
-  if (cuenta.extraidas > 0 && cuenta.descartadas / cuenta.extraidas > MAX_DESCARTE)
-    motivos.push(`descartado el ${Math.round((cuenta.descartadas / cuenta.extraidas) * 100)} % de las posturas extraídas (máximo ${MAX_DESCARTE * 100} %)`);
+  // Publication rule: blocked if more than MAX_DISCARD of the extracted positions were discarded.
+  const reasons: string[] = [];
+  if (invalid.length) reasons.push(`${invalid.length} postura(s) no validan contra el esquema`);
+  if (tally.extracted > 0 && tally.discarded / tally.extracted > MAX_DISCARD)
+    reasons.push(`descartado el ${Math.round((tally.discarded / tally.extracted) * 100)} % de las posturas extraídas (máximo ${MAX_DISCARD * 100} %)`);
 
   return {
-    posturas,
-    respuestas: respuestasValidas,
-    texto: { partido: partido.id, hashPdf: hash, paginas: ctx.paginas },
-    revisiones: temas.flatMap((t) => t.revisiones),
-    publicable: motivos.length === 0,
-    informe: informe(
-      temas.map((t) => t.resumen),
-      cuenta,
-      motivos,
-      fuente.url,
+    positions,
+    answers: validAnswers,
+    text: { party: party.id, hashPdf: hash, pages: ctx.pages },
+    revisions: topics.flatMap((t) => t.revisions),
+    publishable: reasons.length === 0,
+    report: report(
+      topics.map((t) => t.summary),
+      tally,
+      reasons,
+      source.url,
     ),
   };
 }
 
-type PosturaPropone = Extract<Postura, { estado: 'propone' }>;
-type TemaIA = Pick<Tema, 'id' | 'titulo' | 'pregunta'>;
-type Anotar = (barrera: EntradaInforme['barrera'], resultado: EntradaInforme['resultado'], detalle: string) => void;
-/** A failed barrier on a neutral text, with what to tell the AI in the rewrite. */
-interface Fallo {
-  barrera: EntradaInforme['barrera'];
-  detalle: string;
-  evitar?: string[];
-  corregir?: string;
+type ProposingPosition = Extract<Position, { state: 'proposes' }>;
+type AITopic = Pick<Topic, 'id' | 'title' | 'question'>;
+type Annotate = (check: ReportEntry['check'], result: ReportEntry['result'], detail: string) => void;
+/** A failed check on a neutral text, with what to tell the AI in the rewrite. */
+interface Failure {
+  check: ReportEntry['check'];
+  detail: string;
+  avoid?: string[];
+  fix?: string;
 }
 
 /** What every topic of one programme shares. */
-interface Contexto {
-  ia: AdaptadorIA;
-  partido: Partido;
+interface Context {
+  ai: AIAdapter;
+  party: Party;
   hash: string;
-  versionPrompt: string;
-  terminos: TerminosIdentificativos;
-  palabrasClave: PalabrasClave;
-  paginas: string[];
-  comprobarUrl: ComprobarUrl;
+  promptVersion: string;
+  terms: IdentifyingTerms;
+  keywords: Keywords;
+  pages: string[];
+  checkUrl: CheckUrl;
   /** Other parties' published proposals (V5 median, V11). */
-  otras: PosturaPropone[];
+  others: ProposingPosition[];
   /** V11 party list, sorted by id (the order never hints at the party being processed). */
-  candidatos: Pick<Partido, 'id' | 'nombre' | 'siglas'>[];
-  entradas: EntradaInforme[];
+  candidates: Pick<Party, 'id' | 'name' | 'acronym'>[];
+  entries: ReportEntry[];
 }
 
-interface ResultadoTema {
-  postura: Postura;
-  resumen: ResumenPostura;
-  extraida: boolean;
-  descartada: boolean;
-  revisiones: Revision[];
+interface TopicResult {
+  position: Position;
+  summary: PositionSummary;
+  extracted: boolean;
+  discarded: boolean;
+  revisions: Revision[];
 }
 
-function candidatosV11(partido: Partido, ...listas: Pick<Partido, 'id' | 'nombre' | 'siglas'>[][]) {
-  const porId = new Map([partido, ...listas.flat()].map(({ id, nombre, siglas }) => [id, { id, nombre, siglas }]));
-  return [...porId.values()].sort((a, b) => a.id.localeCompare(b.id));
+function v11Candidates(party: Party, ...lists: Pick<Party, 'id' | 'name' | 'acronym'>[][]) {
+  const byId = new Map([party, ...lists.flat()].map(({ id, name, acronym }) => [id, { id, name, acronym }]));
+  return [...byId.values()].sort((a, b) => a.id.localeCompare(b.id));
 }
 
 /** One topic: extraction (V12) → quotes (V1/V2) → neutral text (V3–V6, V10) → V11 → feasibility (V13/V8). */
-async function procesarTema(ctx: Contexto, tema: Tema): Promise<ResultadoTema> {
-  const base = { partido: ctx.partido.id, tema: tema.id, versiones: { prompt: ctx.versionPrompt } };
-  const temaIA: TemaIA = { id: tema.id, titulo: tema.titulo, pregunta: tema.pregunta };
-  const anotar: Anotar = (barrera, resultado, detalle) => ctx.entradas.push({ tema: tema.id, barrera, resultado, detalle });
-  const palabras = ctx.palabrasClave[tema.id] ?? [tema.titulo];
-  const noPropone = (reescrituras: number, descartada: boolean, motivo?: string): ResultadoTema => ({
-    postura: { ...base, estado: 'no_propone' },
-    resumen: { tema: tema.id, estado: 'no_propone', reescrituras, ...(motivo ? { motivo } : {}) },
-    extraida: descartada,
-    descartada,
-    revisiones: [],
+async function processTopic(ctx: Context, topic: Topic): Promise<TopicResult> {
+  const base = { party: ctx.party.id, topic: topic.id, versions: { prompt: ctx.promptVersion } };
+  const aiTopic: AITopic = { id: topic.id, title: topic.title, question: topic.question };
+  const annotate: Annotate = (check, result, detail) => ctx.entries.push({ topic: topic.id, check, result, detail });
+  const words = ctx.keywords[topic.id] ?? [topic.title];
+  const noProposal = (rewrites: number, discarded: boolean, reason?: string): TopicResult => ({
+    position: { ...base, state: 'noProposal' },
+    summary: { topic: topic.id, state: 'noProposal', rewrites, ...(reason ? { reason } : {}) },
+    extracted: discarded,
+    discarded,
+    revisions: [],
   });
 
-  const extraccion = await ctx.ia.completar({
-    tarea: 'extraer-postura',
-    instrucciones: INSTRUCCIONES_EXTRAER,
-    entrada: { tema: temaIA, paginas: ctx.paginas.map((texto, i) => ({ pagina: i + 1, texto })) },
-    esquema: RespuestaExtraer,
+  const extraction = await ctx.ai.complete({
+    task: 'extract-position',
+    instructions: EXTRACT_INSTRUCTIONS,
+    input: { topic: aiTopic, pages: ctx.pages.map((text, i) => ({ page: i + 1, text })) },
+    schema: ExtractResponse,
   });
 
   // V12: "proposes nothing" only after a second pass confirms it; if it finds something, extract it.
-  let citasIA = extraccion.propone ? extraccion.citas : [];
-  let ausenciaRevisada = false;
-  if (citasIA.length === 0) {
-    const v12 = await confirmarAusencia(ctx.ia, temaIA, ctx.paginas, palabras);
-    if (v12.confirmada) {
-      anotar('V12', 'pasa', v12.detalle);
-      return noPropone(0, false);
+  let aiQuotes = extraction.proposes ? extraction.quotes : [];
+  let absenceReviewed = false;
+  if (aiQuotes.length === 0) {
+    const v12 = await confirmAbsence(ctx.ai, aiTopic, ctx.pages, words);
+    if (v12.confirmed) {
+      annotate('V12', 'pass', v12.detail);
+      return noProposal(0, false);
     }
-    anotar('V12', 'extraer', `la segunda pasada encontró ${v12.citas.length} cita(s) que la primera no vio`);
-    citasIA = v12.citas;
-    ausenciaRevisada = true;
+    annotate('V12', 'extract', `la segunda pasada encontró ${v12.quotes.length} cita(s) que la primera no vio`);
+    aiQuotes = v12.quotes;
+    absenceReviewed = true;
   }
 
   /**
-   * A discarded postura shows as "proposes nothing" only if V12 confirms the absence;
+   * A discarded position shows as "proposes nothing" only if V12 confirms the absence;
    * otherwise as "No pudimos verificar su propuesta". Quotes already found in the PDF prove
    * there is a proposal, so V12 only runs when they were not verified.
    */
-  const descartar = async (fallos: Fallo[], reescrituras: number, citasVerificadas: boolean): Promise<ResultadoTema> => {
-    for (const f of fallos) anotar(f.barrera, 'descartar', f.detalle);
-    const motivo = fallos.map((f) => `${f.barrera}: ${f.detalle}`).join('; ');
-    if (!citasVerificadas && !ausenciaRevisada) {
-      const v12 = await confirmarAusencia(ctx.ia, temaIA, ctx.paginas, palabras);
-      if (v12.confirmada) {
-        anotar('V12', 'pasa', `${v12.detalle}; se muestra como "no propone nada"`);
-        return noPropone(reescrituras, true, motivo);
+  const discard = async (failures: Failure[], rewrites: number, verifiedQuotes: boolean): Promise<TopicResult> => {
+    for (const f of failures) annotate(f.check, 'discard', f.detail);
+    const reason = failures.map((f) => `${f.check}: ${f.detail}`).join('; ');
+    if (!verifiedQuotes && !absenceReviewed) {
+      const v12 = await confirmAbsence(ctx.ai, aiTopic, ctx.pages, words);
+      if (v12.confirmed) {
+        annotate('V12', 'pass', `${v12.detail}; se muestra como "no propone nada"`);
+        return noProposal(rewrites, true, reason);
       }
-      anotar('V12', 'aviso', 'la segunda pasada encontró una propuesta: se muestra como "No pudimos verificar su propuesta"');
+      annotate('V12', 'warning', 'la segunda pasada encontró una propuesta: se muestra como "No pudimos verificar su propuesta"');
     }
     return {
-      postura: { ...base, estado: 'sin_verificar' },
-      resumen: { tema: tema.id, estado: 'sin_verificar', reescrituras, motivo },
-      extraida: true,
-      descartada: true,
-      revisiones: [],
+      position: { ...base, state: 'unverified' },
+      summary: { topic: topic.id, state: 'unverified', rewrites, reason },
+      extracted: true,
+      discarded: true,
+      revisions: [],
     };
   };
 
   // V1 + V2: every quote exists in the PDF (page fixed if needed).
-  const citas: Cita[] = [];
-  const correcciones: string[] = [];
-  for (const cita of citasIA) {
-    const r = verificarCita(cita, ctx.paginas);
-    if (!r.ok) return descartar([{ barrera: 'V1', detalle: r.motivo }], 0, false);
-    if (r.paginaCorregida) correcciones.push(`página ${cita.pagina} → ${r.cita.pagina}`);
-    citas.push(r.cita);
+  const quotes: Quote[] = [];
+  const corrections: string[] = [];
+  for (const quote of aiQuotes) {
+    const r = verifyQuote(quote, ctx.pages);
+    if (!r.ok) return discard([{ check: 'V1', detail: r.reason }], 0, false);
+    if (r.fixedPage) corrections.push(`página ${quote.page} → ${r.quote.page}`);
+    quotes.push(r.quote);
   }
-  anotar('V1', 'pasa', `${citas.length} cita(s) localizadas`);
-  if (correcciones.length) for (const c of correcciones) anotar('V2', 'corregir', c);
-  else anotar('V2', 'pasa', 'páginas declaradas correctas');
+  annotate('V1', 'pass', `${quotes.length} cita(s) localizadas`);
+  if (corrections.length) for (const c of corrections) annotate('V2', 'fix', c);
+  else annotate('V2', 'pass', 'páginas declaradas correctas');
 
-  const neutral = await neutralizar(ctx, temaIA, citas, anotar);
-  if ('fallos' in neutral) return descartar(neutral.fallos, neutral.reescrituras, true);
-  const v11 = await rebajarReconocibilidad(ctx, temaIA, citas, neutral.texto, anotar);
+  const neutral = await neutralize(ctx, aiTopic, quotes, annotate);
+  if ('failures' in neutral) return discard(neutral.failures, neutral.rewrites, true);
+  const v11 = await lowerRecognizability(ctx, aiTopic, quotes, neutral.text, annotate);
 
   // V13 + V8: double-blind feasibility note on the final neutral text.
-  const viabilidad = await evaluarViabilidad({
-    ia: ctx.ia, tema: temaIA, texto: v11.texto, citas, terminos: ctx.terminos, comprobarUrl: ctx.comprobarUrl, anotar,
+  const feasibility = await assessFeasibility({
+    ai: ctx.ai, topic: aiTopic, text: v11.text, quotes, terms: ctx.terms, checkUrl: ctx.checkUrl, annotate,
   });
   return {
-    postura: { ...base, estado: 'propone', texto: v11.texto, citas, viabilidad },
-    resumen: { tema: tema.id, estado: 'propone', reescrituras: neutral.reescrituras + v11.reescrituras },
-    extraida: true,
-    descartada: false,
-    revisiones: [...v11.revisiones, ...revisarLongitudes(ctx, tema.id, v11.texto)],
+    position: { ...base, state: 'proposes', text: v11.text, quotes, feasibility },
+    summary: { topic: topic.id, state: 'proposes', rewrites: neutral.rewrites + v11.rewrites },
+    extracted: true,
+    discarded: false,
+    revisions: [...v11.revisions, ...reviewLengths(ctx, topic.id, v11.text)],
   };
 }
 
 /** Word counts of the other parties' published proposals on a topic (V5 median). */
-const longitudesDe = (ctx: Contexto, temaId: string) =>
-  ctx.otras.filter((p) => p.tema === temaId).map((p) => ({ partido: p.partido, palabras: contarPalabras(p.texto) }));
+const lengthsOf = (ctx: Context, topicId: string) =>
+  ctx.others.filter((p) => p.topic === topicId).map((p) => ({ party: p.party, words: countWords(p.text) }));
 
 /**
  * Neutralise, then V3–V6 (deterministic) and V10 (independent fidelity check, only on a text that
- * passed V3–V6). Any failure is fed back to the next rewrite, up to MAX_REINTENTOS times.
- * `pista`: what gave the party away (V11).
+ * passed V3–V6). Any failure is fed back to the next rewrite, up to MAX_RETRIES times.
+ * `hint`: what gave the party away (V11).
  */
-async function neutralizar(
-  ctx: Contexto,
-  tema: TemaIA,
-  citas: Cita[],
-  anotar: Anotar,
-  pista?: string[],
-): Promise<({ texto: TextoNeutral } | { fallos: Fallo[] }) & { reescrituras: number }> {
-  const longitudesTema = longitudesDe(ctx, tema.id).map((l) => l.palabras);
-  let evitar: string[] = [];
-  let corregir: string[] = [];
-  for (let intento = 0; ; intento++) {
-    const propuesta = limpiarTexto(
-      await ctx.ia.completar({
-        tarea: 'neutralizar',
-        instrucciones: INSTRUCCIONES_NEUTRALIZAR,
-        entrada: {
-          tema,
-          citas,
-          ...(evitar.length ? { evitar } : {}),
-          ...(corregir.length ? { corregir } : {}),
-          ...(pista?.length ? { pista } : {}),
+async function neutralize(
+  ctx: Context,
+  topic: AITopic,
+  quotes: Quote[],
+  annotate: Annotate,
+  hint?: string[],
+): Promise<({ text: NeutralText } | { failures: Failure[] }) & { rewrites: number }> {
+  const topicLengths = lengthsOf(ctx, topic.id).map((l) => l.words);
+  let avoid: string[] = [];
+  let fix: string[] = [];
+  for (let attempt = 0; ; attempt++) {
+    const proposal = cleanText(
+      await ctx.ai.complete({
+        task: 'neutralize',
+        instructions: NEUTRALIZE_INSTRUCTIONS,
+        input: {
+          topic,
+          quotes,
+          ...(avoid.length ? { avoid } : {}),
+          ...(fix.length ? { fix } : {}),
+          ...(hint?.length ? { hint } : {}),
         },
-        esquema: RespuestaNeutralizar,
+        schema: NeutralizeResponse,
       }),
     );
-    const fallos: Fallo[] = revisarTexto(propuesta, { citas, terminos: ctx.terminos, longitudesTema });
-    if (fallos.length === 0) {
-      const fidelidad = await verificarFidelidad(ctx.ia, tema, citas, propuesta);
-      if (fidelidad.fiel) {
-        const pasa: Record<BarreraTexto | 'V10', string> = {
+    const failures: Failure[] = reviewText(proposal, { quotes, terms: ctx.terms, topicLengths });
+    if (failures.length === 0) {
+      const fidelity = await verifyFidelity(ctx.ai, topic, quotes, proposal);
+      if (fidelity.faithful) {
+        const pass: Record<TextCheck | 'V10', string> = {
           V3: 'sin marcas identificativas',
           V4: 'cifras trazables a las citas',
           V5: 'longitud dentro del rango',
           V6: 'plantilla completa',
           V10: 'fiel a la cita según un verificador independiente',
         };
-        for (const [barrera, detalle] of Object.entries(pasa)) anotar(barrera as BarreraTexto | 'V10', 'pasa', detalle);
-        return { texto: propuesta, reescrituras: intento };
+        for (const [check, detail] of Object.entries(pass)) annotate(check as TextCheck | 'V10', 'pass', detail);
+        return { text: proposal, rewrites: attempt };
       }
-      fallos.push({ barrera: 'V10', detalle: `no es fiel a la cita: ${fidelidad.motivo}`, corregir: fidelidad.motivo });
+      failures.push({ check: 'V10', detail: `no es fiel a la cita: ${fidelity.reason}`, fix: fidelity.reason });
     }
-    if (intento === MAX_REINTENTOS)
+    if (attempt === MAX_RETRIES)
       return {
-        fallos: fallos.map((f) => ({ barrera: f.barrera, detalle: `${f.detalle} (tras ${MAX_REINTENTOS} reintentos)` })),
-        reescrituras: intento,
+        failures: failures.map((f) => ({ check: f.check, detail: `${f.detail} (tras ${MAX_RETRIES} reintentos)` })),
+        rewrites: attempt,
       };
-    for (const f of fallos) anotar(f.barrera, 'reescribir', f.detalle);
-    evitar = [...new Set([...evitar, ...fallos.flatMap((f) => f.evitar ?? [])])];
-    corregir = fallos.flatMap((f) => (f.corregir ? [f.corregir] : []));
+    for (const f of failures) annotate(f.check, 'rewrite', f.detail);
+    avoid = [...new Set([...avoid, ...failures.flatMap((f) => f.avoid ?? [])])];
+    fix = failures.flatMap((f) => (f.fix ? [f.fix] : []));
   }
 }
 
 /**
  * V11: the guesser sees this text with every other published proposal of the topic. A recognisable
- * text is rewritten with the clue (up to MAX_REINTENTOS); if it persists it is published with an
+ * text is rewritten with the clue (up to MAX_RETRIES); if it persists it is published with an
  * internal warning. Other parties found recognisable come back as revisions, never rewritten here.
  */
-async function rebajarReconocibilidad(
-  ctx: Contexto,
-  tema: TemaIA,
-  citas: Cita[],
-  texto: TextoNeutral,
-  anotar: Anotar,
-): Promise<{ texto: TextoNeutral; reescrituras: number; revisiones: Revision[] }> {
-  if (ctx.candidatos.length < 2) {
-    anotar('V11', 'pasa', 'no aplica: no hay otros partidos entre los que elegir');
-    return { texto, reescrituras: 0, revisiones: [] };
+async function lowerRecognizability(
+  ctx: Context,
+  topic: AITopic,
+  quotes: Quote[],
+  text: NeutralText,
+  annotate: Annotate,
+): Promise<{ text: NeutralText; rewrites: number; revisions: Revision[] }> {
+  if (ctx.candidates.length < 2) {
+    annotate('V11', 'pass', 'no aplica: no hay otros partidos entre los que elegir');
+    return { text, rewrites: 0, revisions: [] };
   }
-  const otras = ctx.otras.filter((p) => p.tema === tema.id).map((p) => ({ partido: p.partido, texto: p.texto }));
-  let reescrituras = 0;
-  for (let ronda = 0; ; ronda++) {
-    const veredictos = await comprobarReconocibilidad(ctx.ia, {
-      tema,
-      posturas: [{ partido: ctx.partido.id, texto }, ...otras],
-      partidos: ctx.candidatos,
-      semilla: `${ctx.hash}:${ronda}`,
+  const others = ctx.others.filter((p) => p.topic === topic.id).map((p) => ({ party: p.party, text: p.text }));
+  let rewrites = 0;
+  for (let round = 0; ; round++) {
+    const verdicts = await checkRecognizability(ctx.ai, {
+      topic,
+      positions: [{ party: ctx.party.id, text }, ...others],
+      parties: ctx.candidates,
+      seed: `${ctx.hash}:${round}`,
     });
-    const terminar = () => ({ texto, reescrituras, revisiones: revisionesV11(ctx, tema.id, veredictos) });
-    const propio = veredictos.get(ctx.partido.id)!;
-    if (!propio.reconocible) {
-      anotar('V11', 'pasa', propio.detalle);
-      return terminar();
+    const finish = () => ({ text, rewrites, revisions: v11Revisions(ctx, topic.id, verdicts) });
+    const own = verdicts.get(ctx.party.id)!;
+    if (!own.recognizable) {
+      annotate('V11', 'pass', own.detail);
+      return finish();
     }
-    const pistas = propio.pistas.join(' / ');
-    if (ronda === MAX_REINTENTOS) {
-      anotar('V11', 'aviso', `sigue siendo reconocible tras ${MAX_REINTENTOS} reescrituras (${propio.detalle}; pista: ${pistas}); se publica`);
-      return terminar();
+    const hints = own.hints.join(' / ');
+    if (round === MAX_RETRIES) {
+      annotate('V11', 'warning', `sigue siendo reconocible tras ${MAX_RETRIES} reescrituras (${own.detail}; pista: ${hints}); se publica`);
+      return finish();
     }
-    anotar('V11', 'reescribir', `${propio.detalle}; pista: ${pistas}`);
-    reescrituras++;
-    const nuevo = await neutralizar(ctx, tema, citas, anotar, propio.pistas);
-    reescrituras += nuevo.reescrituras;
-    if ('fallos' in nuevo) {
-      const barreras = nuevo.fallos.map((f) => f.barrera).join(', ');
-      anotar('V11', 'aviso', `la reescritura no pasó ${barreras}; se publica la versión anterior, reconocible (pista: ${pistas})`);
-      return terminar();
+    annotate('V11', 'rewrite', `${own.detail}; pista: ${hints}`);
+    rewrites++;
+    const newOne = await neutralize(ctx, topic, quotes, annotate, own.hints);
+    rewrites += newOne.rewrites;
+    if ('failures' in newOne) {
+      const checks = newOne.failures.map((f) => f.check).join(', ');
+      annotate('V11', 'warning', `la reescritura no pasó ${checks}; se publica la versión anterior, reconocible (pista: ${hints})`);
+      return finish();
     }
-    texto = nuevo.texto;
+    text = newOne.text;
   }
 }
 
-const alPublicarse = (ctx: Contexto) => `al publicarse el programa de ${ctx.partido.nombre}`;
-const seReescribira = 'se reescribirá cuando se vuelva a procesar su programa';
+const onPublishing = (ctx: Context) => `al publicarse el programa de ${ctx.party.name}`;
+const willBeRewritten = 'se reescribirá cuando se vuelva a procesar su programa';
 
-function revisionesV11(ctx: Contexto, tema: string, veredictos: Map<string, ResultadoReconocibilidad>): Revision[] {
-  return [...veredictos].flatMap(([partido, v]) =>
-    partido !== ctx.partido.id && v.reconocible
-      ? [{ partido, tema, barrera: 'V11' as const, detalle: `${alPublicarse(ctx)}, el adivinador la reconoce (${v.detalle}; pista: ${v.pistas.join(' / ')}); ${seReescribira}` }]
+function v11Revisions(ctx: Context, topic: string, verdicts: Map<string, RecognizabilityResult>): Revision[] {
+  return [...verdicts].flatMap(([party, v]) =>
+    party !== ctx.party.id && v.recognizable
+      ? [{ party, topic, check: 'V11' as const, detail: `${onPublishing(ctx)}, el adivinador la reconoce (${v.detail}; pista: ${v.hints.join(' / ')}); ${willBeRewritten}` }]
       : [],
   );
 }
 
 /** V5 re-check of the published proposals against the topic median with this text in it. */
-function revisarLongitudes(ctx: Contexto, tema: string, texto: TextoNeutral): Revision[] {
-  const otras = longitudesDe(ctx, tema);
-  if (otras.length === 0) return [];
-  const m = mediana([...otras.map((o) => o.palabras), contarPalabras(texto)])!;
-  return otras
-    .filter((o) => Math.abs(o.palabras - m) > m * TOLERANCIA_MEDIANA)
+function reviewLengths(ctx: Context, topic: string, text: NeutralText): Revision[] {
+  const others = lengthsOf(ctx, topic);
+  if (others.length === 0) return [];
+  const m = median([...others.map((o) => o.words), countWords(text)])!;
+  return others
+    .filter((o) => Math.abs(o.words - m) > m * MEDIAN_TOLERANCE)
     .map((o) => ({
-      partido: o.partido,
-      tema,
-      barrera: 'V5' as const,
-      detalle: `${alPublicarse(ctx)}, tiene ${o.palabras} palabras, fuera del ±${TOLERANCIA_MEDIANA * 100} % de la mediana del tema (${m}); ${seReescribira}`,
+      party: o.party,
+      topic,
+      check: 'V5' as const,
+      detail: `${onPublishing(ctx)}, tiene ${o.words} palabras, fuera del ±${MEDIAN_TOLERANCE * 100} % de la mediana del tema (${m}); ${willBeRewritten}`,
     }));
 }

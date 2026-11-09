@@ -1,0 +1,68 @@
+---
+// Verification report of one programme (story 45): every check the programme and its positions went through.
+import InfoPage from '../../components/InfoPage.astro';
+import { dataset, dayDate } from '../../transparency/data';
+import { reportSummary, repoLink } from '../../transparency';
+import { CHECKS } from '../../registry/checks';
+
+export function getStaticPaths() {
+  return dataset.reports.map((report) => ({ params: { party: report.party }, props: { report } }));
+}
+const r = reportSummary(Astro.props.report, dataset.topics, dataset.questions);
+const i = r.report;
+const party = dataset.parties.find((p) => p.id === i.party);
+const manifesto = party?.manifesto.state === 'published' ? party.manifesto : null;
+const name = party?.name ?? i.party;
+const STATE = { proposes: 'Publicada', noProposal: 'No propone nada', unverified: 'Descartada: no pudimos verificarla' } as const;
+const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite: 'reescribir', discard: 'descartada', block: 'bloqueado', extract: 'encontrada', warning: 'aviso' };
+---
+<InfoPage title={`Informe de verificación: ${name}`} description={`Qué comprobaciones pasó el programa de ${name} y qué se descartó.`} back={{ href: '/partidos/', text: '← Partidos y programas' }}>
+  <h1>Informe de verificación: {name}</h1>
+  <p>
+    Todo lo que hizo el proceso automático con este programa: qué propuestas se publicaron, cuáles se
+    reescribieron y qué se descartó y por qué. <a href="/metodologia/#barreras">Qué es cada comprobación</a>.
+  </p>
+  <ul>
+    {manifesto && <li>Documento: <a href={manifesto.url} target="_blank" rel="noopener">{manifesto.title} (PDF ↗)</a></li>}
+    {i.url && <li>Descargado de: <code>{i.url}</code>{i.date && ` el ${dayDate(i.date)}`}</li>}
+    <li>Huella del PDF (SHA-256): <code class="footprint">{i.hashPdf}</code></li>
+    <li>Versión de las instrucciones: <code>{i.promptVersion}</code> (<a href={repoLink('src/pipeline/prompts.ts')}>ver</a>)</li>
+    <li>Propuestas extraídas: {i.extracted} · publicadas: {r.published} · descartadas: {i.discarded}</li>
+    <li>Resultado: {i.publishable ? 'publicable' : `no publicable${i.reason ? ` (${i.reason})` : ''}`}</li>
+  </ul>
+
+  {r.manifesto.length > 0 && (
+    <>
+      <h2>Programa completo</h2>
+      <ul class="entries">
+        {r.manifesto.map((e) => <li><strong>{e.check} · {e.name}</strong>: {RESULT[e.result]}. <span class="grey">{e.detail}</span></li>)}
+      </ul>
+    </>
+  )}
+
+  <h2>Por tema</h2>
+  {r.topics.map((t) => (
+    <details class="report-topic">
+      <summary>{t.topic.title} · {STATE[t.state]}{t.rewrites > 0 && ` · ${t.rewrites} ${t.rewrites === 1 ? 'reescritura' : 'reescrituras'}`}</summary>
+      {t.reason && <p><strong>Motivo:</strong> {t.reason}</p>}
+      <ul class="entries">
+        {t.entries.map((e) => <li title={CHECKS[e.check].description}><strong>{e.check} · {e.name}</strong>: {RESULT[e.result]}. <span class="grey">{e.detail}</span></li>)}
+      </ul>
+    </details>
+  ))}
+  {r.questions.length > 0 && (
+    <>
+      <h2>Respuestas a las preguntas sugeridas</h2>
+      <p>Lo que se comprobó en cada respuesta de la pestaña Preguntar. Estas respuestas no cuentan para publicar o bloquear el programa.</p>
+      {r.questions.map((p) => (
+        <details class="report-topic">
+          <summary>{p.question.text}</summary>
+          <ul class="entries">
+            {p.entries.map((e) => <li title={CHECKS[e.check].description}><strong>{e.check} · {e.name}</strong>: {RESULT[e.result]}. <span class="grey">{e.detail}</span></li>)}
+          </ul>
+        </details>
+      ))}
+    </>
+  )}
+  <p class="grey">El informe completo en JSON está en el <a href={repoLink('data/dataset.json')}>dataset publicado</a>.</p>
+</InfoPage>

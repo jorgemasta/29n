@@ -7,4 +7,4 @@ dist/
 .DS_Store
 .wrangler/
 .dev.vars
-dist-e2e-fallo.png
+dist-e2e-failure.png

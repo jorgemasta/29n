@@ -1,33 +1,33 @@
-// Versioned prompts. Bump VERSION_PROMPT on any change: it is recorded in every postura and
+// Versioned prompts. Bump VERSION_PROMPT on any change: it is recorded in every position and
 // is part of the AI cache key, so changed prompts are never answered from stale cache.
 import { z } from 'zod';
-import { Cita } from '../dataset/esquema';
+import { Quote } from '../dataset/schema';
 
 export const VERSION_PROMPT = 'v2';
 
-export const INSTRUCCIONES_EXTRAER = `Eres un analista que lee programas electorales.
+export const EXTRACT_INSTRUCTIONS = `Eres un analista que lee programas electorales.
 Recibes el texto de un programa, página a página, y un tema.
 Devuelve si el programa propone algo concreto sobre ese tema y, en ese caso, entre 1 y 3 citas
 LITERALES (copiadas carácter a carácter, entre 40 y 600 caracteres cada una) con su número de página.
-No parafrasees, no unas frases de sitios distintos, no inventes. Si no hay propuesta, propone=false y citas=[].`;
+No parafrasees, no unas frases de sitios distintos, no inventes. Si no hay propuesta, proposes=false y quotes=[].`;
 
-export const RespuestaExtraer = z.object({
-  propone: z.boolean(),
-  citas: z.array(z.object({ texto: z.string(), pagina: z.number().int().min(1) })),
+export const ExtractResponse = z.object({
+  proposes: z.boolean(),
+  quotes: z.array(z.object({ text: z.string(), page: z.number().int().min(1) })),
 });
 
-export const INSTRUCCIONES_NEUTRALIZAR = `Reescribe una propuesta electoral en un estilo neutro, común a todos los partidos.
+export const NEUTRALIZE_INSTRUCTIONS = `Reescribe una propuesta electoral en un estilo neutro, común a todos los partidos.
 Recibes un tema y las citas literales de la propuesta. Devuelve:
-- que: qué propone, en una frase de 12 palabras como máximo, sin sujeto ("Limitar…", "Crear…").
-- como: con qué instrumento o cómo lo haría, en 30 palabras como máximo.
-- cifra: la cifra, importe o plazo principal tal y como aparece en las citas, o null si no hay.
-Entre "que" y "como", de 25 a 70 palabras en total. Sin adjetivos valorativos, sin eslóganes,
+- what: qué propone, en una frase de 12 palabras como máximo, sin sujeto ("Limitar…", "Crear…").
+- how: con qué instrumento o cómo lo haría, en 30 palabras como máximo.
+- figure: la cifra, importe o plazo principal tal y como aparece en las citas, o null si no hay.
+Entre "what" y "how", de 25 a 70 palabras en total. Sin adjetivos valorativos, sin eslóganes,
 sin nombres de partidos, siglas, líderes ni palabras de marca de NINGÚN partido.
 No añadas nada que no esté en las citas, tampoco cifras: toda cifra debe aparecer en alguna cita.
-Si recibes "evitar", esos términos no pueden aparecer. Si recibes "corregir", corrige cada punto.
-Si recibes "pista", es lo que delató al partido en tu versión anterior: reescribe sin ese rasgo,
+Si recibes "avoid", esos términos no pueden aparecer. Si recibes "fix", corrige cada punto.
+Si recibes "hint", es lo que delató al partido en tu versión anterior: reescribe sin ese rasgo,
 sin perder fidelidad a las citas.`;
 
-export const EntradaNeutralizar = z.object({ citas: z.array(Cita) });
+export const NeutralizeInput = z.object({ quotes: z.array(Quote) });
 // Loose on purpose: an empty field is caught by V6 (rewrite), not rejected as a malformed answer.
-export const RespuestaNeutralizar = z.object({ que: z.string(), como: z.string(), cifra: z.string().nullable() });
+export const NeutralizeResponse = z.object({ what: z.string(), how: z.string(), figure: z.string().nullable() });

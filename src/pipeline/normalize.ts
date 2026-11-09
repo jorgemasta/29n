@@ -1,0 +1,28 @@
+// Text normalisation shared by the deterministic checks.
+
+/**
+ * V1 normalisation: Unicode NFKC (also unfolds ligatures like "ﬁ"), unified quotes and dashes,
+ * hyphens between letters removed (joins "alqui-\nler" and tolerates "socio-económico" vs
+ * "socioeconómico"), whitespace collapsed. Case and accents are kept: the quote must be literal.
+ */
+export function normalizeQuote(text: string): string {
+  return text
+    .normalize('NFKC')
+    .replace(/[“”„‟«»″"]/g, '"')
+    .replace(/[‘’‚‛′`´']/g, "'")
+    .replace(/[­]/g, '') // soft hyphen
+    .replace(/[‐‑‒–—―]/g, '-')
+    .replace(/(\p{L})-\s*(\p{L})/gu, '$1$2')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** V3 normalisation: lowercase, no accents, whitespace collapsed. */
+export function normalizeTerm(text: string): string {
+  return text
+    .normalize('NFKD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}

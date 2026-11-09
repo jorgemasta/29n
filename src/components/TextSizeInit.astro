@@ -1,0 +1,8 @@
+---
+// Applies the saved 'Aa' preference (src/web/text-size.ts, key 29n:text-size) before the first paint.
+---
+<script is:inline>
+  try {
+    if (JSON.parse(localStorage.getItem('29n:text-size') || 'null')?.large === true) document.documentElement.dataset.textSize = 'large';
+  } catch {}
+</script>

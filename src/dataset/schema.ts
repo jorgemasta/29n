@@ -1,0 +1,248 @@
+// Dataset schema: the contract between the data pipeline, the game engine and the web.
+// Single source of truth: zod schemas give both the TS types and the published JSON Schema
+// (`npm run schema` writes data/dataset.schema.json).
+import { z } from 'zod';
+
+const id = z.string().regex(/^[a-z0-9-]+$/, 'id en minúsculas, cifras y guiones');
+
+export const Scope = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('national') }),
+  /** Regional party: only shown to voters in these provinces (INE province codes, e.g. "08"). */
+  z.object({ type: z.literal('provinces'), provinces: z.array(z.string()).min(1) }),
+]);
+
+/**
+ * What kind of document a party's positions come from. Only the official 29N programme counts in
+ * public; the others are provisional sources allowed only in the private prototype.
+ */
+export const SourceType = z.enum(['manifesto-29n', 'manifesto-2023', 'party-document', 'statements']);
+export const PUBLIC_SOURCES: readonly SourceType[] = ['manifesto-29n'];
+/** Sources usable in public ('public') or also provisional ones ('private', private prototype). */
+export const Mode = z.enum(['public', 'private']);
+
+export const Manifesto = z.discriminatedUnion('state', [
+  z.object({
+    state: z.literal('published'),
+    /** Source type of this document; absent means the official 29N programme. */
+    source: SourceType.optional(),
+    url: z.url(),
+    title: z.string(),
+    hashPdf: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+    date: z.string().optional(),
+  }),
+  z.object({ state: z.literal('pending') }),
+]);
+
+export const Party = z.object({
+  id,
+  name: z.string().min(1),
+  acronym: z.string().min(1),
+  scope: Scope,
+  manifesto: Manifesto,
+  /** Placeholder data used only to fill the private prototype; never shown as real. */
+  test: z.boolean().optional(),
+});
+
+export const Topic = z.object({
+  id,
+  title: z.string().min(1),
+  /** Neutral question shown above the cards. */
+  question: z.string().min(1),
+  /** Plain-language explanation, only for topics with jargon. */
+  explanation: z.string().optional(),
+  scope: z.enum(['national', 'canarias']),
+  /** Fixed, published order: vivienda first. */
+  order: z.number().int(),
+});
+
+export const Quote = z.object({
+  text: z.string().min(40).max(600),
+  page: z.number().int().min(1),
+});
+
+/** Neutral rewrite with the common template: what / how / figure (optional). */
+export const NeutralText = z.object({
+  what: z.string().min(1),
+  how: z.string().min(1),
+  figure: z.string().min(1).nullable(),
+});
+
+export const Versions = z.object({ prompt: z.string() });
+
+// Feasibility note (V13): two blind evaluations with the public rubric (src/registry/rubric.ts).
+export const FeasibilityLevel = z.enum(['viable', 'viableWithCaveats', 'difficult', 'veryDifficult']);
+/** What one evaluation can say: a level, or that the proposal is too vague to assess. */
+export const AssessmentLevel = z.enum([...FeasibilityLevel.options, 'notConcrete']);
+/** What is published: agreed level, both "sin concreción", or disagreement. */
+export const FeasibilityResult = z.enum([...AssessmentLevel.options, 'noConsensus']);
+
+/** Institutional source (V8: allowed domain, answered HTTP 200). */
+export const Source = z.object({ title: z.string().min(1), url: z.url() });
+
+/** One reason per rubric criterion. */
+export const RubricReasons = z.object({
+  competence: z.string().min(1),
+  cost: z.string().min(1),
+  legal: z.string().min(1),
+  precedents: z.string().min(1),
+  majority: z.string().min(1),
+});
+
+export const Assessment = z.object({
+  level: AssessmentLevel,
+  reasons: RubricReasons,
+  /** The "por qué": 2–3 sentences. */
+  why: z.string().min(1),
+  sources: z.array(Source),
+});
+
+export const FeasibilityNote = z.object({
+  result: FeasibilityResult,
+  /** Published "por qué" and sources; absent when there is no consensus (both arguments shown). */
+  why: z.string().min(1).nullable(),
+  sources: z.array(Source),
+  assessments: z.tuple([Assessment, Assessment]),
+  versions: z.object({ prompt: z.string(), rubric: z.string() }),
+});
+
+const basePosition = { party: id, topic: id, versions: Versions };
+
+export const Position = z.discriminatedUnion('state', [
+  z.object({ ...basePosition, state: z.literal('proposes'), text: NeutralText, quotes: z.array(Quote).min(1), feasibility: FeasibilityNote.optional() }),
+  z.object({ ...basePosition, state: z.literal('noProposal') }),
+  /** Extracted but discarded by a check: "No pudimos verificar su propuesta". */
+  z.object({ ...basePosition, state: z.literal('unverified') }),
+]);
+
+/**
+ * Suggested question of the "Preguntar" tab. `keywords` are the public search terms used to
+ * find the candidate pages of each programme ("cómo lo buscamos").
+ */
+export const Question = z.object({
+  id,
+  text: z.string().min(1),
+  keywords: z.array(z.string().min(1)).min(1),
+  /** Fixed order of the suggestion buttons. */
+  order: z.number().int(),
+});
+
+const baseAnswer = { party: id, question: id, versions: Versions };
+
+/** One party's answer to one question (precomputed by the pipeline, or live in #15). */
+export const QuestionAnswer = z.discriminatedUnion('state', [
+  /** Same template as a position (what / how / figure) and same checks: V1, V3–V6, V10. */
+  z.object({ ...baseAnswer, state: z.literal('answers'), text: NeutralText, quotes: z.array(Quote).min(1) }),
+  /** "El programa de X no lo menciona". */
+  z.object({ ...baseAnswer, state: z.literal('notMentioned') }),
+  /** It talks about it, but no answer passed the checks: "No pudimos verificar su respuesta". */
+  z.object({ ...baseAnswer, state: z.literal('unverified') }),
+]);
+
+export const Check = z.enum(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13']);
+
+export const ReportEntry = z.object({
+  /** Absent for programme-level checks (V7) and for answers to questions. */
+  topic: id.optional(),
+  /** Suggested question this entry is about (answers, not positions). */
+  question: id.optional(),
+  check: Check,
+  /** `extract`: V12 found a proposal the first pass missed. `warning`: V11 internal warning, published anyway. */
+  result: z.enum(['pass', 'fix', 'rewrite', 'discard', 'block', 'extract', 'warning']),
+  detail: z.string(),
+  /**
+   * Party whose publication triggered this entry: a re-check (V5, V11) of this party's published
+   * position against the topic with the new one in it. Replaced each time that party is published.
+   */
+  origin: id.optional(),
+});
+
+/** Outcome of one position in the report: final state, rewrites asked for, why it was discarded. */
+export const PositionSummary = z.object({
+  topic: id,
+  state: z.enum(['proposes', 'noProposal', 'unverified']),
+  rewrites: z.number().int().min(0),
+  reason: z.string().optional(),
+});
+
+/** Public verification report, one per programme. */
+export const Report = z.object({
+  party: id,
+  hashPdf: z.string().regex(/^[0-9a-f]{64}$/),
+  /** Where the PDF was downloaded from (V7) and when. */
+  url: z.string().optional(),
+  date: z.string().optional(),
+  promptVersion: z.string(),
+  extracted: z.number().int().min(0),
+  discarded: z.number().int().min(0),
+  publishable: z.boolean(),
+  reason: z.string().optional(),
+  positions: z.array(PositionSummary),
+  entries: z.array(ReportEntry),
+});
+
+export const Dataset = z
+  .object({
+    version: z.literal(1),
+    generated: z.string(),
+    /** "real": produced by the real AI on official PDFs. Anything else must be shown as such. */
+    origin: z.enum(['real', 'simulated', 'test']),
+    note: z.string().optional(),
+    parties: z.array(Party),
+    topics: z.array(Topic).min(1),
+    positions: z.array(Position),
+    reports: z.array(Report),
+    /** Suggested questions of the "Preguntar" tab and their precomputed answers. */
+    questions: z.array(Question).optional(),
+    answers: z.array(QuestionAnswer).optional(),
+  })
+  .superRefine((d, ctx) => {
+    const parties = new Set(d.parties.map((p) => p.id));
+    const topics = new Set(d.topics.map((t) => t.id));
+    const seen = new Set<string>();
+    d.positions.forEach((p, i) => {
+      const key = `${p.party}/${p.topic}`;
+      if (!parties.has(p.party)) ctx.addIssue({ code: 'custom', path: ['positions', i, 'party'], message: `partido desconocido: ${p.party}` });
+      if (!topics.has(p.topic)) ctx.addIssue({ code: 'custom', path: ['positions', i, 'topic'], message: `tema desconocido: ${p.topic}` });
+      if (seen.has(key)) ctx.addIssue({ code: 'custom', path: ['positions', i], message: `más de un estado para ${key}` });
+      seen.add(key);
+    });
+    // Every published party has exactly one state per topic.
+    for (const party of d.parties) {
+      if (party.manifesto.state !== 'published') continue;
+      for (const topic of d.topics) {
+        if (!seen.has(`${party.id}/${topic.id}`))
+          ctx.addIssue({ code: 'custom', path: ['positions'], message: `falta el estado de ${party.id}/${topic.id}` });
+      }
+    }
+    // Answers: known party and question, at most one per party × question. A missing answer is
+    // allowed (a party processed before a question was added): it is simply not shown.
+    const questions = new Set((d.questions ?? []).map((p) => p.id));
+    const answered = new Set<string>();
+    (d.answers ?? []).forEach((r, i) => {
+      const key = `${r.party}/${r.question}`;
+      if (!parties.has(r.party)) ctx.addIssue({ code: 'custom', path: ['answers', i, 'party'], message: `partido desconocido: ${r.party}` });
+      if (!questions.has(r.question)) ctx.addIssue({ code: 'custom', path: ['answers', i, 'question'], message: `pregunta desconocida: ${r.question}` });
+      if (answered.has(key)) ctx.addIssue({ code: 'custom', path: ['answers', i], message: `más de una respuesta para ${key}` });
+      answered.add(key);
+    });
+  });
+
+export type SourceType = z.infer<typeof SourceType>;
+export type Mode = z.infer<typeof Mode>;
+export type Scope = z.infer<typeof Scope>;
+export type Party = z.infer<typeof Party>;
+export type Topic = z.infer<typeof Topic>;
+export type Quote = z.infer<typeof Quote>;
+export type NeutralText = z.infer<typeof NeutralText>;
+export type Position = z.infer<typeof Position>;
+export type AssessmentLevel = z.infer<typeof AssessmentLevel>;
+export type FeasibilityResult = z.infer<typeof FeasibilityResult>;
+export type Source = z.infer<typeof Source>;
+export type Assessment = z.infer<typeof Assessment>;
+export type FeasibilityNote = z.infer<typeof FeasibilityNote>;
+export type Question = z.infer<typeof Question>;
+export type QuestionAnswer = z.infer<typeof QuestionAnswer>;
+export type ReportEntry = z.infer<typeof ReportEntry>;
+export type PositionSummary = z.infer<typeof PositionSummary>;
+export type Report = z.infer<typeof Report>;
+export type Dataset = z.infer<typeof Dataset>;

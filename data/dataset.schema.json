@@ -6,21 +6,21 @@
       "type": "number",
       "const": 1
     },
-    "generado": {
+    "generated": {
       "type": "string"
     },
-    "origen": {
+    "origin": {
       "type": "string",
       "enum": [
         "real",
-        "simulado",
-        "prueba"
+        "simulated",
+        "test"
       ]
     },
-    "nota": {
+    "note": {
       "type": "string"
     },
-    "partidos": {
+    "parties": {
       "type": "array",
       "items": {
         "type": "object",
@@ -29,37 +29,37 @@
             "type": "string",
             "pattern": "^[a-z0-9-]+$"
           },
-          "nombre": {
+          "name": {
             "type": "string",
             "minLength": 1
           },
-          "siglas": {
+          "acronym": {
             "type": "string",
             "minLength": 1
           },
-          "ambito": {
+          "scope": {
             "oneOf": [
               {
                 "type": "object",
                 "properties": {
-                  "tipo": {
+                  "type": {
                     "type": "string",
-                    "const": "estatal"
+                    "const": "national"
                   }
                 },
                 "required": [
-                  "tipo"
+                  "type"
                 ],
                 "additionalProperties": false
               },
               {
                 "type": "object",
                 "properties": {
-                  "tipo": {
+                  "type": {
                     "type": "string",
-                    "const": "provincias"
+                    "const": "provinces"
                   },
-                  "provincias": {
+                  "provinces": {
                     "minItems": 1,
                     "type": "array",
                     "items": {
@@ -68,83 +68,83 @@
                   }
                 },
                 "required": [
-                  "tipo",
-                  "provincias"
+                  "type",
+                  "provinces"
                 ],
                 "additionalProperties": false
               }
             ]
           },
-          "programa": {
+          "manifesto": {
             "oneOf": [
               {
                 "type": "object",
                 "properties": {
-                  "estado": {
+                  "state": {
                     "type": "string",
-                    "const": "publicado"
+                    "const": "published"
                   },
-                  "fuente": {
+                  "source": {
                     "type": "string",
                     "enum": [
-                      "programa-29n",
-                      "programa-2023",
-                      "documento-partido",
-                      "declaraciones"
+                      "manifesto-29n",
+                      "manifesto-2023",
+                      "party-document",
+                      "statements"
                     ]
                   },
                   "url": {
                     "type": "string",
                     "format": "uri"
                   },
-                  "titulo": {
+                  "title": {
                     "type": "string"
                   },
                   "hashPdf": {
                     "type": "string",
                     "pattern": "^[0-9a-f]{64}$"
                   },
-                  "fecha": {
+                  "date": {
                     "type": "string"
                   }
                 },
                 "required": [
-                  "estado",
+                  "state",
                   "url",
-                  "titulo"
+                  "title"
                 ],
                 "additionalProperties": false
               },
               {
                 "type": "object",
                 "properties": {
-                  "estado": {
+                  "state": {
                     "type": "string",
-                    "const": "pendiente"
+                    "const": "pending"
                   }
                 },
                 "required": [
-                  "estado"
+                  "state"
                 ],
                 "additionalProperties": false
               }
             ]
           },
-          "prueba": {
+          "test": {
             "type": "boolean"
           }
         },
         "required": [
           "id",
-          "nombre",
-          "siglas",
-          "ambito",
-          "programa"
+          "name",
+          "acronym",
+          "scope",
+          "manifesto"
         ],
         "additionalProperties": false
       }
     },
-    "temas": {
+    "topics": {
       "minItems": 1,
       "type": "array",
       "items": {
@@ -154,25 +154,25 @@
             "type": "string",
             "pattern": "^[a-z0-9-]+$"
           },
-          "titulo": {
+          "title": {
             "type": "string",
             "minLength": 1
           },
-          "pregunta": {
+          "question": {
             "type": "string",
             "minLength": 1
           },
-          "explicacion": {
+          "explanation": {
             "type": "string"
           },
-          "ambito": {
+          "scope": {
             "type": "string",
             "enum": [
-              "nacional",
+              "national",
               "canarias"
             ]
           },
-          "orden": {
+          "order": {
             "type": "integer",
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
@@ -180,30 +180,30 @@
         },
         "required": [
           "id",
-          "titulo",
-          "pregunta",
-          "ambito",
-          "orden"
+          "title",
+          "question",
+          "scope",
+          "order"
         ],
         "additionalProperties": false
       }
     },
-    "posturas": {
+    "positions": {
       "type": "array",
       "items": {
         "oneOf": [
           {
             "type": "object",
             "properties": {
-              "partido": {
+              "party": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "tema": {
+              "topic": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "versiones": {
+              "versions": {
                 "type": "object",
                 "properties": {
                   "prompt": {
@@ -215,22 +215,22 @@
                 ],
                 "additionalProperties": false
               },
-              "estado": {
+              "state": {
                 "type": "string",
-                "const": "propone"
+                "const": "proposes"
               },
-              "texto": {
+              "text": {
                 "type": "object",
                 "properties": {
-                  "que": {
+                  "what": {
                     "type": "string",
                     "minLength": 1
                   },
-                  "como": {
+                  "how": {
                     "type": "string",
                     "minLength": 1
                   },
-                  "cifra": {
+                  "figure": {
                     "anyOf": [
                       {
                         "type": "string",
@@ -243,51 +243,51 @@
                   }
                 },
                 "required": [
-                  "que",
-                  "como",
-                  "cifra"
+                  "what",
+                  "how",
+                  "figure"
                 ],
                 "additionalProperties": false
               },
-              "citas": {
+              "quotes": {
                 "minItems": 1,
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "texto": {
+                    "text": {
                       "type": "string",
                       "minLength": 40,
                       "maxLength": 600
                     },
-                    "pagina": {
+                    "page": {
                       "type": "integer",
                       "minimum": 1,
                       "maximum": 9007199254740991
                     }
                   },
                   "required": [
-                    "texto",
-                    "pagina"
+                    "text",
+                    "page"
                   ],
                   "additionalProperties": false
                 }
               },
-              "viabilidad": {
+              "feasibility": {
                 "type": "object",
                 "properties": {
-                  "resultado": {
+                  "result": {
                     "type": "string",
                     "enum": [
                       "viable",
-                      "viable_con_matices",
-                      "dificil",
-                      "muy_dificil",
-                      "sin_concrecion",
-                      "sin_consenso"
+                      "viableWithCaveats",
+                      "difficult",
+                      "veryDifficult",
+                      "notConcrete",
+                      "noConsensus"
                     ]
                   },
-                  "porque": {
+                  "why": {
                     "anyOf": [
                       {
                         "type": "string",
@@ -298,12 +298,12 @@
                       }
                     ]
                   },
-                  "fuentes": {
+                  "sources": {
                     "type": "array",
                     "items": {
                       "type": "object",
                       "properties": {
-                        "titulo": {
+                        "title": {
                           "type": "string",
                           "minLength": 1
                         },
@@ -313,36 +313,36 @@
                         }
                       },
                       "required": [
-                        "titulo",
+                        "title",
                         "url"
                       ],
                       "additionalProperties": false
                     }
                   },
-                  "evaluaciones": {
+                  "assessments": {
                     "type": "array",
                     "prefixItems": [
                       {
                         "type": "object",
                         "properties": {
-                          "nivel": {
+                          "level": {
                             "type": "string",
                             "enum": [
                               "viable",
-                              "viable_con_matices",
-                              "dificil",
-                              "muy_dificil",
-                              "sin_concrecion"
+                              "viableWithCaveats",
+                              "difficult",
+                              "veryDifficult",
+                              "notConcrete"
                             ]
                           },
-                          "razones": {
+                          "reasons": {
                             "type": "object",
                             "properties": {
-                              "competencia": {
+                              "competence": {
                                 "type": "string",
                                 "minLength": 1
                               },
-                              "coste": {
+                              "cost": {
                                 "type": "string",
                                 "minLength": 1
                               },
@@ -350,34 +350,34 @@
                                 "type": "string",
                                 "minLength": 1
                               },
-                              "precedentes": {
+                              "precedents": {
                                 "type": "string",
                                 "minLength": 1
                               },
-                              "mayoria": {
+                              "majority": {
                                 "type": "string",
                                 "minLength": 1
                               }
                             },
                             "required": [
-                              "competencia",
-                              "coste",
+                              "competence",
+                              "cost",
                               "legal",
-                              "precedentes",
-                              "mayoria"
+                              "precedents",
+                              "majority"
                             ],
                             "additionalProperties": false
                           },
-                          "porque": {
+                          "why": {
                             "type": "string",
                             "minLength": 1
                           },
-                          "fuentes": {
+                          "sources": {
                             "type": "array",
                             "items": {
                               "type": "object",
                               "properties": {
-                                "titulo": {
+                                "title": {
                                   "type": "string",
                                   "minLength": 1
                                 },
@@ -387,7 +387,7 @@
                                 }
                               },
                               "required": [
-                                "titulo",
+                                "title",
                                 "url"
                               ],
                               "additionalProperties": false
@@ -395,34 +395,34 @@
                           }
                         },
                         "required": [
-                          "nivel",
-                          "razones",
-                          "porque",
-                          "fuentes"
+                          "level",
+                          "reasons",
+                          "why",
+                          "sources"
                         ],
                         "additionalProperties": false
                       },
                       {
                         "type": "object",
                         "properties": {
-                          "nivel": {
+                          "level": {
                             "type": "string",
                             "enum": [
                               "viable",
-                              "viable_con_matices",
-                              "dificil",
-                              "muy_dificil",
-                              "sin_concrecion"
+                              "viableWithCaveats",
+                              "difficult",
+                              "veryDifficult",
+                              "notConcrete"
                             ]
                           },
-                          "razones": {
+                          "reasons": {
                             "type": "object",
                             "properties": {
-                              "competencia": {
+                              "competence": {
                                 "type": "string",
                                 "minLength": 1
                               },
-                              "coste": {
+                              "cost": {
                                 "type": "string",
                                 "minLength": 1
                               },
@@ -430,34 +430,34 @@
                                 "type": "string",
                                 "minLength": 1
                               },
-                              "precedentes": {
+                              "precedents": {
                                 "type": "string",
                                 "minLength": 1
                               },
-                              "mayoria": {
+                              "majority": {
                                 "type": "string",
                                 "minLength": 1
                               }
                             },
                             "required": [
-                              "competencia",
-                              "coste",
+                              "competence",
+                              "cost",
                               "legal",
-                              "precedentes",
-                              "mayoria"
+                              "precedents",
+                              "majority"
                             ],
                             "additionalProperties": false
                           },
-                          "porque": {
+                          "why": {
                             "type": "string",
                             "minLength": 1
                           },
-                          "fuentes": {
+                          "sources": {
                             "type": "array",
                             "items": {
                               "type": "object",
                               "properties": {
-                                "titulo": {
+                                "title": {
                                   "type": "string",
                                   "minLength": 1
                                 },
@@ -467,7 +467,7 @@
                                 }
                               },
                               "required": [
-                                "titulo",
+                                "title",
                                 "url"
                               ],
                               "additionalProperties": false
@@ -475,10 +475,10 @@
                           }
                         },
                         "required": [
-                          "nivel",
-                          "razones",
-                          "porque",
-                          "fuentes"
+                          "level",
+                          "reasons",
+                          "why",
+                          "sources"
                         ],
                         "additionalProperties": false
                       }
@@ -487,55 +487,55 @@
                     "minItems": 2,
                     "maxItems": 2
                   },
-                  "versiones": {
+                  "versions": {
                     "type": "object",
                     "properties": {
                       "prompt": {
                         "type": "string"
                       },
-                      "rubrica": {
+                      "rubric": {
                         "type": "string"
                       }
                     },
                     "required": [
                       "prompt",
-                      "rubrica"
+                      "rubric"
                     ],
                     "additionalProperties": false
                   }
                 },
                 "required": [
-                  "resultado",
-                  "porque",
-                  "fuentes",
-                  "evaluaciones",
-                  "versiones"
+                  "result",
+                  "why",
+                  "sources",
+                  "assessments",
+                  "versions"
                 ],
                 "additionalProperties": false
               }
             },
             "required": [
-              "partido",
-              "tema",
-              "versiones",
-              "estado",
-              "texto",
-              "citas"
+              "party",
+              "topic",
+              "versions",
+              "state",
+              "text",
+              "quotes"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "partido": {
+              "party": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "tema": {
+              "topic": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "versiones": {
+              "versions": {
                 "type": "object",
                 "properties": {
                   "prompt": {
@@ -547,31 +547,31 @@
                 ],
                 "additionalProperties": false
               },
-              "estado": {
+              "state": {
                 "type": "string",
-                "const": "no_propone"
+                "const": "noProposal"
               }
             },
             "required": [
-              "partido",
-              "tema",
-              "versiones",
-              "estado"
+              "party",
+              "topic",
+              "versions",
+              "state"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "partido": {
+              "party": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "tema": {
+              "topic": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "versiones": {
+              "versions": {
                 "type": "object",
                 "properties": {
                   "prompt": {
@@ -583,28 +583,28 @@
                 ],
                 "additionalProperties": false
               },
-              "estado": {
+              "state": {
                 "type": "string",
-                "const": "sin_verificar"
+                "const": "unverified"
               }
             },
             "required": [
-              "partido",
-              "tema",
-              "versiones",
-              "estado"
+              "party",
+              "topic",
+              "versions",
+              "state"
             ],
             "additionalProperties": false
           }
         ]
       }
     },
-    "informes": {
+    "reports": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "partido": {
+          "party": {
             "type": "string",
             "pattern": "^[a-z0-9-]+$"
           },
@@ -615,76 +615,76 @@
           "url": {
             "type": "string"
           },
-          "fecha": {
+          "date": {
             "type": "string"
           },
-          "versionPrompt": {
+          "promptVersion": {
             "type": "string"
           },
-          "extraidas": {
+          "extracted": {
             "type": "integer",
             "minimum": 0,
             "maximum": 9007199254740991
           },
-          "descartadas": {
+          "discarded": {
             "type": "integer",
             "minimum": 0,
             "maximum": 9007199254740991
           },
-          "publicable": {
+          "publishable": {
             "type": "boolean"
           },
-          "motivo": {
+          "reason": {
             "type": "string"
           },
-          "posturas": {
+          "positions": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "tema": {
+                "topic": {
                   "type": "string",
                   "pattern": "^[a-z0-9-]+$"
                 },
-                "estado": {
+                "state": {
                   "type": "string",
                   "enum": [
-                    "propone",
-                    "no_propone",
-                    "sin_verificar"
+                    "proposes",
+                    "noProposal",
+                    "unverified"
                   ]
                 },
-                "reescrituras": {
+                "rewrites": {
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
                 },
-                "motivo": {
+                "reason": {
                   "type": "string"
                 }
               },
               "required": [
-                "tema",
-                "estado",
-                "reescrituras"
+                "topic",
+                "state",
+                "rewrites"
               ],
               "additionalProperties": false
             }
           },
-          "entradas": {
+          "entries": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "tema": {
+                "topic": {
                   "type": "string",
                   "pattern": "^[a-z0-9-]+$"
                 },
-                "pregunta": {
+                "question": {
                   "type": "string",
                   "pattern": "^[a-z0-9-]+$"
                 },
-                "barrera": {
+                "check": {
                   "type": "string",
                   "enum": [
                     "V1",
@@ -702,49 +702,49 @@
                     "V13"
                   ]
                 },
-                "resultado": {
+                "result": {
                   "type": "string",
                   "enum": [
-                    "pasa",
-                    "corregir",
-                    "reescribir",
-                    "descartar",
-                    "bloquear",
-                    "extraer",
-                    "aviso"
+                    "pass",
+                    "fix",
+                    "rewrite",
+                    "discard",
+                    "block",
+                    "extract",
+                    "warning"
                   ]
                 },
-                "detalle": {
+                "detail": {
                   "type": "string"
                 },
-                "origen": {
+                "origin": {
                   "type": "string",
                   "pattern": "^[a-z0-9-]+$"
                 }
               },
               "required": [
-                "barrera",
-                "resultado",
-                "detalle"
+                "check",
+                "result",
+                "detail"
               ],
               "additionalProperties": false
             }
           }
         },
         "required": [
-          "partido",
+          "party",
           "hashPdf",
-          "versionPrompt",
-          "extraidas",
-          "descartadas",
-          "publicable",
-          "posturas",
-          "entradas"
+          "promptVersion",
+          "extracted",
+          "discarded",
+          "publishable",
+          "positions",
+          "entries"
         ],
         "additionalProperties": false
       }
     },
-    "preguntas": {
+    "questions": {
       "type": "array",
       "items": {
         "type": "object",
@@ -753,11 +753,11 @@
             "type": "string",
             "pattern": "^[a-z0-9-]+$"
           },
-          "texto": {
+          "text": {
             "type": "string",
             "minLength": 1
           },
-          "palabrasClave": {
+          "keywords": {
             "minItems": 1,
             "type": "array",
             "items": {
@@ -765,7 +765,7 @@
               "minLength": 1
             }
           },
-          "orden": {
+          "order": {
             "type": "integer",
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
@@ -773,29 +773,29 @@
         },
         "required": [
           "id",
-          "texto",
-          "palabrasClave",
-          "orden"
+          "text",
+          "keywords",
+          "order"
         ],
         "additionalProperties": false
       }
     },
-    "respuestas": {
+    "answers": {
       "type": "array",
       "items": {
         "oneOf": [
           {
             "type": "object",
             "properties": {
-              "partido": {
+              "party": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "pregunta": {
+              "question": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "versiones": {
+              "versions": {
                 "type": "object",
                 "properties": {
                   "prompt": {
@@ -807,22 +807,22 @@
                 ],
                 "additionalProperties": false
               },
-              "estado": {
+              "state": {
                 "type": "string",
-                "const": "responde"
+                "const": "answers"
               },
-              "texto": {
+              "text": {
                 "type": "object",
                 "properties": {
-                  "que": {
+                  "what": {
                     "type": "string",
                     "minLength": 1
                   },
-                  "como": {
+                  "how": {
                     "type": "string",
                     "minLength": 1
                   },
-                  "cifra": {
+                  "figure": {
                     "anyOf": [
                       {
                         "type": "string",
@@ -835,59 +835,59 @@
                   }
                 },
                 "required": [
-                  "que",
-                  "como",
-                  "cifra"
+                  "what",
+                  "how",
+                  "figure"
                 ],
                 "additionalProperties": false
               },
-              "citas": {
+              "quotes": {
                 "minItems": 1,
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "texto": {
+                    "text": {
                       "type": "string",
                       "minLength": 40,
                       "maxLength": 600
                     },
-                    "pagina": {
+                    "page": {
                       "type": "integer",
                       "minimum": 1,
                       "maximum": 9007199254740991
                     }
                   },
                   "required": [
-                    "texto",
-                    "pagina"
+                    "text",
+                    "page"
                   ],
                   "additionalProperties": false
                 }
               }
             },
             "required": [
-              "partido",
-              "pregunta",
-              "versiones",
-              "estado",
-              "texto",
-              "citas"
+              "party",
+              "question",
+              "versions",
+              "state",
+              "text",
+              "quotes"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "partido": {
+              "party": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "pregunta": {
+              "question": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "versiones": {
+              "versions": {
                 "type": "object",
                 "properties": {
                   "prompt": {
@@ -899,31 +899,31 @@
                 ],
                 "additionalProperties": false
               },
-              "estado": {
+              "state": {
                 "type": "string",
-                "const": "no_menciona"
+                "const": "notMentioned"
               }
             },
             "required": [
-              "partido",
-              "pregunta",
-              "versiones",
-              "estado"
+              "party",
+              "question",
+              "versions",
+              "state"
             ],
             "additionalProperties": false
           },
           {
             "type": "object",
             "properties": {
-              "partido": {
+              "party": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "pregunta": {
+              "question": {
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$"
               },
-              "versiones": {
+              "versions": {
                 "type": "object",
                 "properties": {
                   "prompt": {
@@ -935,16 +935,16 @@
                 ],
                 "additionalProperties": false
               },
-              "estado": {
+              "state": {
                 "type": "string",
-                "const": "sin_verificar"
+                "const": "unverified"
               }
             },
             "required": [
-              "partido",
-              "pregunta",
-              "versiones",
-              "estado"
+              "party",
+              "question",
+              "versions",
+              "state"
             ],
             "additionalProperties": false
           }
@@ -954,12 +954,12 @@
   },
   "required": [
     "version",
-    "generado",
-    "origen",
-    "partidos",
-    "temas",
-    "posturas",
-    "informes"
+    "generated",
+    "origin",
+    "parties",
+    "topics",
+    "positions",
+    "reports"
   ],
   "additionalProperties": false
 }

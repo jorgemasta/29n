@@ -1,4 +1,4 @@
-// Cloudflare Worker: static site (dist/) plus a small function (src/worker) for /api/*, /textos/*
+// Cloudflare Worker: static site (dist/) plus a small function (src/worker) for /api/*, /texts/*
 // and "/" (?r=reto link preview). Deploy, secrets and bindings: docs/deploy.md.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
@@ -10,27 +10,27 @@
     "binding": "ASSETS",
     "not_found_handling": "404-page",
     // Only these paths run the function; everything else is served as static files.
-    "run_worker_first": ["/", "/api/*", "/textos/*"]
+    "run_worker_first": ["/", "/api/*", "/texts/*"]
   },
   // No request or console logs (privacy policy): Workers Logs and traces stay off.
   "observability": { "enabled": false },
   "vars": {
-    // "1" opens the free question (spec: ~18-nov). Also build with PUBLIC_PREGUNTA_LIBRE=1.
-    "PREGUNTA_LIBRE": "0",
-    "TOPE_MENSUAL": "150"
+    // "1" opens the free question (spec: ~18-nov). Also build with PUBLIC_FREE_QUESTION=1.
+    "FREE_QUESTION": "0",
+    "MONTHLY_CAP": "150"
   },
   // Needed for the free question and the per-session limits (docs/deploy.md). Uncomment with the
-  // id printed by `npx wrangler kv namespace create PREGUNTAS`:
-  // "kv_namespaces": [{ "binding": "PREGUNTAS", "id": "<id>" }],
+  // id printed by `npx wrangler kv namespace create QUESTIONS`:
+  // "kv_namespaces": [{ "binding": "QUESTIONS", "id": "<id>" }],
   "routes": [{ "pattern": "29n.jorgemasta.com", "custom_domain": true }],
   "env": {
-    // Private prototype (`npm run deploy:privado`, MODO=privado): its own Worker on workers.dev, never the
+    // Private prototype (`npm run deploy:private`, SITE_MODE=private): its own Worker on workers.dev, never the
     // public domain, so it can't overwrite the production site. Free question stays closed.
-    "privado": {
+    "private": {
       "name": "29n-privado",
       "routes": [],
       "workers_dev": true,
-      "vars": { "PREGUNTA_LIBRE": "0", "TOPE_MENSUAL": "0", "MODO": "privado" }
+      "vars": { "FREE_QUESTION": "0", "MONTHLY_CAP": "0", "SITE_MODE": "private" }
     }
   }
 }

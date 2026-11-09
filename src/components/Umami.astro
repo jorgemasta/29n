@@ -1,9 +1,9 @@
 ---
-// Umami Cloud (EU region, no cookies): page views + the events of src/web/analitica.ts.
+// Umami Cloud (EU region, no cookies): page views + the events of src/web/analytics.ts.
 // Off unless UMAMI_WEBSITE_ID is set at build time (local, test and preview builds send nothing).
 // Query string and hash are not recorded (?provincia=, ?r=, #tema/…), and Do Not Track is respected.
 const id = process.env.UMAMI_WEBSITE_ID;
 const src = process.env.UMAMI_SCRIPT_URL || 'https://cloud.umami.is/script.js';
-const dominios = process.env.UMAMI_DOMAINS || '29n.jorgemasta.com';
+const domains = process.env.UMAMI_DOMAINS || '29n.jorgemasta.com';
 ---
-{id && <script is:inline defer src={src} data-website-id={id} data-domains={dominios} data-exclude-search="true" data-exclude-hash="true" data-do-not-track="true" />}
+{id && <script is:inline defer src={src} data-website-id={id} data-domains={domains} data-exclude-search="true" data-exclude-hash="true" data-do-not-track="true" />}
