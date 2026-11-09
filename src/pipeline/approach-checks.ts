@@ -172,13 +172,20 @@ export function recognizabilityCheck(parties: Record<string, PartyName> = PARTIE
     const candidates = proposingParties(approaches, positions).map((id) => ({ id, name: parties[id]?.name ?? id, acronym: parties[id]?.acronym ?? id }));
     const tally = new Map(approaches.map((a) => [a.id, { hits: 0, hints: [] as string[] }]));
     return (async () => {
-      for (const [round, order] of distinctOrders(approaches.length, GUESS_ROUNDS, question.id).entries()) {
-        const r = await ai.complete({
-          task: 'guess-party',
-          instructions: APPROACH_GUESS_INSTRUCTIONS,
-          input: { question: { id: question.id, text: question.text }, round, parties: candidates, approaches: order.map((i, slot) => ({ letter: LETTERS[slot]!, text: toText(approaches[i]!) })) },
-          schema: GuessApproachResponse,
-        });
+      // Independent rounds: asked at once, tallied in round order.
+      const orders = distinctOrders(approaches.length, GUESS_ROUNDS, question.id);
+      const answers = await Promise.all(
+        orders.map((order, round) =>
+          ai.complete({
+            task: 'guess-party',
+            instructions: APPROACH_GUESS_INSTRUCTIONS,
+            input: { question: { id: question.id, text: question.text }, round, parties: candidates, approaches: order.map((i, slot) => ({ letter: LETTERS[slot]!, text: toText(approaches[i]!) })) },
+            schema: GuessApproachResponse,
+          }),
+        ),
+      );
+      for (const [round, order] of orders.entries()) {
+        const r = answers[round]!;
         order.forEach((i, slot) => {
           const approach = approaches[i]!;
           const a = r.assignments.find((x) => x.letter === LETTERS[slot]);

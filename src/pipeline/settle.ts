@@ -152,8 +152,8 @@ async function settle(
   let rounds = 0;
   while (!settled && rounds < MAX_ROUNDS) {
     rounds++;
-    const first = await runPass(ai, input, proposing, 1, rounds);
-    const second = await runPass(ai, input, proposing, 2, rounds);
+    // Independent passes: run at once.
+    const [first, second] = await Promise.all([runPass(ai, input, proposing, 1, rounds), runPass(ai, input, proposing, 2, rounds)]);
     const disagreement = !first.ok ? `pasada 1 no válida: ${first.reason}` : !second.ok ? `pasada 2 no válida: ${second.reason}` : differences(first.classification, second.classification);
     if (!disagreement && first.ok) {
       settled = first.classification;
@@ -187,13 +187,10 @@ async function settle(
 async function checkApproaches(input: SettleInput, settled: Approach[], ai: AIAdapter, checks: readonly ApproachCheck[], entries: SettleEntry[]): Promise<Approach[] | null> {
   let approaches = settled;
   for (let attempt = 0; ; attempt++) {
-    const findings: { approach: Approach; finding: ApproachFinding }[] = [];
-    for (const approach of approaches) {
-      for (const check of checks) {
-        const found = await check(approach, { question: input.question, approaches, positions: input.positions, ai, frozen: !!input.frozen });
-        findings.push(...found.map((finding) => ({ approach, finding })));
-      }
-    }
+    // Every check of every approach at once; findings kept approach by approach, check by check.
+    const context = { question: input.question, approaches, positions: input.positions, ai, frozen: !!input.frozen };
+    const found = await Promise.all(approaches.flatMap((approach) => checks.map(async (check) => (await check(approach, context)).map((finding) => ({ approach, finding })))));
+    const findings: { approach: Approach; finding: ApproachFinding }[] = found.flat();
     const entry = ({ approach, finding }: (typeof findings)[number], result: SettleEntry['result']): SettleEntry => ({ check: finding.check, approach: approach.id, result, detail: finding.detail });
     const failing = findings.filter((f) => f.finding.result === 'discard' || f.finding.result === 'block');
     const rewritable = failing.length > 0 && failing.every((f) => f.finding.result === 'discard') && attempt < MAX_REWRITES && !input.frozen;
@@ -202,12 +199,12 @@ async function checkApproaches(input: SettleInput, settled: Approach[], ai: AIAd
       return failing.length ? null : approaches;
     }
     entries.push(...failing.map((f) => entry(f, 'rewrite')));
-    const next: Approach[] = [];
-    for (const approach of approaches) {
-      const fixes = failing.filter((f) => f.approach === approach).map((f) => f.finding.fix ?? f.finding.detail);
-      next.push(fixes.length ? await rewriteApproach(ai, input.question, approach, fixes) : approach);
-    }
-    approaches = next;
+    approaches = await Promise.all(
+      approaches.map((approach) => {
+        const fixes = failing.filter((f) => f.approach === approach).map((f) => f.finding.fix ?? f.finding.detail);
+        return fixes.length ? rewriteApproach(ai, input.question, approach, fixes) : approach;
+      }),
+    );
   }
 }
 

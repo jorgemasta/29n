@@ -328,6 +328,30 @@ describe("settleApproaches (test point A')", () => {
     });
   });
 
+  it('runs the two passes, and the checks of every approach, concurrently (#18 review)', async () => {
+    const inner = fakeAi(() => threeApproaches);
+    const flight = { now: 0, max: new Map<string, number>() };
+    const track = async <T>(key: string, run: () => Promise<T>) => {
+      flight.now++;
+      flight.max.set(key, Math.max(flight.max.get(key) ?? 0, flight.now));
+      await new Promise((r) => setTimeout(r, 5));
+      try {
+        return await run();
+      } finally {
+        flight.now--;
+      }
+    };
+    const ai = { complete: (r: Parameters<typeof inner.complete>[0]) => track(r.task, () => inner.complete(r)) } as typeof inner;
+    const slow: ApproachCheck = (approach) => track('check', async () => [{ check: 'V6', result: 'pass', detail: approach.id }]);
+    const result = await settleApproaches({ question, positions }, ai, { checks: [slow, slow] });
+
+    expect(result.publishable).toBe(true);
+    expect(flight.max.get('settle-approaches')).toBe(2);
+    expect(flight.max.get('check')).toBe(6);
+    // Same report as one after another: approach by approach, check by check.
+    expect(result.report.entries.filter((e) => e.check === 'V6').map((e) => e.detail)).toEqual(['alquiler-1', 'alquiler-1', 'alquiler-2', 'alquiler-2', 'alquiler-3', 'alquiler-3']);
+  });
+
   it('the settled question plays in a valid v2 dataset (V9)', async () => {
     const { question: q } = await settleApproaches({ question, positions: [...positions, proposes('qui')] }, fakeAi(() => threeApproaches));
     const parties = (['pej', 'otp', 'ter', 'cua', 'qui'] as const).map((id) => ({
