@@ -3,7 +3,8 @@
 //     [--source manifesto-29n|manifesto-2023|party-document|statements]  (anything but manifesto-29n is
 //     a provisional source: only shown by the private build, `npm run build:private`)
 // AI answers are cached in data/cache/ai (commit it: re-runs are then free and identical).
-// Writes the dataset only if the programme is publishable and the dataset passes V9.
+// Writes the dataset only if the programme is publishable and the dataset passes V9. If the
+// approaches are already frozen (published questions), the party is classified into them (#28).
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { textPath } from '../src/questions/texts';
 import { parseArgs } from 'node:util';
@@ -12,6 +13,9 @@ import { createDiskCache } from '../src/ai/disk-cache';
 import { createClaudeAI } from '../src/ai/claude';
 import { processManifesto } from '../src/pipeline';
 import { mergeManifesto } from '../src/pipeline/publish';
+import { classifyLateParty } from '../src/pipeline/late';
+import { SETTLE_PROMPT_VERSION } from '../src/pipeline/prompts-settle';
+import { withCache } from '../src/ai/cache';
 import { PARTIES } from '../src/registry/parties';
 
 const { values } = parseArgs({
@@ -38,10 +42,12 @@ const source = SourceType.parse(values.source);
 const party: Party = { ...base, manifesto: { state: 'published', source, url: values.url, title: values.title } };
 const previous = Dataset.parse(JSON.parse(await readFile(values.dataset, 'utf8')));
 
-const result = await processManifesto(pdf, party, createClaudeAI(), {
+const ai = createClaudeAI();
+const cache = createDiskCache('data/cache/ai');
+const result = await processManifesto(pdf, party, ai, {
   // One position per published question (the pulse's frozen list, #23).
   questions: previous.questions ?? [],
-  cache: createDiskCache('data/cache/ai'),
+  cache,
   date: values.date,
 });
 
@@ -53,7 +59,17 @@ if (!result.publishable) {
   process.exit(1);
 }
 
+// Late manifesto: classify the party into the frozen approaches of the published questions.
+const late = await classifyLateParty(previous, party.id, result.positions, withCache(ai, cache, { hashPdf: result.report.hashPdf, promptVersion: SETTLE_PROMPT_VERSION }));
+if (!late.ok) {
+  await mkdir('data/reports/blocked', { recursive: true });
+  await writeFile(`data/reports/blocked/${party.id}-approaches.json`, JSON.stringify(late.reports, null, 2) + '\n');
+  console.error(`No publicable: ${late.reason}. Informe en data/reports/blocked/${party.id}-approaches.json`);
+  process.exit(1);
+}
+
 const merge = mergeManifesto(previous, party, result, {
+  questions: late.questions,
   generated: new Date().toISOString(),
   date: values.date,
   // Every registered party is listed; without a processed programme it is "⏳ programa pendiente".

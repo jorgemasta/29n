@@ -9,7 +9,11 @@
 // Then every approach check (V3, V4, V5, V6, V10, V11 by default, approach-checks.ts) runs on each
 // approach; a `discard` finding gets the approach rewritten (at most MAX_REWRITES times, never a
 // frozen one), a `block` or a failure that outlives the rewrites makes the question unpublishable.
-// `input.frozen` keeps already-published approaches and only classifies (#28).
+// Late manifesto (#28): with `input.frozen` (a published question) the approaches are not settled
+// again. Only `frozen.parties` are classified into them (the AI sees only their quotes, with the
+// frozen approaches); every other party keeps the stance it was published with, and a classified
+// party that fits none "proposes something else". The same two passes must agree and the same
+// checks run, but a frozen approach is never rewritten: a failing check makes it unpublishable.
 import { z } from 'zod';
 import type { AIAdapter } from '../ai/adapter';
 import {
@@ -37,11 +41,20 @@ export interface SettlePosition {
   quotes?: readonly Quote[];
 }
 
+/** A published question whose approaches are frozen, and the parties to (re)classify into them (#28). */
+export interface FrozenQuestion {
+  approaches: readonly Approach[];
+  otherProposals: readonly OtherProposal[];
+  /** Parties with a new or changed manifesto. Everyone else keeps its published stances. */
+  parties: readonly string[];
+}
+
 export interface SettleInput {
   question: QuestionSpec;
+  /** Every party's position on the question (the checks look at all of them). */
   positions: readonly SettlePosition[];
-  /** Already-published approaches of this question: kept as they are, parties only classified (#28). */
-  frozen?: readonly Approach[];
+  /** Already-published approaches of this question: kept as they are, only `parties` classified (#28). */
+  frozen?: FrozenQuestion;
 }
 
 export interface ApproachFinding {
@@ -114,7 +127,31 @@ export async function settleApproaches(input: SettleInput, ai: AIAdapter, option
     report: { question: question.id, promptVersion: SETTLE_PROMPT_VERSION, rounds, publishable, ...(reason ? { reason } : {}), entries },
   });
 
+  const { frozen } = input;
+  if (frozen) {
+    // Only the late parties are classified; with no proposal among them nothing is asked.
+    const late = proposing.filter((p) => frozen.parties.includes(p.party));
+    if (late.length === 0) {
+      const parsed = Question.safeParse({ ...question, ...mergeFrozen(frozen, [], { approaches: frozen.approaches.map(() => new Map()), otherProposals: [] }) });
+      if (parsed.success) return result(true, 0, parsed.data);
+      return result(false, 0, null, `esquema no válido: ${parsed.error.issues.map((i) => i.message).join('; ')}`);
+    }
+    return settle(input, late, ai, options, entries, result);
+  }
   if (proposing.length === 0) return result(false, 0, null, 'ningún partido propone nada en esta pregunta');
+  return settle(input, proposing, ai, options, entries, result);
+}
+
+/** The two passes, the checks and V9; `proposing` are the parties the AI classifies. */
+async function settle(
+  input: SettleInput,
+  proposing: readonly SettlePosition[],
+  ai: AIAdapter,
+  options: SettleOptions,
+  entries: SettleEntry[],
+  result: (publishable: boolean, rounds: number, q: Question | null, reason?: string) => SettleResult,
+): Promise<SettleResult> {
+  const { question } = input;
 
   let settled: Classification | null = null;
   let rounds = 0;
@@ -190,7 +227,7 @@ async function runPass(ai: AIAdapter, input: SettleInput, proposing: readonly Se
       pass,
       round,
       positions: ordered.map((p) => ({ party: p.party, quotes: (p.quotes ?? []).map((q) => q.text) })),
-      ...(input.frozen ? { frozenApproaches: input.frozen.map(({ what, how, figure, filler }) => ({ what, how, figure, filler })) } : {}),
+      ...(input.frozen ? { frozenApproaches: input.frozen.approaches.map(({ what, how, figure, filler }) => ({ what, how, figure, filler })) } : {}),
     },
     schema: SettleResponse,
   });
@@ -203,6 +240,7 @@ function readPass(answer: SettleResponse, input: SettleInput, proposing: readonl
   if (answer.approaches.length !== 3) return fail(`devuelve ${answer.approaches.length} enfoques en vez de 3`);
   const byParty = new Map(proposing.map((p) => [p.party, p]));
   const approaches: Approach[] = [];
+  const levelsByApproach: Map<string, PartyStance>[] = [];
   const defenders = new Set<string>();
   for (const [i, a] of answer.approaches.entries()) {
     const levels = new Map<string, PartyStance>();
@@ -215,22 +253,49 @@ function readPass(answer: SettleResponse, input: SettleInput, proposing: readonl
       levels.set(s.party, { party: s.party, stance: s.stance, quote });
       defenders.add(s.party);
     }
-    const frozen = input.frozen?.[i];
-    const filler = frozen ? frozen.filler : levels.size === 0;
-    if (filler && levels.size > 0) return fail(`el enfoque ${i + 1} es inventado pero lo defienden partidos`);
+    levelsByApproach.push(levels);
+    if (input.frozen) continue;
+    const filler = levels.size === 0;
     approaches.push({
-      id: frozen?.id ?? `${input.question.id}-${i + 1}`,
-      what: frozen?.what ?? a.what,
-      how: frozen?.how ?? a.how,
-      figure: frozen ? frozen.figure : a.figure,
+      id: `${input.question.id}-${i + 1}`,
+      what: a.what,
+      how: a.how,
+      figure: a.figure,
       filler,
       stances: proposing.map((p) => levels.get(p.party) ?? { party: p.party, stance: 'none' as const }),
     });
   }
-  if (approaches.every((a) => a.filler)) return fail('ningún enfoque lo defiende un partido');
   // Whoever fits no approach "proposes something else", shown at the reveal with its first quote.
   const otherProposals = proposing.filter((p) => !defenders.has(p.party)).map((p) => ({ party: p.party, quote: { ...p.quotes![0]! } }));
+  if (input.frozen) return { ok: true, classification: mergeFrozen(input.frozen, proposing, { approaches: levelsByApproach, otherProposals }) };
+  if (approaches.every((a) => a.filler)) return fail('ningún enfoque lo defiende un partido');
   return { ok: true, classification: { approaches, otherProposals } };
+}
+
+/**
+ * The frozen question with `frozen.parties` taken out and the late classification put in: same
+ * ids and texts, everyone else's stances untouched. A filler approach a late party defends is no
+ * longer filler (its text stays: it was plausible enough to be someone's proposal).
+ */
+function mergeFrozen(
+  frozen: FrozenQuestion,
+  classified: readonly SettlePosition[],
+  late: { approaches: readonly Map<string, PartyStance>[]; otherProposals: readonly OtherProposal[] },
+): Classification {
+  const reclassified = new Set(frozen.parties);
+  const approaches = frozen.approaches.map((a, i) => {
+    const levels = late.approaches[i]!;
+    const levelOf = (party: string): PartyStance => levels.get(party) ?? { party, stance: 'none' };
+    // A reclassified party keeps its slot (or leaves it, without a proposal now); new ones go last.
+    const stances = [
+      ...a.stances.flatMap((s) => (!reclassified.has(s.party) ? [{ ...s }] : classified.some((p) => p.party === s.party) ? [levelOf(s.party)] : [])),
+      ...classified.filter((p) => !a.stances.some((s) => s.party === p.party)).map((p) => levelOf(p.party)),
+    ];
+    const defended = stances.some((s) => s.stance !== 'none');
+    return { ...a, filler: a.filler && !defended, stances };
+  });
+  const otherProposals = [...frozen.otherProposals.filter((o) => !reclassified.has(o.party)).map((o) => ({ ...o })), ...late.otherProposals];
+  return { approaches, otherProposals };
 }
 
 /** The party's own quote that contains what the AI quoted (literal, normalised like V1). */

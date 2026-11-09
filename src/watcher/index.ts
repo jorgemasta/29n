@@ -2,8 +2,9 @@
 //   watch({dataset, state, sources, parties}, ports, options) → {dataset, state, results}
 // For each party: read its sources (official pages, aggregators or the PDF itself) → pick the
 // programme PDF on an official domain → compare its hash with the last one seen → run the data
-// pipeline → publish (commit + deploy) if publishable, or keep the previous state if blocked →
-// notify the maintainer's phone. Every side effect goes through `ports`, so tests use fakes.
+// pipeline → classify the party into the frozen approaches of the published questions (#28,
+// classifyLateParty) → publish (commit + deploy) if publishable, or keep the previous state if
+// blocked → notify the maintainer's phone. Every side effect goes through `ports`, so tests use fakes.
 import type { Dataset, Party, SourceType } from '../dataset/schema';
 import type { AIAdapter } from '../ai/adapter';
 import type { CacheStore } from '../ai/cache';
@@ -11,6 +12,10 @@ import { processManifesto, type ProcessOptions } from '../pipeline';
 import { verifySource } from '../pipeline/source';
 import { hashPdf } from '../pipeline/pdf';
 import { mergeManifesto } from '../pipeline/publish';
+import { classifyLateParty } from '../pipeline/late';
+import { SETTLE_PROMPT_VERSION } from '../pipeline/prompts-settle';
+import type { SettleOptions } from '../pipeline/settle';
+import { withCache } from '../ai/cache';
 import { OFFICIAL_DOMAINS } from '../registry/domains';
 import { textPath } from '../questions/texts';
 
@@ -62,6 +67,8 @@ export interface WatchOptions {
   force?: boolean;
   /** Pipeline options; `questions` defaults to the dataset's published questions (the pulse's list, #23). */
   processResult?: Partial<ProcessOptions>;
+  /** Options of the late classification into frozen approaches (default checks otherwise). */
+  settle?: SettleOptions;
 }
 
 export type PartyResult = {
@@ -85,6 +92,8 @@ export const DATASET_PATH = 'data/dataset.json';
 export const STATE_PATH = 'data/watcher.json';
 const reportPath = (p: string) => `data/reports/${p}.json`;
 const blockedPath = (p: string) => `data/reports/blocked/${p}.json`;
+/** Settle reports of a party blocked because a frozen question could not take it (#28). */
+const blockedApproachesPath = (p: string) => `data/reports/blocked/${p}-approaches.json`;
 const toJson = (x: unknown) => JSON.stringify(x, null, 2) + '\n';
 const errorMessage = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -163,18 +172,28 @@ export async function watch(
         cache: ports.cache ?? options.processResult?.cache,
         date,
       });
-      const merge = mergeManifesto(dataset, party, result, {
-        generated: now.toISOString(),
-        date,
-        registry: input.parties,
-      });
+      // Late manifesto: place the party in the approaches already published (frozen), alone.
+      const settleAi = ports.cache ? withCache(ports.ai, ports.cache, { hashPdf: hash, promptVersion: SETTLE_PROMPT_VERSION }) : ports.ai;
+      const late = result.publishable ? await classifyLateParty(dataset, id, result.positions, settleAi, options.settle) : null;
+      const merge = late && !late.ok
+        ? { ok: false as const, reason: late.reason }
+        : mergeManifesto(dataset, party, result, {
+            generated: now.toISOString(),
+            date,
+            registry: input.parties,
+            ...(late?.ok ? { questions: late.questions } : {}),
+          });
 
       if (!merge.ok) {
         // Blocked: nothing of this party is published; remember the hash so it is not retried.
         const newState = { ...state, [id]: { url, hash, date, result: 'blocked' as const, reason: merge.reason } };
         await ports.save({
           message: `vigilante: ${id} bloqueado (${merge.reason})`,
-          files: { [blockedPath(id)]: toJson(result.report), [STATE_PATH]: toJson(newState) },
+          files: {
+            [blockedPath(id)]: toJson(result.report),
+            ...(late && !late.ok ? { [blockedApproachesPath(id)]: toJson(late.reports) } : {}),
+            [STATE_PATH]: toJson(newState),
+          },
           deploy: false,
         });
         state = newState;

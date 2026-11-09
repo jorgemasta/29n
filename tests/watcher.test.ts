@@ -1,13 +1,14 @@
 // The programme watcher, exercised only through `watch` with fakes for fetching, the AI,
 // git/deploy (`save`) and the phone notification (`sendFeedback`). No network.
 import { describe, expect, it } from 'vitest';
-import { buildDataset, Dataset } from '../src/dataset';
+import { buildDataset, Dataset, type Party, type Question } from '../src/dataset';
+import type { QuestionToProcess } from '../src/pipeline';
 import { createFakeAI, type FakeResponses } from '../src/ai/fake';
 import { createMemoryCache } from '../src/ai/cache';
 import { watch, type Alert, type Change, type Download, type WatcherState, type WatchedSource } from '../src/watcher';
 import { createIssueAlert, WATCHER_LABEL } from '../src/watcher/issue';
 import { createTestPdf } from './fixtures/pdf';
-import { testDomains, sampleParty, housingQuestion, testTerms } from './fixtures/registry';
+import { testDomains, sampleParty, housingQuestion, otherParty, testTerms } from './fixtures/registry';
 
 const QUOTE =
   'Limitaremos el precio del alquiler en las zonas tensionadas y ampliaremos el parque público de vivienda.';
@@ -72,17 +73,20 @@ async function mount(o: {
   sources?: WatchedSource[];
   saveFails?: boolean;
   alertFails?: boolean;
+  dataset?: Dataset;
+  parties?: Record<string, Omit<Party, 'manifesto'>>;
+  questions?: QuestionToProcess[];
 }) {
   const web = createWeb(o.web);
   const saved: Change[] = [];
   const alerts: Alert[] = [];
   const ai = createFakeAI(o.answers ?? answers());
   const cache = createMemoryCache();
-  let dataset = initialDataset();
+  let dataset = o.dataset ?? initialDataset();
   let state: WatcherState = {};
   const run = async (opts: { party?: string; force?: boolean } = {}) => {
     const r = await watch(
-      { dataset, state, sources: o.sources ?? [{ party: 'pej', url: PEJ_PAGE }], parties: { pej: pejRegistry } },
+      { dataset, state, sources: o.sources ?? [{ party: 'pej', url: PEJ_PAGE }], parties: o.parties ?? { pej: pejRegistry } },
       {
         download: web.download,
         ai,
@@ -99,7 +103,7 @@ async function mount(o: {
       },
       {
         ...opts,
-        processResult: { questions: [housingQuestion], terms: testTerms, domains: testDomains, checkUrl: async () => true },
+        processResult: { questions: o.questions ?? [housingQuestion], terms: testTerms, domains: testDomains, checkUrl: async () => true },
       },
     );
     dataset = r.dataset;
@@ -306,6 +310,129 @@ describe('watch', () => {
       { processResult: { terms: testTerms, domains: testDomains, checkUrl: async () => true } },
     );
     expect(r.dataset.positions).toEqual([expect.objectContaining({ party: 'pej', question: 'vivienda-asequible', state: 'proposes' })]);
+  });
+
+  describe('a late manifesto: approaches already frozen (#28)', () => {
+    // Published (real) dataset: OTP processed and the housing question settled with its 3 approaches.
+    // Approaches present in the published dataset's `questions` are frozen. PEJ's manifesto arrives late.
+    const OTP_QUOTE = 'Construiremos vivienda pública en alquiler social en suelo del Estado en todas las provincias.';
+    const { manifesto: __, ...otpRegistry } = otherParty;
+    const registry = { pej: pejRegistry, otp: otpRegistry };
+    const approach = (n: number, what: string, how: string, filler: boolean, stances: Question['approaches'][number]['stances']) => ({
+      id: `vivienda-asequible-${n}`, what, how, figure: null, filler, stances,
+    });
+    const frozenQuestion: Question = {
+      id: housingQuestion.id, theme: 'vivienda', text: housingQuestion.text, keywords: housingQuestion.keywords,
+      followUp: false, order: 1, origin: { cis: null, manifestos: 2 },
+      approaches: [
+        approach(1, 'Construir vivienda pública para alquilar a precio social.', 'En suelo público, en todas las provincias.', false, [{ party: 'otp', stance: 'full', quote: { text: OTP_QUOTE, page: 4 } }]),
+        approach(2, 'Limitar el precio del alquiler en las zonas más caras.', 'Con un tope legal durante varios años.', true, [{ party: 'otp', stance: 'none' }]),
+        approach(3, 'Bajar impuestos a quien compra su primera vivienda.', 'Con una rebaja del IVA de la vivienda nueva.', true, [{ party: 'otp', stance: 'none' }]),
+      ],
+      otherProposals: [],
+    };
+    const unpublished: QuestionToProcess = { id: 'pensiones', text: '¿Qué harían con las pensiones?', keywords: ['pensiones'] };
+    const otpPositions = [
+      { party: 'otp', question: housingQuestion.id, versions: { prompt: 'v2' }, state: 'proposes' as const, proposal: { what: 'Vivienda pública.', how: 'En suelo del Estado.', figure: null }, quotes: [{ text: OTP_QUOTE, page: 4 }] },
+      { party: 'otp', question: 'pensiones', versions: { prompt: 'v2' }, state: 'proposes' as const, proposal: { what: 'Subir pensiones.', how: 'Con el IPC.', figure: null }, quotes: [{ text: 'Subiremos todas las pensiones cada año según el IPC real.', page: 6 }] },
+    ];
+    const publishedDataset = (): Dataset =>
+      Dataset.parse(buildDataset({
+        parties: [{ ...otherParty, manifesto: { ...otherParty.manifesto, state: 'published', hashPdf: 'a'.repeat(64) } } as Party, { ...pejRegistry, manifesto: { state: 'pending' } }],
+        themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
+        questions: [frozenQuestion],
+        results: [{
+          positions: otpPositions,
+          report: { party: 'otp', hashPdf: 'a'.repeat(64), promptVersion: 'v2', extracted: 2, discarded: 0, publishable: true, positions: [], entries: [] },
+        }],
+        generated: '2026-11-01T00:00:00.000Z',
+        origin: 'real',
+      }));
+    /** A pass that keeps the frozen texts and puts PEJ in approach `at` (or nowhere). */
+    const placing = (at?: number) => (input: { frozenApproaches: { what: string; how: string; figure: string | null; filler: boolean }[] }) => ({
+      approaches: input.frozenApproaches.map((a, i) => ({ ...a, stances: i === at ? [{ party: 'pej', stance: 'partial', quote: QUOTE }] : [] })),
+    });
+    const lateMount = async (settle: FakeResponses[string], o: { questions?: QuestionToProcess[] } = {}) =>
+      mount({
+        web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() },
+        answers: answers({ 'settle-approaches': settle }),
+        dataset: publishedDataset(),
+        parties: registry,
+        ...o,
+      });
+    const texts = (q: Question) => q.approaches.map(({ id, what, how, figure }) => ({ id, what, how, figure }));
+    const published = (ds: Dataset) => ds.questions!.find((q) => q.id === housingQuestion.id)!;
+
+    it('classifies the new party into the frozen approaches and publishes on its own', async () => {
+      const m = await lateMount(placing(1));
+      const r = await m.run();
+
+      expect(r.results).toEqual([expect.objectContaining({ party: 'pej', result: 'published' })]);
+      const change = m.saved.at(-1)!;
+      expect(change.deploy).toBe(true);
+      const ds = Dataset.parse(json(change, 'data/dataset.json'));
+      const q = published(ds);
+      expect(texts(q)).toEqual(texts(frozenQuestion));
+      expect(q.approaches[1]!.stances).toContainEqual({ party: 'pej', stance: 'partial', quote: { text: QUOTE, page: 2 } });
+      expect(q.approaches[1]!.filler).toBe(false);
+      // OTP stays exactly where it was published.
+      expect(q.approaches.map((a) => a.stances.filter((s) => s.party === 'otp'))).toEqual(frozenQuestion.approaches.map((a) => a.stances));
+      expect(ds.positions).toContainEqual(expect.objectContaining({ party: 'otp', question: housingQuestion.id }));
+      expect(m.dataset).toEqual(ds);
+      // The AI only saw PEJ's quotes, with the frozen approaches.
+      const settle = m.ai.calls.filter((c) => c.task === 'settle-approaches').map((c) => c.input as { positions: { party: string }[]; frozenApproaches: unknown[] });
+      expect(settle.length).toBeGreaterThan(0);
+      for (const input of settle) {
+        expect(input.positions.map((p) => p.party)).toEqual(['pej']);
+        expect(input.frozenApproaches).toHaveLength(3);
+      }
+    });
+
+    it('a new party that fits no frozen approach is published as proposing something else', async () => {
+      const m = await lateMount(placing());
+      await m.run();
+
+      const q = published(m.dataset);
+      expect(texts(q)).toEqual(texts(frozenQuestion));
+      expect(q.otherProposals).toEqual([{ party: 'pej', quote: { text: QUOTE, page: 2 } }]);
+      expect(q.approaches.every((a) => a.stances.some((s) => s.party === 'pej' && s.stance === 'none'))).toBe(true);
+    });
+
+    it('blocks the manifesto when the classification cannot be settled, and keeps the published dataset', async () => {
+      let n = 0;
+      // The two passes never agree.
+      const m = await lateMount((input: Parameters<ReturnType<typeof placing>>[0]) => placing(n++ % 2)(input));
+      const before = m.dataset;
+      const r = await m.run();
+
+      expect(r.results).toEqual([expect.objectContaining({ party: 'pej', result: 'blocked', reason: expect.stringContaining(housingQuestion.id) })]);
+      expect(m.dataset).toEqual(before);
+      expect(m.saved.every((c) => !c.deploy && !c.files['data/dataset.json'])).toBe(true);
+      expect(json(m.saved.at(-1), 'data/reports/blocked/pej-approaches.json')).toEqual([
+        expect.objectContaining({ question: housingQuestion.id, publishable: false }),
+      ]);
+      expect(m.alerts).toEqual([expect.objectContaining({ type: 'failure', message: expect.stringContaining(housingQuestion.id) })]);
+    });
+
+    it('an unpublished question stays unpublished: the new position is kept for the operator, no approach is settled', async () => {
+      const m = await lateMount(placing(0), { questions: [housingQuestion, unpublished] });
+      await m.run();
+
+      expect(m.dataset.questions!.map((q) => q.id)).toEqual([housingQuestion.id]);
+      expect(m.dataset.positions).toContainEqual(expect.objectContaining({ party: 'pej', question: 'pensiones' }));
+      const settled = m.ai.calls.filter((c) => c.task === 'settle-approaches').map((c) => (c.input as { question: { id: string } }).question.id);
+      expect(new Set(settled)).toEqual(new Set([housingQuestion.id]));
+    });
+
+    it('a changed manifesto moves only that party, and a forced re-run gives the same result', async () => {
+      const m = await lateMount(placing(1));
+      await m.run();
+      const first = m.dataset;
+      await m.run({ party: 'pej', force: true });
+
+      expect(m.dataset.questions).toEqual(first.questions);
+      expect(published(m.dataset).approaches.flatMap((a) => a.stances.filter((s) => s.party === 'pej' && s.stance !== 'none'))).toHaveLength(1);
+    });
   });
 
   describe('manual relaunch', () => {

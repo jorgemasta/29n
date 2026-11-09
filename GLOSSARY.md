@@ -61,6 +61,8 @@ Preguntar tab's one is `suggestedQuestion` and the voter-typed one `freeQuestion
 | enfoque inventado | `filler` (flag on `approach`) | An approach no party defends, added to reach 3. Adds to no party. |
 | de lleno / en parte / no | `stance: 'full' \| 'partial' \| 'none'` | How a party fits an approach (1 / 0.5 / 0). Stored as `PartyStance` in `approach.stances`; every non-`none` one carries its `quote`. |
 | clasificación | `classification` | Every party's stances on the approaches of a question, plus its `otherProposals`. What `settleApproaches` produces. |
+| enfoques congelados | `frozen` / `FrozenQuestion` | The approaches of a question published in the real dataset's `questions`: never settled again. A late party is classified into them (`settleApproaches` with `frozen`). |
+| programa tardío | `classifyLateParty` | A manifesto processed after the approaches are frozen: only that party is classified, question by question (#28). |
 | propone otra cosa | `otherProposal` | A party that fits no approach (`question.otherProposals`, with its quote): out of the blind choice, shown at reveal. |
 | postura (en una pregunta) | `position` | What one party says about one question (`proposes` / `noProposal` / `unverified`), from `processManifesto`; the input of `settleApproaches`. A `proposes` one carries its `proposal`, `quotes` and `feasibility`. Dataset key `positions`. |
 | propuesta concreta | `proposal` | The party's own what / how / figure on a question, exact figures, not neutralised: shown only at the reveal. |
