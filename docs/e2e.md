@@ -36,3 +36,5 @@ cd ../root
 for f in ../rpms/*.rpm; do case $(basename $f) in glibc*|libgcc*|libstdc++*|systemd*) continue;; esac
   rpm2cpio $f | cpio -idm --quiet; done
 ```
+
+> **Desactualizado desde #19.** El recorrido de `tests/e2e/smoke.e2e.ts` es el de la v1 (temas, barra inferior, resultado). La web ya juega temáticas con 3 enfoques; el smoke se reescribe en #31.
