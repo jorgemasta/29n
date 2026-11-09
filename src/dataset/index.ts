@@ -5,7 +5,9 @@ import {
   type Mode,
   type Party,
   type Position,
+  type Question,
   type SuggestedQuestion,
+  type Theme,
   type SuggestedAnswer,
   type Topic,
   type SourceType,
@@ -34,13 +36,16 @@ export function buildDataset(args: {
   topics: Topic[];
   /** Suggested questions; their answers come from each result's `answers`. */
   suggestedQuestions?: SuggestedQuestion[];
+  /** v2 themes and questions (with their approaches and stances). */
+  themes?: Theme[];
+  questions?: Question[];
   results: { positions: Position[]; report: Report; answers?: SuggestedAnswer[] }[];
   generated: string;
   origin: Dataset['origin'];
   note?: string;
 }): Dataset {
   return {
-    version: 1,
+    version: 2,
     generated: args.generated,
     origin: args.origin,
     ...(args.note ? { note: args.note } : {}),
@@ -54,6 +59,8 @@ export function buildDataset(args: {
           answers: args.results.flatMap((r) => r.answers ?? []),
         }
       : {}),
+    ...(args.themes ? { themes: [...args.themes].sort((a, b) => a.order - b.order) } : {}),
+    ...(args.questions ? { questions: [...args.questions].sort((a, b) => a.theme.localeCompare(b.theme) || a.order - b.order) } : {}),
   };
 }
 

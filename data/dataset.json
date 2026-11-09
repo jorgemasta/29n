@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "generated": "2026-11-09T21:59:07.601Z",
+  "version": 2,
+  "generated": "2026-11-09T22:02:06.494Z",
   "origin": "simulated",
   "note": "Datos de PRUEBA: partidos y programas ficticios, procesados con el adaptador de IA falso, también las respuestas de Preguntar. No representan a ningún partido real. El partido D simula una fuente provisional (solo privado); E es regional (Canarias) y F, regional con programa pendiente.",
   "parties": [
@@ -11605,6 +11605,104 @@
         "prompt": "pregunta-v1"
       },
       "state": "notMentioned"
+    }
+  ],
+  "themes": [
+    {
+      "id": "vivienda",
+      "title": "Vivienda",
+      "order": 1
+    }
+  ],
+  "questions": [
+    {
+      "id": "vivienda-asequible",
+      "theme": "vivienda",
+      "text": "¿Qué harían para que la vivienda sea asequible?",
+      "followUp": false,
+      "order": 1,
+      "origin": {
+        "cis": "La vivienda es el primer problema para una parte importante de la población (dato simulado).",
+        "manifestos": 5
+      },
+      "approaches": [
+        {
+          "id": "public-housing",
+          "what": "Que el Estado construya vivienda pública de alquiler asequible.",
+          "how": "Una empresa o un plan públicos levantarían viviendas cuyo alquiler no superaría una parte fija de los ingresos de quien viva en ellas.",
+          "figure": "decenas de miles de viviendas al año",
+          "filler": false,
+          "stances": [
+            {
+              "party": "prueba-a",
+              "stance": "full",
+              "quote": {
+                "text": "Crearemos una empresa pública estatal de vivienda que construya 50.000 viviendas de alquiler asequible al año, con precios que no superen el 30 % de los ingresos.",
+                "page": 2
+              }
+            },
+            {
+              "party": "prueba-e",
+              "stance": "partial",
+              "quote": {
+                "text": "Limitaremos las nuevas licencias de vivienda vacacional en las islas y destinaremos el 20 % del suelo de cada nuevo desarrollo a vivienda protegida para residentes.",
+                "page": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "regulate-market",
+          "what": "Poner límites al mercado del alquiler.",
+          "how": "Se limitaría el precio del alquiler o los nuevos pisos turísticos donde falte vivienda, y se penalizarían las viviendas que lleven años vacías.",
+          "figure": null,
+          "filler": false,
+          "stances": [
+            {
+              "party": "prueba-c",
+              "stance": "full",
+              "quote": {
+                "text": "Limitaremos el precio del alquiler en las zonas tensionadas y penalizaremos en el IBI las viviendas vacías durante más de dos años.",
+                "page": 2
+              }
+            },
+            {
+              "party": "prueba-e",
+              "stance": "partial",
+              "quote": {
+                "text": "Limitaremos las nuevas licencias de vivienda vacacional en las islas y destinaremos el 20 % del suelo de cada nuevo desarrollo a vivienda protegida para residentes.",
+                "page": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "ease-buying",
+          "what": "Facilitar que la gente compre su primera vivienda.",
+          "how": "Se bajarían los impuestos o se darían avales públicos para comprar la primera casa, y se liberaría suelo para que se construya más.",
+          "figure": null,
+          "filler": false,
+          "stances": [
+            {
+              "party": "prueba-b",
+              "stance": "full",
+              "quote": {
+                "text": "Eliminaremos el impuesto de transmisiones patrimoniales en la compra de la primera vivienda y liberaremos suelo público para que se construya más vivienda.",
+                "page": 2
+              }
+            },
+            {
+              "party": "prueba-d",
+              "stance": "partial",
+              "quote": {
+                "text": "Daremos avales públicos para que los jóvenes menores de 35 años puedan financiar el 100 % de la compra de su primera vivienda.",
+                "page": 2
+              }
+            }
+          ]
+        }
+      ],
+      "otherProposals": []
     }
   ]
 }

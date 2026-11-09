@@ -14,6 +14,7 @@ import { processManifesto } from '../src/pipeline';
 import { TOPICS } from '../src/registry/topics';
 import { SUGGESTED_QUESTIONS } from '../src/registry/questions';
 import { FICTIONAL, FICTIONAL_PENDING, SIMULATED_ANSWERS } from './simulated-data';
+import { simulatedThemes } from './simulated-themes';
 
 // Simulated feasibility (V13): fictional, generic answers that vary by party and topic so the
 // reveal shows every kind of note (agreement, "sin concreción", "sin consenso").
@@ -140,6 +141,7 @@ const dataset = buildDataset({
   parties,
   topics: TOPICS,
   suggestedQuestions: SUGGESTED_QUESTIONS,
+  ...simulatedThemes(results.flatMap((r) => r.positions)),
   results,
   generated: new Date().toISOString(),
   origin: 'simulated',

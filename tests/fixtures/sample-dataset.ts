@@ -43,7 +43,7 @@ export const sampleNote: FeasibilityNote = {
  * (35 Las Palmas, 38 Santa Cruz de Tenerife), 1 regional pending party in 35, 1 regional party in 08 (Barcelona).
  */
 export const sampleDataset: Dataset = {
-  version: 1,
+  version: 2,
   generated: '2026-11-08T00:00:00.000Z',
   origin: 'test',
   parties: [

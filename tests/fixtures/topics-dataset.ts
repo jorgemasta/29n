@@ -35,7 +35,7 @@ const proposes = (party: string, topic: string): Position => ({
  * are provisional, private-prototype-only sources.
  */
 export const topicsDataset: Dataset = {
-  version: 1,
+  version: 2,
   generated: '2026-11-08T00:00:00.000Z',
   origin: 'test',
   parties: [party('uno'), party('dos', 'manifesto-29n'), party('viejo', 'manifesto-2023'), party('dichos', 'statements')],

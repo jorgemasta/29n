@@ -138,6 +138,68 @@ export const SuggestedAnswer = z.discriminatedUnion('state', [
   z.object({ ...baseAnswer, state: z.literal('unverified') }),
 ]);
 
+// v2 (#18): themes → questions → 3 approaches; each party's stance on each approach.
+
+/**
+ * Theme ("temática"): groups questions. National, or a regionalTheme ("Tu comunidad") with
+ * `region` = the INE autonomous-community code (CODAUTO, e.g. "05" Canarias), shown only there.
+ */
+export const Theme = z.object({
+  id,
+  title: z.string().min(1),
+  /** Fixed, published order (from the pulse). */
+  order: z.number().int(),
+  region: z.string().regex(/^\d{2}$/).optional(),
+});
+
+/** How a party fits an approach: full (1), partial (0.5) or none (0). */
+export const Stance = z.enum(['full', 'partial', 'none']);
+
+/** One party's stance on one approach; every stance other than "none" carries its quote. */
+export const PartyStance = z.union([
+  z.object({ party: id, stance: z.enum(['full', 'partial']), quote: Quote }),
+  z.object({ party: id, stance: z.literal('none') }),
+]);
+
+/**
+ * Approach ("enfoque"): one of the 3 options of a question, with the same what / how / figure
+ * template as a neutral text and figures rounded to a common order of magnitude. A `filler`
+ * approach is defended by no party: it was added to reach 3.
+ */
+export const Approach = z.object({
+  id,
+  ...NeutralText.shape,
+  filler: z.boolean(),
+  stances: z.array(PartyStance),
+});
+
+/** A party that fits no approach of a question ("propone otra cosa"), shown at the reveal. */
+export const OtherProposal = z.object({ party: id, quote: Quote });
+
+/** Why the pulse picked a question: a CIS barometer datum and/or how many manifestos address it. */
+export const QuestionOrigin = z.object({
+  cis: z.string().min(1).nullable(),
+  manifestos: z.number().int().min(0),
+});
+
+/**
+ * Question ("pregunta"): one blind choice inside a theme. Base questions are played first;
+ * `followUp` ones ("para afinar") are offered after the theme. A published question always has
+ * exactly 3 approaches.
+ */
+export const Question = z.object({
+  id,
+  theme: id,
+  /** Neutral open question: "¿Qué harían…?". */
+  text: z.string().min(1),
+  followUp: z.boolean(),
+  /** Order within the theme (from the pulse). */
+  order: z.number().int(),
+  origin: QuestionOrigin,
+  approaches: z.array(Approach).length(3, 'toda pregunta publicada tiene exactamente 3 enfoques'),
+  otherProposals: z.array(OtherProposal),
+});
+
 export const Check = z.enum(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13']);
 
 export const ReportEntry = z.object({
@@ -182,7 +244,7 @@ export const Report = z.object({
 
 export const Dataset = z
   .object({
-    version: z.literal(1),
+    version: z.literal(2),
     generated: z.string(),
     /** "real": produced by the real AI on official PDFs. Anything else must be shown as such. */
     origin: z.enum(['real', 'simulated', 'test']),
@@ -194,6 +256,9 @@ export const Dataset = z
     /** Suggested questions of the "Preguntar" tab and their precomputed answers. */
     suggestedQuestions: z.array(SuggestedQuestion).optional(),
     answers: z.array(SuggestedAnswer).optional(),
+    /** v2: themes and their questions with 3 approaches each. Optional until v1 topics go away (#24). */
+    themes: z.array(Theme).optional(),
+    questions: z.array(Question).optional(),
   })
   .superRefine((d, ctx) => {
     const parties = new Set(d.parties.map((p) => p.id));
@@ -225,7 +290,46 @@ export const Dataset = z
       if (answered.has(key)) ctx.addIssue({ code: 'custom', path: ['answers', i], message: `más de una respuesta para ${key}` });
       answered.add(key);
     });
+    checkQuestions(d, parties, ctx);
   });
+
+/** V9 for v2: known theme and parties, unique ids, one stance per party × approach, no defended filler. */
+function checkQuestions(d: { themes?: Theme[]; questions?: Question[] }, parties: Set<string>, ctx: z.RefinementCtx) {
+  const issue = (path: (string | number)[], message: string) => ctx.addIssue({ code: 'custom', path, message });
+  const themes = new Set<string>();
+  (d.themes ?? []).forEach((t, i) => {
+    if (themes.has(t.id)) issue(['themes', i, 'id'], `temática repetida: ${t.id}`);
+    themes.add(t.id);
+  });
+  const questions = new Set<string>();
+  (d.questions ?? []).forEach((q, i) => {
+    const at = ['questions', i];
+    if (questions.has(q.id)) issue([...at, 'id'], `pregunta repetida: ${q.id}`);
+    questions.add(q.id);
+    if (!themes.has(q.theme)) issue([...at, 'theme'], `temática desconocida: ${q.theme}`);
+    const approaches = new Set<string>();
+    const defenders = new Set<string>();
+    q.approaches.forEach((a, j) => {
+      if (approaches.has(a.id)) issue([...at, 'approaches', j, 'id'], `enfoque repetido en ${q.id}: ${a.id}`);
+      approaches.add(a.id);
+      const seen = new Set<string>();
+      a.stances.forEach((s, k) => {
+        const path = [...at, 'approaches', j, 'stances', k];
+        if (!parties.has(s.party)) issue(path, `partido desconocido: ${s.party}`);
+        if (seen.has(s.party)) issue(path, `más de un nivel de ${s.party} en ${q.id}/${a.id}`);
+        seen.add(s.party);
+        if (s.stance === 'none') return;
+        defenders.add(s.party);
+        if (a.filler) issue(path, `el enfoque inventado ${q.id}/${a.id} no puede tener partidos que lo defiendan`);
+      });
+    });
+    q.otherProposals.forEach((o, k) => {
+      const path = [...at, 'otherProposals', k];
+      if (!parties.has(o.party)) issue(path, `partido desconocido: ${o.party}`);
+      if (defenders.has(o.party)) issue(path, `${o.party} defiende un enfoque de ${q.id} y a la vez propone otra cosa`);
+    });
+  });
+}
 
 export type SourceType = z.infer<typeof SourceType>;
 export type Mode = z.infer<typeof Mode>;
@@ -246,3 +350,10 @@ export type ReportEntry = z.infer<typeof ReportEntry>;
 export type PositionSummary = z.infer<typeof PositionSummary>;
 export type Report = z.infer<typeof Report>;
 export type Dataset = z.infer<typeof Dataset>;
+export type Theme = z.infer<typeof Theme>;
+export type Stance = z.infer<typeof Stance>;
+export type PartyStance = z.infer<typeof PartyStance>;
+export type Approach = z.infer<typeof Approach>;
+export type OtherProposal = z.infer<typeof OtherProposal>;
+export type QuestionOrigin = z.infer<typeof QuestionOrigin>;
+export type Question = z.infer<typeof Question>;
