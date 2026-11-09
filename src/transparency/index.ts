@@ -1,7 +1,9 @@
 // Transparency data (#11): derived views of the dataset for the methodology, parties-and-programmes
 // and verification-report pages, plus the prefilled GitHub issue links ("Reportar error", "Falta un partido").
 // Pure functions: the pages only render what these return.
-import type { Dataset, ReportEntry, Report, Party, SuggestedQuestion, FeasibilityResult, PositionSummary, Topic, SourceType } from '../dataset/schema';
+import type { Dataset, ReportEntry, Report, Party, SuggestedQuestion, FeasibilityResult, PositionSummary, Topic, SourceType, Question, Theme, Approach } from '../dataset/schema';
+import type { Pulse } from '../pulse';
+import { linkQuote, type LinkedQuote } from '../game/party';
 import { CHECKS } from '../registry/checks';
 import { provinceByCode } from '../registry/territory';
 
@@ -231,11 +233,14 @@ export function missingPartyIssue(d: MissingPartyData = {}): IssueContent {
 
 /** Every AI task, what it does and the repository file holding its exact instructions. */
 export const PROMPTS = [
-  { task: 'extract-position', what: 'Extrae la propuesta de cada tema con sus citas literales', file: 'src/pipeline/prompts.ts' },
-  { task: 'neutralize', what: 'Reescribe la propuesta en el estilo común, sin marcas del partido', file: 'src/pipeline/prompts.ts' },
-  { task: 'verify-fidelity', what: 'V10: comprueba que la reescritura es fiel a las citas', file: 'src/pipeline/fidelity.ts' },
-  { task: 'guess-party', what: 'V11: intenta adivinar de qué partido es cada texto', file: 'src/pipeline/recognizability.ts' },
-  { task: 'confirm-absence', what: 'V12: confirma que un partido no propone nada sobre un tema', file: 'src/pipeline/absence.ts' },
+  { task: 'take-pulse', what: 'Pulso: propone temáticas y preguntas a partir del CIS y de los programas, en dos pasadas', file: 'src/pulse/prompt.ts' },
+  { task: 'extract-position', what: 'Extrae la propuesta de cada partido con sus citas literales', file: 'src/pipeline/prompts.ts' },
+  { task: 'settle-approaches', what: 'Agrupa las propuestas de cada pregunta en 3 enfoques y sitúa a cada partido, en dos pasadas', file: 'src/pipeline/prompts-settle.ts' },
+  { task: 'rewrite-approach', what: 'Reescribe un enfoque que no pasó una comprobación', file: 'src/pipeline/prompts-approach.ts' },
+  { task: 'verify-fidelity', what: 'V10: comprueba que cada enfoque es fiel a las citas de quien lo defiende de lleno', file: 'src/pipeline/prompts-approach.ts' },
+  { task: 'guess-party', what: 'V11: intenta adivinar qué partidos defienden cada enfoque', file: 'src/pipeline/prompts-approach.ts' },
+  { task: 'neutralize', what: 'Reescribe la propuesta concreta de cada partido en el estilo común', file: 'src/pipeline/prompts.ts' },
+  { task: 'confirm-absence', what: 'V12: confirma que un partido no propone nada sobre una pregunta', file: 'src/pipeline/absence.ts' },
   { task: 'assess-feasibility', what: 'V13: evalúa la viabilidad a ciegas, dos veces', file: 'src/pipeline/prompts-feasibility.ts' },
   { task: 'answer-question', what: 'Responde a las preguntas sugeridas con citas literales', file: 'src/questions/prompts.ts' },
 ] as const;
@@ -245,3 +250,156 @@ export const FREE_QUESTION_PROMPTS = [
   { task: 'answer-question', what: 'Pregunta libre: responde con citas literales', file: 'src/questions/prompts.ts' },
   { task: 'verify-fidelity', what: 'Pregunta libre: V10, comprueba que la respuesta es fiel a las citas', file: 'src/pipeline/fidelity.ts' },
 ] as const;
+
+// --- v2 (#29): pulse, question list, unpublished questions, stances per party ----------------------
+
+const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
+const sortQuestions = (qs: readonly Question[]) => [...qs].sort((a, b) => Number(a.followUp) - Number(b.followUp) || byOrder(a, b));
+
+export interface PulseSummary {
+  frozenAt: string;
+  promptVersion: string;
+  cis: { barometer: string; url: string };
+  /** Manifestos whose topics were read. */
+  manifestos: number;
+  /** Open-network candidates per source (discovery only; X is never one). */
+  networks: { source: Pulse['sources']['networks'][number]['source']; count: number }[];
+  questions: number;
+  rejected: number;
+}
+
+/** What the methodology says about the pulse; null until data/pulse.json exists. */
+export function pulseSummary(pulse: Pulse | null): PulseSummary | null {
+  if (!pulse) return null;
+  const networks = new Map<PulseSummary['networks'][number]['source'], number>();
+  for (const n of pulse.sources.networks) networks.set(n.source, (networks.get(n.source) ?? 0) + 1);
+  return {
+    frozenAt: pulse.frozenAt,
+    promptVersion: pulse.promptVersion,
+    cis: { barometer: pulse.sources.cis.barometer, url: pulse.sources.cis.url },
+    manifestos: pulse.sources.manifestos.length,
+    networks: [...networks].map(([source, count]) => ({ source, count })),
+    questions: pulse.questions.length,
+    rejected: pulse.rejected.length,
+  };
+}
+
+/** Where the CIS datum is explained when the barometer link is unknown. */
+export const PULSE_ANCHOR = '/metodologia/#pulso';
+
+export interface OriginLink {
+  text: string;
+  href: string;
+}
+
+export interface ListedQuestion {
+  id: string;
+  text: string;
+  followUp: boolean;
+  origin: OriginLink[];
+}
+
+/** Why a question was picked, as links: the CIS barometer and/or the manifestos that address it. */
+export function originLinks(origin: Question['origin'], pulse: Pulse | null): OriginLink[] {
+  const links: OriginLink[] = [];
+  if (origin.cis) links.push({ text: `CIS: ${origin.cis}`, href: pulse?.sources.cis.url ?? PULSE_ANCHOR });
+  if (origin.manifestos > 0)
+    links.push({ text: origin.manifestos === 1 ? 'La trata 1 programa' : `La tratan ${origin.manifestos} programas`, href: '/partidos/' });
+  if (links.length === 0) links.push({ text: 'Pulso', href: PULSE_ANCHOR });
+  return links;
+}
+
+/** Published questions by theme (theme order; base questions first), each with its origin. */
+export function questionList(ds: Dataset, pulse: Pulse | null): { theme: Theme; questions: ListedQuestion[] }[] {
+  const questions = ds.questions ?? [];
+  return [...(ds.themes ?? [])]
+    .sort(byOrder)
+    .map((theme) => ({
+      theme,
+      questions: sortQuestions(questions.filter((q) => q.theme === theme.id)).map((q) => ({
+        id: q.id,
+        text: q.text,
+        followUp: q.followUp,
+        origin: originLinks(q.origin, pulse),
+      })),
+    }))
+    .filter((t) => t.questions.length > 0);
+}
+
+export interface UnpublishedQuestion {
+  id: string;
+  text: string;
+  /** Theme title (or id when the theme itself did not enter). */
+  theme: string;
+  /** `pulse`: it did not enter the list. `approaches`: its 3 approaches could not be settled. */
+  stage: 'pulse' | 'approaches';
+  reason: string;
+}
+
+/** Questions that were not published and why: approach-stage ones first, then pulse rejections. */
+export function unpublishedQuestions(ds: Dataset, pulse: Pulse | null): UnpublishedQuestion[] {
+  const published = new Set((ds.questions ?? []).map((q) => q.id));
+  const titles = new Map([...(pulse?.themes ?? []), ...(ds.themes ?? [])].map((t) => [t.id, t.title]));
+  const pulseQuestion = new Map((pulse?.questions ?? []).map((q) => [q.id, q]));
+  const approaches = (ds.approachReports ?? [])
+    .filter((r) => !r.publishable && !published.has(r.question))
+    .map((r): UnpublishedQuestion => {
+      const theme = r.theme ?? pulseQuestion.get(r.question)?.theme ?? '';
+      return {
+        id: r.question,
+        text: r.text ?? pulseQuestion.get(r.question)?.text ?? r.question,
+        theme: titles.get(theme) ?? theme,
+        stage: 'approaches',
+        reason: r.reason ?? 'No pasó las comprobaciones.',
+      };
+    });
+  const rejected = (pulse?.rejected ?? []).map((r): UnpublishedQuestion => ({
+    id: r.id,
+    text: r.text,
+    theme: titles.get(r.theme) ?? r.theme,
+    stage: 'pulse',
+    reason: r.detail,
+  }));
+  return [...approaches, ...rejected];
+}
+
+export type PartyStanceRow =
+  | { kind: 'approach'; approach: Pick<Approach, 'id' | 'what' | 'how' | 'figure'>; stance: 'full' | 'partial'; quote: LinkedQuote }
+  | { kind: 'otherProposal'; quote: LinkedQuote };
+
+/**
+ * Per-party report: for every published question, the approach(es) the party defends with their level
+ * and quote, or its "propone otra cosa" with its quote; empty when it is in neither.
+ */
+export function partyStances(ds: Dataset, partyId: string): { theme: Theme; questions: { id: string; text: string; followUp: boolean; stances: PartyStanceRow[] }[] }[] {
+  const party = ds.parties.find((p) => p.id === partyId);
+  const link = (q: { text: string; page: number }): LinkedQuote => (party ? linkQuote(party, q) : { ...q, link: '' });
+  const questions = ds.questions ?? [];
+  return [...(ds.themes ?? [])]
+    .sort(byOrder)
+    .map((theme) => ({
+      theme,
+      questions: sortQuestions(questions.filter((q) => q.theme === theme.id)).map((q) => {
+        const stances: PartyStanceRow[] = [];
+        for (const a of q.approaches) {
+          if (a.filler) continue;
+          for (const s of a.stances)
+            if (s.party === partyId && s.stance !== 'none')
+              stances.push({ kind: 'approach', approach: { id: a.id, what: a.what, how: a.how, figure: a.figure }, stance: s.stance, quote: link(s.quote) });
+        }
+        for (const o of q.otherProposals) if (o.party === partyId) stances.push({ kind: 'otherProposal', quote: link(o.quote) });
+        return { id: q.id, text: q.text, followUp: q.followUp, stances };
+      }),
+    }))
+    .filter((t) => t.questions.length > 0);
+}
+
+/** Parties with a stance or an "other proposal" in some published question. */
+export function partiesWithStances(ds: Dataset): string[] {
+  const ids = new Set<string>();
+  for (const q of ds.questions ?? []) {
+    for (const a of q.approaches) for (const s of a.stances) if (s.stance !== 'none' && !a.filler) ids.add(s.party);
+    for (const o of q.otherProposals) ids.add(o.party);
+  }
+  return [...ids].sort();
+}

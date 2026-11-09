@@ -7,8 +7,16 @@ import {
   reportSummary,
   missingPartyUrl,
   reportErrorUrl,
+  PROMPTS,
+  pulseSummary,
+  questionList,
+  unpublishedQuestions,
+  partyStances,
 } from '../src/transparency';
+import { themesDataset } from './fixtures/themes-dataset';
+import { samplePulse } from './fixtures/pulse';
 import { CHECKS } from '../src/registry/checks';
+import { GUESS_ROUNDS, MAX_REWRITES, LENGTH_TOLERANCE, CHANCE_SIGNIFICANCE } from '../src/pipeline/approach-checks';
 import { createFeedback, FEEDBACK_LIMIT, DAILY_FEEDBACK_LIMIT } from '../src/transparency/feedback';
 import { createMemoryStore } from '../src/questions/free';
 import { Check, type Dataset, type Report, type FeasibilityNote, type Position } from '../src/dataset/schema';
@@ -270,5 +278,163 @@ describe('feedback without a GitHub account (Cloudflare function, POST /api/feed
     expect(JSON.stringify(store.dump())).not.toContain('s1');
     const failing = createFeedback({ createIssue: async () => { throw new Error('502'); } });
     expect(await failing.send(reportError, 's2')).toMatchObject({ state: 'error', fallbackUrl: expect.stringContaining('/issues/new') });
+  });
+});
+
+// --- v2 (#29): pulse, approaches, question list, unpublished questions, stances per party -----------
+
+describe('pulseSummary', () => {
+  it('says when the list was frozen and what it was taken from (never X)', () => {
+    const r = pulseSummary(samplePulse)!;
+    expect(r.frozenAt).toBe('2026-11-01');
+    expect(r.promptVersion).toBe('pulso-v1');
+    expect(r.cis).toEqual({ barometer: 'Barómetro del CIS de octubre de 2026', url: 'https://www.cis.es/barometro-octubre-2026' });
+    expect(r.manifestos).toBe(3);
+    expect(r.networks).toEqual([
+      { source: 'reddit', count: 2 },
+      { source: 'web', count: 1 },
+    ]);
+    expect(r.questions).toBe(3);
+    expect(r.rejected).toBe(2);
+  });
+
+  it('is null until the pulse is taken: the site builds without data/pulse.json', () => {
+    expect(pulseSummary(null)).toBeNull();
+  });
+});
+
+describe('questionList', () => {
+  it('lists the published questions by theme, base ones first, each linking to its origin', () => {
+    const list = questionList(themesDataset, samplePulse);
+    expect(list.map((t) => t.theme.id)).toEqual(['vivienda', 'sanidad', 'canarias']);
+    const vivienda = list[0]!;
+    expect(vivienda.questions.map((q) => [q.id, q.followUp])).toEqual([
+      ['alquiler', false],
+      ['compra', false],
+      ['okupacion', true],
+    ]);
+    const alquiler = vivienda.questions[0]!;
+    expect(alquiler.text).toBe('¿Qué harían para que el alquiler sea asequible?');
+    expect(alquiler.origin).toEqual([
+      { text: 'CIS: Preocupa al 30 % según el barómetro', href: 'https://www.cis.es/barometro-octubre-2026' },
+      { text: 'La tratan 4 programas', href: '/partidos/' },
+    ]);
+  });
+
+  it('every question links to its origin even without the pulse file', () => {
+    for (const t of questionList(themesDataset, null))
+      for (const q of t.questions) {
+        expect(q.origin.length).toBeGreaterThan(0);
+        for (const o of q.origin) expect(o.href).toMatch(/^(https:\/\/|\/)/);
+      }
+  });
+
+  it('says "1 programa" in the singular and leaves out a zero count', () => {
+    const ds = { ...themesDataset, questions: themesDataset.questions!.map((q, i) => ({ ...q, origin: { cis: i === 0 ? 'x' : null, manifestos: i === 0 ? 0 : 1 } })) };
+    const [first, second] = questionList(ds, null)[0]!.questions;
+    expect(first!.origin.map((o) => o.text)).toEqual(['CIS: x']);
+    expect(second!.origin.map((o) => o.text)).toEqual(['La trata 1 programa']);
+  });
+
+  it('is empty for a dataset without v2 questions', () => {
+    expect(questionList({ ...themesDataset, themes: undefined, questions: undefined }, null)).toEqual([]);
+  });
+});
+
+describe('unpublishedQuestions', () => {
+  const ds = {
+    ...themesDataset,
+    approachReports: [
+      { question: 'alquiler', theme: 'vivienda', text: '¿Qué harían para que el alquiler sea asequible?', promptVersion: 'enfoques-v1', rounds: 1, publishable: true, entries: [] },
+      {
+        question: 'urgencias',
+        theme: 'sanidad',
+        text: '¿Qué harían con las urgencias?',
+        promptVersion: 'enfoques-v1',
+        rounds: 2,
+        publishable: false,
+        reason: 'las dos pasadas no coinciden tras el reintento',
+        entries: [{ check: 'agreement' as const, result: 'discard' as const, detail: 'no coinciden' }],
+      },
+    ],
+  };
+
+  it('lists the pulse candidates that did not enter and the questions whose approaches could not be settled, with why', () => {
+    const r = unpublishedQuestions(ds, samplePulse);
+    expect(r).toEqual([
+      { id: 'urgencias', text: '¿Qué harían con las urgencias?', theme: 'Sanidad', stage: 'approaches', reason: 'las dos pasadas no coinciden tras el reintento' },
+      { id: 'chemtrails', text: '¿Qué harían con las estelas de los aviones?', theme: 'Sanidad', stage: 'pulse', reason: 'Solo sale de redes abiertas: no está en el CIS ni la trata ningún programa.' },
+      { id: 'toros', text: '¿Qué harían con los toros?', theme: 'cultura', stage: 'pulse', reason: 'Solo la propuso una de las dos pasadas independientes.' },
+    ]);
+  });
+
+  it('never lists a published question, and works with neither the pulse nor reports', () => {
+    expect(unpublishedQuestions(ds, samplePulse).map((q) => q.id)).not.toContain('alquiler');
+    expect(unpublishedQuestions(themesDataset, null)).toEqual([]);
+  });
+
+  it('a question published later (a new report) is no longer listed as unpublished', () => {
+    const later = { ...ds, approachReports: ds.approachReports.map((r) => ({ ...r, publishable: true })), questions: [...ds.questions!, { ...ds.questions![0]!, id: 'urgencias', theme: 'sanidad' }] };
+    expect(unpublishedQuestions(later, samplePulse).map((q) => q.id)).not.toContain('urgencias');
+  });
+});
+
+describe('partyStances (per-party report)', () => {
+  it('shows each question with the approach the party defends, its level and its quote with the PDF page', () => {
+    const r = partyStances(themesDataset, 'bbb');
+    const alquiler = r.find((t) => t.theme.id === 'vivienda')!.questions.find((q) => q.id === 'alquiler')!;
+    expect(alquiler.stances).toEqual([
+      {
+        kind: 'approach',
+        approach: { id: 'control', what: 'Enfoque uno', how: 'Mediante el instrumento uno', figure: 'decenas de miles' },
+        stance: 'partial',
+        quote: { text: 'Cita literal número 4 del programa de bbb, con más de cuarenta caracteres.', page: 4, link: 'https://ejemplo.org/bbb.pdf#page=4' },
+      },
+    ]);
+  });
+
+  it('shows "propone otra cosa" with its quote, and nothing for questions it does not address', () => {
+    const r = partyStances(themesDataset, 'bcn');
+    const alquiler = r.flatMap((t) => t.questions).find((q) => q.id === 'alquiler')!;
+    expect(alquiler.stances).toEqual([
+      { kind: 'otherProposal', quote: { text: 'Cita literal número 5 del programa de bcn, con más de cuarenta caracteres.', page: 5, link: 'https://ejemplo.org/bcn.pdf#page=5' } },
+    ]);
+    expect(r.flatMap((t) => t.questions).find((q) => q.id === 'compra')!.stances).toEqual([]);
+  });
+
+  it('never puts a party on a filler approach', () => {
+    for (const p of ['aaa', 'bbb', 'ccc', 'isla', 'bcn'])
+      for (const q of partyStances(themesDataset, p).flatMap((t) => t.questions))
+        for (const s of q.stances) if (s.kind === 'approach') expect(['ayudas', 'ventanilla']).not.toContain(s.approach.id);
+  });
+
+  it('only lists themes and questions in their published order', () => {
+    expect(partyStances(themesDataset, 'aaa').map((t) => t.theme.id)).toEqual(['vivienda', 'sanidad', 'canarias']);
+  });
+});
+
+describe('methodology v2: prompts and checks', () => {
+  it('lists the v2 prompts: pulse, settle approaches, rewrite, fidelity and guesser on approaches', () => {
+    const tasks = PROMPTS.map((p) => p.task);
+    for (const t of ['take-pulse', 'settle-approaches', 'rewrite-approach', 'verify-fidelity', 'guess-party']) expect(tasks).toContain(t);
+    expect(PROMPTS.find((p) => p.task === 'take-pulse')!.file).toBe('src/pulse/prompt.ts');
+    expect(PROMPTS.find((p) => p.task === 'settle-approaches')!.file).toBe('src/pipeline/prompts-settle.ts');
+    expect(PROMPTS.find((p) => p.task === 'rewrite-approach')!.file).toBe('src/pipeline/prompts-approach.ts');
+  });
+
+  it('describes the approach checks as they run on approaches', () => {
+    expect(CHECKS.V4.description).toMatch(/redonde/i);
+    expect(CHECKS.V4.description).toMatch(/1,5/);
+    expect(CHECKS.V5.description).toMatch(/25 %/);
+    expect(CHECKS.V5.description).toMatch(/enfoque/);
+    expect(CHECKS.V10.description).toMatch(/de lleno/);
+    expect(CHECKS.V11.description).toMatch(/azar/);
+    expect(CHECKS.V11.description).toMatch(/5 %/);
+    for (const c of ['V3', 'V6'] as const) expect(CHECKS[c].description).toMatch(/enfoque/);
+    // The numbers in the text are the pipeline's.
+    expect(CHECKS.V5.description).toContain(`${LENGTH_TOLERANCE * 100} %`);
+    expect(CHECKS.V11.description).toContain(`${GUESS_ROUNDS} veces`);
+    expect(CHECKS.V11.description).toContain(`hasta ${MAX_REWRITES} veces`);
+    expect(CHECKS.V11.description).toContain(`${CHANCE_SIGNIFICANCE * 100} %`);
   });
 });
