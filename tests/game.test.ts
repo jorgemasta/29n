@@ -1,6 +1,6 @@
 // Test point B: the game engine, exercised only through createGame.
 import { describe, expect, it } from 'vitest';
-import { createGame, NONE } from '../src/game';
+import { createGame, MINUTES_PER_QUESTION, NONE } from '../src/game';
 import { validateDataset } from '../src/dataset';
 import { sampleDataset, sampleNote } from './fixtures/sample-dataset';
 import { topicsDataset } from './fixtures/topics-dataset';
@@ -912,9 +912,99 @@ describe('createGame: themes, questions and approaches (v2)', () => {
     expect(JSON.stringify(blind)).not.toMatch(PARTY_INFO);
   });
 
+  /**
+   * themesDataset plus each party's position on the question "alquiler" (concrete proposal with
+   * exact figures and feasibility). Positions are keyed by question id: v1 `topic` until #21 renames
+   * it to `question`. "oferta" is defended only by isla (regional, Canary provinces).
+   */
+  const detailed = (): Dataset => {
+    const pos = (party: string, rest: Record<string, unknown>) => ({ party, topic: 'alquiler', versions: { prompt: 'v1' }, ...rest });
+    const proposes = (party: string, figure: string | null, feasibility?: typeof sampleNote) =>
+      pos(party, {
+        state: 'proposes',
+        text: { what: `Propuesta concreta de ${party}`, how: `Cómo lo haría ${party}`, figure },
+        quotes: [{ text: `Cita de la propuesta concreta de ${party}, con más de cuarenta caracteres.`, page: 9 }],
+        ...(feasibility ? { feasibility } : {}),
+      });
+    return {
+      ...themesDataset,
+      positions: [
+        ...themesDataset.positions,
+        proposes('aaa', '120.000 viviendas en 4 años', sampleNote),
+        proposes('bbb', null),
+        proposes('isla', '3.500 viviendas'),
+        proposes('bcn', '2.000 millones de euros'),
+        pos('nada', { state: 'noProposal' }),
+        pos('ccc', { state: 'unverified' }),
+      ] as Dataset['positions'],
+      questions: themesDataset.questions!.map((q) =>
+        q.id !== 'alquiler'
+          ? q
+          : { ...q, approaches: q.approaches.map((a) => (a.id === 'oferta' ? { ...a, stances: a.stances.filter((s) => s.party === 'isla') } : a)) },
+      ),
+    };
+  };
+  const alquilerReveal = (province: string | null = null) =>
+    createGame(detailed(), province, 's').chooseApproach('alquiler', 'A').chooseApproach('compra', NONE).revealTheme('vivienda')
+      .themeReveal('vivienda')!.questions.find((q) => q.question.id === 'alquiler')!;
+  const approachOf = (q: ReturnType<typeof alquilerReveal>, word: string) => q.approaches.find((a) => a.what === `Enfoque ${word}`)!;
+
+  it("the reveal gives each defending party's concrete proposal with exact figures and its feasibility", () => {
+    const control = approachOf(alquilerReveal(), 'uno');
+    const [aaa, bbb] = control.parties;
+    expect(aaa!.proposal).toEqual({
+      what: 'Propuesta concreta de aaa',
+      how: 'Cómo lo haría aaa',
+      figure: '120.000 viviendas en 4 años',
+      feasibility: sampleNote,
+      noSources: true,
+    });
+    expect(bbb!.proposal).toMatchObject({ figure: null, feasibility: null, noSources: false });
+  });
+
+  it('a party without a position on the question still shows its stance and quote, with no proposal', () => {
+    const control = approachOf(alquilerReveal(), 'uno');
+    const game = createGame(themesDataset, null, 's').chooseApproach('alquiler', 'A').chooseApproach('compra', NONE).revealTheme('vivienda');
+    const plain = game.themeReveal('vivienda')!.questions[0]!.approaches.find((a) => a.what === 'Enfoque uno')!;
+    expect(plain.parties.map((p) => p.proposal)).toEqual([null, null]);
+    expect(control.parties[0]!.quote.link).toBe('https://ejemplo.org/aaa.pdf#page=3');
+  });
+
+  it('"propone otra cosa" comes with its proposal and quote', () => {
+    const [other] = alquilerReveal('08').otherProposals;
+    expect(other!.party.id).toBe('bcn');
+    expect(other!.quote).toMatchObject({ page: 5, link: 'https://ejemplo.org/bcn.pdf#page=5' });
+    expect(other!.proposal).toMatchObject({ what: 'Propuesta concreta de bcn', figure: '2.000 millones de euros' });
+  });
+
+  it('lists the parties in play that propose nothing on the question, and those not verified', () => {
+    // ccc defends nothing once "oferta" keeps only isla, and its position was not verified.
+    const q = alquilerReveal();
+    expect(q.noProposal.map((p) => p.id)).toEqual(['nada']);
+    expect(q.unverified.map((p) => p.id)).toEqual(['ccc']);
+    // Pending parties have no manifesto to read: they are not "no propone nada".
+    expect(JSON.stringify(q)).not.toMatch(/"pend"/);
+    const barcelona = alquilerReveal('08');
+    expect(barcelona.noProposal.map((p) => p.id)).toEqual(['nada']);
+    expect(barcelona.otherProposals.map((o) => o.party.id)).toEqual(['bcn']);
+    // A party with no position at all on the question defends nothing either: no proposal.
+    const plain = createGame(themesDataset, null, 's').chooseApproach('listas', 'A').revealTheme('sanidad').themeReveal('sanidad')!;
+    expect(plain.questions[0]!.noProposal.map((p) => p.id)).toEqual(['nada']);
+  });
+
+  it('marks an approach defended only by parties not running in the province', () => {
+    expect(approachOf(alquilerReveal(), 'dos')).toMatchObject({ parties: [], onlyElsewhere: true, filler: false });
+    expect(approachOf(alquilerReveal('08'), 'dos').onlyElsewhere).toBe(true);
+    expect(approachOf(alquilerReveal('35'), 'dos')).toMatchObject({ onlyElsewhere: false });
+    expect(approachOf(alquilerReveal('35'), 'dos').parties.map((p) => p.party.id)).toEqual(['isla']);
+    expect(approachOf(alquilerReveal(), 'uno').onlyElsewhere).toBe(false);
+    expect(approachOf(alquilerReveal(), 'tres')).toMatchObject({ filler: true, onlyElsewhere: false });
+  });
+
   it('a party with only a provisional source is named at the reveal only in private mode', () => {
     const d = publishedDataset as Dataset;
-    const q = d.questions![0]!;
+    const national = new Set(d.themes!.filter((t) => t.region === undefined).map((t) => t.id));
+    const q = d.questions!.find((x) => national.has(x.theme) && x.approaches.some((a) => a.stances.some((s) => s.party === 'prueba-d')))!;
     const named = (mode: 'public' | 'private') => {
       const game = createGame(d, null, 's', undefined, { mode });
       const played = game.theme(q.theme).questions.reduce((g, x) => g.chooseApproach(x.question.id, NONE), game).revealTheme(q.theme);
@@ -922,5 +1012,114 @@ describe('createGame: themes, questions and approaches (v2)', () => {
     };
     expect(named('public')).not.toContain('prueba-d');
     expect(named('private')).toContain('prueba-d');
+  });
+});
+
+describe('createGame: a full game by themes (#24)', () => {
+  const ids = (themes: { id: string }[]) => themes.map((t) => t.id);
+  const fresh = (province: string | null = null) => createGame(themesDataset, province, 's');
+  const roundTrip = (game: ReturnType<typeof fresh>, province: string | null = null) =>
+    createGame(themesDataset, province, 's', JSON.parse(JSON.stringify(game.state)));
+  /** Answers every base question of a theme with "none", then reveals it. */
+  const finish = (game: ReturnType<typeof fresh>, themeId: string) =>
+    game.theme(themeId).questions.reduce((g, q) => g.chooseApproach(q.question.id, NONE), game).revealTheme(themeId);
+
+  it('nothing is selected until the voter picks themes', () => {
+    expect(fresh().selectedThemes()).toEqual([]);
+    expect(fresh().nextTheme()).toBeNull();
+  });
+
+  it('plays only the themes picked, in their published order', () => {
+    const game = fresh('35').selectThemes(['canarias', 'vivienda']);
+    expect(ids(game.selectedThemes())).toEqual(['vivienda', 'canarias']);
+    expect(ids(roundTrip(game, '35').selectedThemes())).toEqual(['vivienda', 'canarias']);
+  });
+
+  it('"Todas" selects every theme available in the province, also those of a later province change', () => {
+    const all = fresh('35').selectThemes('all');
+    expect(ids(all.selectedThemes())).toEqual(['vivienda', 'sanidad', 'canarias']);
+    expect(ids(roundTrip(all, '08').selectedThemes())).toEqual(['vivienda', 'sanidad']);
+    expect(ids(roundTrip(all, '38').selectedThemes())).toEqual(['vivienda', 'sanidad', 'canarias']);
+  });
+
+  it('a picked theme not available in the province is left out', () => {
+    expect(ids(roundTrip(fresh('35').selectThemes(['canarias', 'sanidad']), '08').selectedThemes())).toEqual(['sanidad']);
+  });
+
+  it('rejects an empty or unknown selection', () => {
+    expect(() => fresh().selectThemes([])).toThrow();
+    expect(() => fresh().selectThemes(['nope'])).toThrow();
+    expect(() => fresh('08').selectThemes(['canarias'])).toThrow();
+  });
+
+  it('playing a theme that was not picked adds it to the selection', () => {
+    const game = fresh().selectThemes(['sanidad']).chooseApproach('alquiler', 'A');
+    expect(ids(game.selectedThemes())).toEqual(['vivienda', 'sanidad']);
+    expect(ids(fresh().selectThemes('all').chooseApproach('alquiler', 'A').selectedThemes())).toEqual(['vivienda', 'sanidad']);
+  });
+
+  it('goes to the next picked theme not revealed yet, wrapping, and to none when all are revealed', () => {
+    const game = fresh('35').selectThemes(['vivienda', 'canarias']);
+    expect(game.nextTheme()?.id).toBe('vivienda');
+    expect(game.nextTheme('vivienda')?.id).toBe('canarias');
+    const one = finish(game, 'canarias');
+    expect(one.nextTheme('vivienda')?.id).toBe('vivienda');
+    expect(one.nextTheme('canarias')?.id).toBe('vivienda');
+    expect(finish(one, 'vivienda').nextTheme('vivienda')).toBeNull();
+  });
+
+  it('counts revealed themes out of the picked ones ("Temáticas · 1/2")', () => {
+    const game = fresh().selectThemes(['vivienda', 'sanidad']);
+    expect(game.themesProgress()).toEqual({ revealed: 0, total: 2 });
+    expect(finish(game, 'sanidad').themesProgress()).toEqual({ revealed: 1, total: 2 });
+  });
+
+  it('tells how many questions a theme has and roughly how long it takes', () => {
+    const v = fresh().theme('vivienda');
+    expect(v.questions).toHaveLength(2);
+    expect(v.minutes).toBe(2 * MINUTES_PER_QUESTION);
+  });
+
+  it('a question knows its place in the theme ("Pregunta 2 de 2"); a follow-up one, among the follow-ups', () => {
+    const game = fresh();
+    expect(game.question('alquiler').progress).toEqual({ number: 1, total: 2, followUp: false });
+    expect(game.question('compra').progress).toEqual({ number: 2, total: 2, followUp: false });
+    expect(game.question('okupacion').progress).toEqual({ number: 1, total: 1, followUp: true });
+  });
+
+  it('points to the next base question to answer, and to none once all are answered', () => {
+    const game = fresh();
+    expect(game.theme('vivienda').next).toBe('alquiler');
+    expect(game.chooseApproach('alquiler', 'A').theme('vivienda').next).toBe('compra');
+    expect(game.chooseApproach('compra', 'A').theme('vivienda').next).toBe('alquiler');
+    expect(game.chooseApproach('alquiler', 'A').chooseApproach('compra', 'B').theme('vivienda').next).toBeNull();
+  });
+
+  it('offers the follow-up questions only after the reveal, until they are answered', () => {
+    const answered = fresh().chooseApproach('alquiler', 'A').chooseApproach('compra', 'B');
+    expect(answered.theme('vivienda').nextFollowUp).toBeNull();
+    const revealed = answered.revealTheme('vivienda');
+    expect(revealed.theme('vivienda').next).toBeNull();
+    expect(revealed.theme('vivienda').nextFollowUp).toBe('okupacion');
+    expect(revealed.chooseApproach('okupacion', NONE).theme('vivienda').nextFollowUp).toBeNull();
+  });
+
+  it('a revealed theme can be repeated: its choices are forgotten and it is blind again', () => {
+    const played = finish(finish(fresh().selectThemes('all'), 'sanidad'), 'vivienda').chooseApproach('okupacion', 'A');
+    const again = played.repeatTheme('vivienda');
+    const v = again.theme('vivienda');
+    expect(v.revealed).toBe(false);
+    expect([...v.questions, ...v.followUps].map((q) => q.choice)).toEqual([null, null, null]);
+    expect(again.themeReveal('vivienda')).toBeNull();
+    expect(again.chooseApproach('alquiler', 'B').theme('vivienda').questions[0]!.choice).toBe('B');
+    expect(again.theme('sanidad').revealed).toBe(true);
+    expect(again.themeReveal('sanidad')).toEqual(played.themeReveal('sanidad'));
+    expect(ids(again.selectedThemes())).toEqual(['vivienda', 'sanidad']);
+    expect(() => again.repeatTheme('nope')).toThrow();
+  });
+
+  it('the game state holds only choices and themes, never a party', () => {
+    const game = finish(fresh('35').selectThemes('all'), 'vivienda').chooseApproach('okupacion', 'A');
+    expect(JSON.stringify(game.state)).not.toMatch(/aaa|bbb|ccc|isla|bcn/);
   });
 });

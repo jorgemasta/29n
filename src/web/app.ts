@@ -1,7 +1,8 @@
-// Client app: first-visit home → province → theme (questions with 3 approaches, confirmed in a
-// sheet → summary → reveal) → next theme. All logic lives in the game engine; this file only routes
-// (#portada, #provincia, #tematicas, #tematica/<theme>[/<question>], #preguntar[/<id>], #datos)
-// and keeps the header chip "Temáticas · n/N" up to date. Screens: src/web/themes.ts. Choices never
+// Client app: first-visit home → province → pick themes → theme (questions with 3 approaches,
+// confirmed in a sheet → summary → reveal → optional follow-up questions) → next picked theme. All
+// logic lives in the game engine; this file only routes (#portada, #provincia, #elegir, #tematicas,
+// #tematica/<theme>[/<question>], #preguntar[/<id>], #datos) and keeps the header chip
+// "Temáticas · n/N" up to date. Screens: src/web/themes.ts. Choices never
 // leave the browser.
 // Not here yet: result (#25), guess in the sheet (#26), detailed reveal (#27), share (#30).
 import type { Dataset, Mode } from '../dataset/schema';
@@ -17,7 +18,7 @@ import { TEXT_SIZE_KEY, largeText } from './text-size';
 import { setupAnalytics, trackStarted } from './analytics';
 import { challengeNotice } from './share';
 import { h } from './dom';
-import { nextTheme, questionView, revealView, summaryView, themeHref, themesListView, themesProgress } from './themes';
+import { pickThemesView, questionView, revealView, summaryView, themeHref, themesListView, themesProgress } from './themes';
 
 const SEED_KEY = '29n:seed';
 const STATE_KEY = '29n:state';
@@ -64,10 +65,18 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
   };
   update(game.markKnown());
 
-  /** The next theme not revealed yet, or the list when every theme is revealed. */
+  /** The next picked theme not revealed yet; the picker before picking; the list when all are revealed. */
   const goToNext = (after?: string) => {
-    const t = nextTheme(game, after);
+    if (!game.selectedThemes().length) return goTo('elegir');
+    const t = game.nextTheme(after);
     goTo(t ? themeHref(t.id).slice(1) : 'tematicas');
+  };
+
+  /** Goes to `path`; on the same hash (no hashchange) renders it here. */
+  const show = (path: string) => {
+    if (location.hash.slice(1) === path) render();
+    else goTo(path);
+    window.scrollTo(0, 0);
   };
 
   /** #tematica/<theme>[/<question>]: the question asked for, the next unanswered one, the summary or the reveal. */
@@ -77,21 +86,26 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
     const asked = questionId === null ? null : [...v.questions, ...v.followUps].find((q) => q.question.id === questionId);
     // After the reveal only follow-up questions can still be answered.
     const playable = asked && !(v.revealed && !asked.question.followUp) ? asked.question.id : null;
-    const next = v.questions.find((q) => q.choice === null)?.question.id ?? null;
-    const id = playable ?? (v.revealed ? null : next);
+    const id = playable ?? v.next;
     if (id) {
       trackStarted(game);
       return questionView(game, id, {
         choose: (letter) => {
           update(game.chooseApproach(id, letter));
-          // Same hash (first question of the theme): no hashchange, so render here.
-          if (location.hash === themeHref(themeId)) render();
-          else goTo(themeHref(themeId).slice(1));
-          window.scrollTo(0, 0);
+          // After the reveal, follow-up questions go one after another, then back to the reveal.
+          const followUp = game.theme(themeId).nextFollowUp;
+          show((v.revealed && followUp ? themeHref(themeId, followUp) : themeHref(themeId)).slice(1));
         },
       });
     }
-    if (v.revealed) return revealView(game, themeId, () => goToNext(themeId));
+    if (v.revealed)
+      return revealView(game, themeId, {
+        next: () => goToNext(themeId),
+        repeat: () => {
+          update(game.repeatTheme(themeId));
+          show(themeHref(themeId).slice(1));
+        },
+      });
     return summaryView(game, themeId, () => {
       update(game.revealTheme(themeId));
       render();
@@ -106,6 +120,10 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
     else if (path === 'datos') screen = dataViewApp();
     else if (path === 'portada') screen = homeView(() => (province === undefined ? goTo('provincia') : goToNext()));
     else if (province === undefined) return goTo('portada'); // first visit: the home page, then the province
+    else if (path === 'elegir') screen = pickThemesView(game, { pick: (themes) => {
+      update(game.selectThemes(themes));
+      goToNext();
+    } });
     else if (path === 'tematicas') screen = themesListView(game, [partiesBlock(game), listLinks()]);
     else if (route === 'tematica' && rest[0]) screen = themeScreen(rest[0], rest[1] ?? null);
     else if (path === 'preguntar') screen = questionsView(game);
