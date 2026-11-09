@@ -3,8 +3,8 @@
 // --party: only that party (manual relaunch). --force: process even if the PDF is unchanged
 // (with the committed AI cache the result is identical and free). --no-publish: dry run, writes
 // nothing, no git, no deploy (notices go to the console).
-// Env: ANTHROPIC_API_KEY (+ optional AI_GATEWAY_URL); NTFY_TOPIC (+ optional NTFY_TOKEN,
-// NTFY_SERVER) for phone notices; CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID for `npm run deploy`.
+// Env: ANTHROPIC_API_KEY (+ optional AI_GATEWAY_URL); GH_TOKEN for `gh` (notices as GitHub issues,
+// WATCHER_ASSIGNEE = who gets notified); CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID for `npm run deploy`.
 // PUSH=1 pushes each commit (the workflow sets it).
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -17,7 +17,7 @@ import { PARTIES } from '../src/registry/parties';
 import { TOPICS } from '../src/registry/topics';
 import { DATASET_PATH, STATE_PATH, watch, type Alert, type Change, type Download, type WatcherState } from '../src/watcher';
 import { MANIFESTO_SOURCES } from '../src/watcher/sources';
-import { createNtfyAlert } from '../src/watcher/ntfy';
+import { createIssueAlert } from '../src/watcher/issue';
 
 const { values } = parseArgs({
   options: {
@@ -82,10 +82,10 @@ async function save(c: Change) {
 }
 
 const consoleAlert = async (a: Alert) => console.log(`[alert ${a.type}] ${a.title}\n${a.message}`);
-const phoneAlert = process.env.NTFY_TOPIC
-  ? createNtfyAlert({ topic: process.env.NTFY_TOPIC, token: process.env.NTFY_TOKEN || undefined, server: process.env.NTFY_SERVER || undefined })
-  : null;
-if (!phoneAlert) console.warn('NTFY_TOPIC no definido: los avisos solo salen por consola.');
+const issueAlert = createIssueAlert({
+  run: (args) => execFileSync('gh', args, { encoding: 'utf8' }),
+  assignee: process.env.WATCHER_ASSIGNEE || undefined,
+});
 
 const readJson = async (path: string, fallback: unknown) => {
   try {
@@ -109,7 +109,7 @@ const r = await watch(
     save,
     sendAlert: async (a) => {
       await consoleAlert(a);
-      if (phoneAlert && !dryRun) await phoneAlert(a);
+      if (!dryRun) await issueAlert(a);
     },
     now: () => new Date(),
   },

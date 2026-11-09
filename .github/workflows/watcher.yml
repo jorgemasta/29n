@@ -1,5 +1,5 @@
 # Programme watcher: every 2 h looks for new or changed programme PDFs, runs the data pipeline,
-# commits dataset + report and deploys if publishable, and notifies the maintainer's phone (ntfy).
+# commits dataset + report and deploys if publishable, and opens a GitHub issue (label 'vigilante') for each publication and failure.
 # Manual relaunch of one party: Actions → "Manifesto watcher" → Run workflow.
 # Secrets to set (Settings → Secrets and variables → Actions): see docs/deploy.md.
 name: Manifesto watcher
@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 # Never two runs at once: both would commit and deploy the same dataset.
 concurrency:
@@ -51,8 +52,8 @@ jobs:
           AI_GATEWAY_URL: ${{ secrets.AI_GATEWAY_URL }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          WATCHER_ASSIGNEE: ${{ github.repository_owner }}
           # Without it the deploy ships the site with analytics off (docs/deploy.md).
           UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
           # "1" once the free question is open (docs/deploy.md); otherwise its deploys close the box again.
@@ -69,13 +70,13 @@ jobs:
       - name: Alert if the job fails
         if: failure()
         env:
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          [ -n "$NTFY_TOPIC" ] || exit 0
-          auth=()
-          if [ -n "$NTFY_TOKEN" ]; then auth=(-H "Authorization: Bearer $NTFY_TOKEN"); fi
-          jq -n --arg t "$NTFY_TOPIC" --arg m "El job del watcher ha fallado: $RUN_URL" \
-            '{topic:$t, title:"29N: fallo del watcher", message:$m, priority:4, tags:["warning"]}' \
-            | curl -fsS "${auth[@]}" -H 'content-type: application/json' --data-binary @- https://ntfy.sh
+          title="29N: fallo del vigilante ($(date -u +%F))"
+          gh label create vigilante --color 5319E7 --description 'Aviso del vigilante de programas' --force
+          # One open issue per day at most: the cron runs every 2 h.
+          open=$(gh issue list --label vigilante --state open --json title --jq "map(select(.title == \"$title\")) | length")
+          [ "$open" = "0" ] || exit 0
+          gh issue create --title "$title" --label vigilante --assignee "${{ github.repository_owner }}" \
+            --body "El job del vigilante ha fallado: $RUN_URL"

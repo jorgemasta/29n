@@ -51,9 +51,10 @@ Nada de esto lo hace el código ni un agente. Detalle de cada paso en las seccio
 
 1. **Cloudflare**: cuenta con la zona `jorgemasta.com`; `npx wrangler login` o un `CLOUDFLARE_API_TOKEN`
    (plantilla «Edit Cloudflare Workers» + DNS) y el `CLOUDFLARE_ACCOUNT_ID`.
-2. **ntfy**: instalar la app y suscribirse a un tema largo y aleatorio (es el secreto).
+2. **Avisos del vigilante**: llegan como issues de GitHub (etiqueta `vigilante`, asignados al dueño del repo).
+   Tener la app de GitHub en el móvil con las notificaciones activadas (o el correo de GitHub).
 3. **Secretos de GitHub Actions** (Settings → Secrets and variables → Actions): `ANTHROPIC_API_KEY`,
-   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `NTFY_TOPIC` (opcionales `NTFY_TOKEN`, `AI_GATEWAY_URL`), y
+   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (opcional `AI_GATEWAY_URL`), y
    *Workflow permissions* «Read and write» (push a `main`).
 4. **Etiquetas del repo**: crear `reporte` y `falta-partido` (avisos); `reneutralizar` la crea el job de apuestas (`guesses.yml`).
 5. **Umami** (opcional): cuenta en la región UE, sitio `29n.jorgemasta.com`; variable del repo `UMAMI_WEBSITE_ID` y
@@ -148,20 +149,20 @@ cambiado, ejecuta el proceso de datos. Si es publicable: commit de `data/dataset
 estado, `npm run deploy` y push a `main`. Si se bloquea: commit solo del informe bloqueado y del estado
 (el dataset y la web quedan como estaban, y no se reintenta hasta que cambie el PDF). Si algo falla (IA,
 PDF, despliegue): no se publica nada y se reintenta en la siguiente ejecución. Cada publicación y cada
-fallo (con el motivo) llegan al móvil por ntfy.
+fallo (con el motivo) abre un issue con la etiqueta `vigilante`, asignado al dueño del repo para que GitHub
+le notifique. Los de publicación se cierran al momento (quedan como registro); los de fallo quedan abiertos
+hasta que alguien los revise, y un fallo que se repite no abre otro issue mientras el anterior siga abierto.
 
 **Pasos humanos (no hay secretos en el repo ni en la máquina de desarrollo):**
 
-1. Instalar la app **ntfy** (Android/iOS) y suscribirse a un tema con un nombre largo y aleatorio
-   (el nombre del tema es el secreto: quien lo conozca puede leer los avisos).
+1. Activar las notificaciones de GitHub para el repo (app móvil o correo): los avisos son issues asignados al
+   dueño del repo. La etiqueta `vigilante` la crea el propio job.
 2. En GitHub → Settings → Secrets and variables → Actions, crear:
    | Secreto | Uso |
    |---|---|
    | `ANTHROPIC_API_KEY` | Proceso de datos (Claude). |
    | `CLOUDFLARE_API_TOKEN` | `wrangler deploy` (plantilla «Edit Cloudflare Workers» + DNS de `jorgemasta.com`). |
    | `CLOUDFLARE_ACCOUNT_ID` | Cuenta de Cloudflare. |
-   | `NTFY_TOPIC` | Tema de ntfy del paso 1. |
-   | `NTFY_TOKEN` | Opcional: solo si el tema/servidor ntfy está protegido. |
    | `AI_GATEWAY_URL` | Opcional: Cloudflare AI Gateway. |
 3. Settings → Actions → General → *Workflow permissions*: «Read and write» (el job hace push a `main`).
    Si `main` está protegida, permitir el push de GitHub Actions.

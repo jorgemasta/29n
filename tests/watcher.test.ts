@@ -5,7 +5,7 @@ import { buildDataset, Dataset } from '../src/dataset';
 import { createFakeAI, type FakeResponses } from '../src/ai/fake';
 import { createMemoryCache } from '../src/ai/cache';
 import { watch, type Alert, type Change, type Download, type WatcherState, type WatchedSource } from '../src/watcher';
-import { createNtfyAlert } from '../src/watcher/ntfy';
+import { createIssueAlert, WATCHER_LABEL } from '../src/watcher/issue';
 import { createTestPdf } from './fixtures/pdf';
 import { testDomains, sampleParty, housingTopic, testTerms } from './fixtures/registry';
 
@@ -91,7 +91,7 @@ async function mount(o: {
           saved.push(c);
         },
         sendAlert: async (a) => {
-          if (o.alertFails) throw new Error('ntfy caído');
+          if (o.alertFails) throw new Error('GitHub caído');
           alerts.push(a);
         },
         now: () => new Date('2026-11-08T10:00:00Z'),
@@ -277,7 +277,7 @@ describe('watch', () => {
     const m = await mount({ web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() }, alertFails: true });
     const r = await m.run();
     expect(r.results[0]?.result).toBe('published');
-    expect(r.alertErrors).toEqual([expect.stringContaining('ntfy caído')]);
+    expect(r.alertErrors).toEqual([expect.stringContaining('GitHub caído')]);
   });
 
   it('keeps watching the other parties when one source is unreachable', async () => {
@@ -325,28 +325,48 @@ describe('watch', () => {
   });
 });
 
-describe('createNtfyAlert', () => {
-  it('publishes the notice to the secret topic, high priority for failures', async () => {
-    const requested: { url: string; init: RequestInit }[] = [];
-    const sendAlert = createNtfyAlert({
-      topic: 'tema-secreto',
-      token: 'tk',
-      fetch: (async (url: string, init: RequestInit) => {
-        requested.push({ url, init });
-        return new Response('{}', { status: 200 });
-      }) as typeof fetch,
-    });
+describe('createIssueAlert', () => {
+  const fakeGh = (openTitles: string[] = []) => {
+    const calls: string[][] = [];
+    const run = (args: string[]) => {
+      calls.push(args);
+      if (args[0] === 'issue' && args[1] === 'list') return JSON.stringify(openTitles.map((title) => ({ title })));
+      if (args[0] === 'issue' && args[1] === 'create') return 'https://github.com/jorgemasta/29n/issues/99\n';
+      return '';
+    };
+    return { run, calls };
+  };
+  const created = (calls: string[][]) => calls.filter((c) => c[0] === 'issue' && c[1] === 'create');
+
+  it('opens a labelled issue assigned to the maintainer for a failure, and leaves it open', async () => {
+    const gh = fakeGh();
+    const sendAlert = createIssueAlert({ run: gh.run, assignee: 'jorgemasta' });
     await sendAlert({ type: 'failure', title: '29N: programa de PEJ bloqueado', message: 'V1: cita inventada' });
 
-    expect(requested[0]?.url).toBe('https://ntfy.sh');
-    expect((requested[0]?.init.headers as Record<string, string>).authorization).toBe('Bearer tk');
-    expect(JSON.parse(String(requested[0]?.init.body))).toEqual(
-      expect.objectContaining({ topic: 'tema-secreto', title: '29N: programa de PEJ bloqueado', message: 'V1: cita inventada', priority: 4 }),
-    );
+    const [create] = created(gh.calls);
+    expect(create).toEqual(expect.arrayContaining(['--title', '29N: programa de PEJ bloqueado', '--label', WATCHER_LABEL, '--assignee', 'jorgemasta']));
+    expect(create?.[create.indexOf('--body') + 1]).toContain('V1: cita inventada');
+    expect(gh.calls.some((c) => c[1] === 'close')).toBe(false);
   });
 
-  it('fails loudly when ntfy rejects the notice', async () => {
-    const sendAlert = createNtfyAlert({ topic: 't', fetch: (async () => new Response('', { status: 429 })) as unknown as typeof fetch });
-    await expect(sendAlert({ type: 'published', title: 't', message: 'm' })).rejects.toThrow(/429/);
+  it('closes a publication notice right away, so it notifies without staying open', async () => {
+    const gh = fakeGh();
+    await createIssueAlert({ run: gh.run })({ type: 'published', title: '29N: publicado el programa de PEJ', message: '3 posturas' });
+    expect(gh.calls).toContainEqual(['issue', 'close', 'https://github.com/jorgemasta/29n/issues/99', '--reason', 'completed']);
+  });
+
+  it('does not repeat a failure that already has an open issue', async () => {
+    const gh = fakeGh(['29N: fallo al procesar PEJ']);
+    await createIssueAlert({ run: gh.run })({ type: 'failure', title: '29N: fallo al procesar PEJ', message: 'timeout' });
+    expect(created(gh.calls)).toHaveLength(0);
+  });
+
+  it('fails loudly when gh fails', async () => {
+    const sendAlert = createIssueAlert({
+      run: () => {
+        throw new Error('gh: HTTP 403');
+      },
+    });
+    await expect(sendAlert({ type: 'published', title: 't', message: 'm' })).rejects.toThrow(/403/);
   });
 });

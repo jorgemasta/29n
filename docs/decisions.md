@@ -47,7 +47,7 @@ Cerradas en la sesión de *grilling* del 8-nov-2026. El detalle de la UX está e
 ## Proceso de datos
 - Un cron cada 2 o 3 horas busca programas nuevos en las webs de los partidos y en agregadores.
 - Proceso completo: extraer, neutralizar, verificar, evaluar la viabilidad y publicar automáticamente si todas las comprobaciones pasan.
-- Aviso al móvil en cada publicación y en cada fallo.
+- Aviso en cada publicación y en cada fallo, como issue de GitHub (etiqueta `vigilante`).
 - El dataset es JSON versionado en el repo.
 - **Comparación entre partidos (V5 y V11)**: cada programa se compara con todas las posturas ya publicadas del tema.
   - V11: el adivinador recibe la postura nueva junto con todas las publicadas del tema y la lista de partidos registrados (también si es el primero en publicar). Se ejecuta 3 veces con órdenes distintos (barajados independientes, distintos entre sí mientras haya permutaciones suficientes).
