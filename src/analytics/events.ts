@@ -1,6 +1,6 @@
-// Analytics events (#13), built as pure data. The only things that may leave the browser:
-// funnel steps and, per topic, whether a bet was right. Never the chosen card or party, the party bet
-// on, the province or the ranking. Every event is checked against this fixed shape before sending
+// Analytics events (#13, #26), built as pure data. The only things that may leave the browser:
+// funnel steps and, per question, whether a guess was right. Never the chosen approach or party, the
+// party guessed, the province or the ranking. Every event is checked against this fixed shape before sending
 // (src/web/analytics.ts is the only module that talks to Umami).
 import { GOAL_TOPICS, type Game } from '../game';
 
@@ -11,8 +11,8 @@ export const EVENTS = {
   'five-topics': [],
   'saw-result': [],
   shared: ['variant'],
-  'guess-hit': ['topic'],
-  'guess-miss': ['topic'],
+  'guess-hit': ['question'],
+  'guess-miss': ['question'],
 } as const satisfies Record<string, readonly string[]>;
 
 export type EventName = keyof typeof EVENTS;
@@ -23,8 +23,8 @@ export interface AnalyticsEvent {
 }
 
 const VARIANTS: readonly string[] = ['neutral', 'ranking'] satisfies ShareVariant[];
-/** Topic ids are slugs ("vivienda", "ref-canarias"); anything else (free text, names) is refused. */
-const TOPIC_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+/** Topic and question ids are slugs ("vivienda", "ref-canarias"); anything else (free text, names) is refused. */
+const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /** True only for a known event with exactly its allowed fields and allowed values. `parties`: ids never allowed as a value. */
 export function isValidEvent(e: AnalyticsEvent, { parties = [] as readonly string[] } = {}): boolean {
@@ -36,7 +36,7 @@ export function isValidEvent(e: AnalyticsEvent, { parties = [] as readonly strin
   if (allowed.length === 0 && e.data !== undefined) return false;
   for (const [k, v] of Object.entries(data)) {
     if (typeof v !== 'string' || v.length > 40) return false;
-    if (k === 'topic' && (!TOPIC_ID.test(v) || parties.includes(v))) return false;
+    if ((k === 'topic' || k === 'question') && (!SLUG.test(v) || parties.includes(v))) return false;
     if (k === 'variant' && !VARIANTS.includes(v)) return false;
   }
   return true;
@@ -46,15 +46,21 @@ export const startedEvent = (): AnalyticsEvent => ({ name: 'started' });
 export const sawResultEvent = (): AnalyticsEvent => ({ name: 'saw-result' });
 export const sharedEvent = (variant: ShareVariant): AnalyticsEvent => ({ name: 'shared', data: { variant } });
 
-/**
- * Events for a confirmed choice, from the game before and after `choose`: topic completed, the
- * 5th topic, and the bet's hit/miss (read from the engine's reveal; the party itself is dropped here).
- */
+/** v1: events for a confirmed choice, from the game before and after `choose`: topic completed and the 5th topic. */
 export function confirmEvents(before: Game, after: Game, topic: string): AnalyticsEvent[] {
   if (!after.done().includes(topic)) return [];
   const events: AnalyticsEvent[] = [{ name: 'topic-completed', data: { topic } }];
   if (before.done().length < GOAL_TOPICS && after.done().length >= GOAL_TOPICS) events.push({ name: 'five-topics' });
-  const guess = after.reveal(topic)?.guess;
-  if (guess) events.push({ name: guess.correct ? 'guess-hit' : 'guess-miss', data: { topic } });
   return events;
+}
+
+/**
+ * Hit or miss of the guesses on these questions, once revealed (a theme just revealed, or a follow-up
+ * question answered after it). Only the question id and the outcome: the party guessed is dropped here.
+ */
+export function guessEvents(game: Game, questionIds: string[]): AnalyticsEvent[] {
+  const outcomes = game.guessOutcomes();
+  return questionIds
+    .filter((q) => Object.hasOwn(outcomes, q))
+    .map((question) => ({ name: outcomes[question] ? 'guess-hit' : 'guess-miss', data: { question } }));
 }

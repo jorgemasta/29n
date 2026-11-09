@@ -25,6 +25,20 @@ export interface ThemeState {
   revealedThemes?: string[];
   /** Themes the voter picked to play ("all" = "Todas", also those of another province later). */
   selectedThemes?: string[] | typeof ALL;
+  /** Optional guess per question id: the party the voter thinks defends the chosen approach. */
+  questionGuesses?: Record<string, string>;
+}
+
+/** The voter's guess on a question, judged once its theme is revealed. */
+export interface GuessReveal {
+  party: RevealedParty;
+  /** The party is `full` or `partial` in the chosen approach (several parties can be right). */
+  correct: boolean;
+}
+
+export interface ApproachChoiceOptions {
+  /** Party id the voter guesses defends the chosen approach. Not allowed with "none". */
+  guess?: string;
 }
 
 /** What the voter sees before the reveal: no id, no party, no stance. */
@@ -111,6 +125,8 @@ export interface QuestionReveal {
   noProposal: RevealedParty[];
   /** Parties in play whose proposal on the question did not pass the checks, by name. */
   unverified: RevealedParty[];
+  /** "Tú pensabas: X"; null without a guess. */
+  guess: GuessReveal | null;
 }
 
 export interface ThemeReveal {
@@ -175,7 +191,18 @@ export interface ThemeGame<G> {
    * Choose an approach by letter, or "none" ("Ninguna me convence"). Changeable until the reveal.
    * Playing a theme that was not picked adds it to the pick.
    */
-  chooseApproach(questionId: string, letter: string | None): G;
+  chooseApproach(questionId: string, letter: string | None, options?: ApproachChoiceOptions): G;
+  /** Guess chips in the sheet: every party in play here with a published manifesto, by name. Empty with the guess off. */
+  questionGuessOptions(questionId: string): RevealedParty[];
+  /** Hit (true) or miss per revealed question with a guess. Never the party: this is what analytics may send. */
+  guessOutcomes(): Record<string, boolean>;
+  /** "Acertaste X de Y": over revealed questions with a guess. */
+  guessScore(): { hits: number; total: number };
+  /**
+   * Chance of a blind guess being right on this question, here: for each approach, its defenders in
+   * play over the parties offered; the most generous approach (the periodic check compares with it).
+   */
+  guessChance(questionId: string): number;
   /** "Destapar": once every base question is answered. Choices become final. */
   revealTheme(themeId: string): G;
   /** Null until the theme is revealed. */
@@ -193,6 +220,8 @@ export interface ThemeContext<G> {
   state: ThemeState;
   /** Parties in play here with a published manifesto. */
   published: Map<string, Party>;
+  /** False after "No volver a preguntarme": no guess is offered or accepted (past ones still count). */
+  guess: boolean;
   withChanges(changes: ThemeState): G;
 }
 
@@ -207,6 +236,7 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
     .sort((a, b) => a.order - b.order);
   const choices = state.questionChoices ?? {};
   const revealed = new Set(state.revealedThemes ?? []);
+  const guesses = state.questionGuesses ?? {};
 
   const findTheme = (themeId: string): Theme => {
     const t = themes.find((x) => x.id === themeId);
@@ -244,6 +274,22 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
   /** Runs in the voter's province (national, or regional here). */
   const runsHere = (p: Party) => p.scope.type === 'national' || (ctx.province !== null && p.scope.provinces.includes(ctx.province));
 
+  /** Parties defending (full or partial) an approach. */
+  const defendersOf = (a: Approach) => a.stances.filter((s) => s.stance !== 'none').map((s) => s.party);
+  const guessOf = (q: Question): GuessReveal | null => {
+    const guessed = guesses[q.id];
+    const party = guessed === undefined ? undefined : ctx.published.get(guessed);
+    if (!party) return null;
+    const chosen = q.approaches.find((a) => a.id === choices[q.id]);
+    return { party: revealParty(party), correct: chosen !== undefined && defendersOf(chosen).includes(guessed!) };
+  };
+  const revealedQuestions = () => questions.filter((q) => revealed.has(q.theme) && choices[q.id] !== undefined);
+  const outcomes = () =>
+    Object.fromEntries(revealedQuestions().flatMap((q) => {
+      const g = guessOf(q);
+      return g ? [[q.id, g.correct] as const] : [];
+    }));
+  const offered = () => [...ctx.published.values()].map(revealParty).sort(byName);
   /** Rows for these answered questions: the stances of the parties in play on each chosen approach. */
   const affinityRows = (list: Question[]): AffinityRow[] => {
     const points = new Map([...ctx.published.keys()].map((id) => [id, 0]));
@@ -305,6 +351,7 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
         .sort((x, y) => byName(x.party, y.party)),
       noProposal: silent.filter((x) => !x.unverified).map((x) => x.party).sort(byName),
       unverified: silent.filter((x) => x.unverified).map((x) => x.party).sort(byName),
+      guess: guessOf(q),
     };
   };
 
@@ -327,8 +374,10 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
     repeatTheme(themeId) {
       findTheme(themeId);
       const ofTheme = new Set(questionsOf(themeId).map((q) => q.id));
+      const others = <T>(r: Record<string, T>) => Object.fromEntries(Object.entries(r).filter(([q]) => !ofTheme.has(q)));
       return ctx.withChanges({
-        questionChoices: Object.fromEntries(Object.entries(choices).filter(([q]) => !ofTheme.has(q))),
+        questionChoices: others(choices),
+        questionGuesses: others(guesses),
         revealedThemes: [...revealed].filter((t) => t !== themeId),
       });
     },
@@ -349,9 +398,14 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
         nextFollowUp: isRevealed ? unanswered(all.filter((q) => q.followUp)) : null,
       };
     },
-    chooseApproach(questionId, letter) {
+    chooseApproach(questionId, letter, { guess } = {}) {
       const q = findQuestion(questionId);
       if (revealed.has(q.theme) && !q.followUp) throw new Error(`La temática ${q.theme} ya está destapada`);
+      if (guess !== undefined) {
+        if (letter === NONE) throw new Error('No se puede apostar con «Ninguna me convence»');
+        if (!ctx.guess) throw new Error('La apuesta está desactivada');
+        if (!ctx.published.has(guess)) throw new Error(`No se puede apostar por ${guess}: no está en juego aquí`);
+      }
       let choice: string;
       if (letter === NONE) choice = NONE;
       else {
@@ -360,7 +414,27 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
         choice = x.approach.id;
       }
       const { [questionId]: _, ...others } = choices;
-      return ctx.withChanges({ questionChoices: { ...others, [questionId]: choice }, ...selecting(q.theme) });
+      const { [questionId]: __, ...otherGuesses } = guesses;
+      return ctx.withChanges({
+        questionChoices: { ...others, [questionId]: choice },
+        questionGuesses: guess === undefined ? otherGuesses : { ...otherGuesses, [questionId]: guess },
+        ...selecting(q.theme),
+      });
+    },
+    questionGuessOptions(questionId) {
+      findQuestion(questionId);
+      return ctx.guess ? offered() : [];
+    },
+    guessOutcomes: outcomes,
+    guessScore() {
+      const all = Object.values(outcomes());
+      return { hits: all.filter(Boolean).length, total: all.length };
+    },
+    guessChance(questionId) {
+      const q = findQuestion(questionId);
+      const n = ctx.published.size;
+      if (!n) return 0;
+      return Math.max(...q.approaches.map((a) => defendersOf(a).filter((p) => ctx.published.has(p)).length / n));
     },
     revealTheme(themeId) {
       findTheme(themeId);

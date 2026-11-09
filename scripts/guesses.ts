@@ -1,14 +1,16 @@
-// Bet hit-rate check (#13), run weekly by .github/workflows/guesses.yml (or by hand):
+// Guess hit-rate check (#13, #26), run weekly by .github/workflows/guesses.yml (or by hand):
 //   npx tsx scripts/guesses.ts [--days 30] [--no-publish]
-// Reads aggregated 'guess-hit' / 'guess-miss' counts per topic from Umami and opens a GitHub
-// issue (label 'reneutralizar') for each topic above 60 % with enough bets. --no-publish: print only.
+// Reads aggregated 'guess-hit' / 'guess-miss' counts per question from Umami and opens a GitHub
+// issue (label 'reneutralizar') for each question whose hit rate is clearly above its own chance
+// (from data/dataset.json), only with enough guesses. --no-publish: print only.
 // Env: UMAMI_API_KEY, UMAMI_WEBSITE_ID (unset ⇒ analytics disabled, exits 0), UMAMI_API_URL
 // (default https://stats.padelful.com/api, the self-hosted instance); GH_TOKEN for `gh` (the workflow passes github.token).
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
-import { checkGuesses, type GuessPorts } from '../src/guesses';
+import { checkGuesses, questionChances, type GuessPorts } from '../src/guesses';
 import { createUmamiCounter, createGitHubPorts } from '../src/guesses/adapters';
-import { TOPICS } from '../src/registry/topics';
+import { Dataset } from '../src/dataset';
 
 const { values } = parseArgs({
   options: { days: { type: 'string', default: '30' }, 'no-publish': { type: 'boolean', default: false } },
@@ -35,6 +37,8 @@ const ports: GuessPorts = {
     : gh.openIssue,
 };
 
-const r = await checkGuesses(ports, { topics: TOPICS, period: `los últimos ${days} días` });
-for (const t of r.topics) console.log(`${t.topic}: ${t.guesses} apuestas, ${Math.round(t.rate * 100)} % → ${t.action}`);
-if (!r.topics.length) console.log('Sin apuestas en el periodo.');
+const dataset = Dataset.parse(JSON.parse(readFileSync('data/dataset.json', 'utf8')));
+const pct = (x: number) => `${Math.round(x * 100)} %`;
+const r = await checkGuesses(ports, { questions: questionChances(dataset), period: `los últimos ${days} días` });
+for (const q of r.questions) console.log(`${q.question}: ${q.guesses} apuestas, ${pct(q.rate)} (azar ${pct(q.chance)}) → ${q.action}`);
+if (!r.questions.length) console.log('Sin apuestas en el periodo.');

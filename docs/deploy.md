@@ -180,7 +180,7 @@ Node: Astro está fijado a 7.4.1 porque esta máquina tiene Node 22.23.2 (Astro 
 Eventos (lista cerrada en `src/analytics/events.ts`, validados antes de enviarse; `src/web/analytics.ts`
 es el único módulo del cliente que habla con Umami, vía `window.umami.track`): `started`,
 `topic-completed {topic}`, `five-topics`, `saw-result`, `shared {variant}`,
-`guess-hit {topic}`, `guess-miss {topic}`. Nunca el partido elegido o apostado, la provincia ni el
+`guess-hit {question}`, `guess-miss {question}` (solo si se acertó, nunca el partido). Nunca el partido elegido o apostado, la provincia ni el
 ranking. El script no registra la query (`?provincia=`, `?r=`) ni el hash, y respeta Do Not Track.
 
 **Sin `UMAMI_WEBSITE_ID` en el build no se carga el script de Umami y no se envía nada.** Pasos humanos:
@@ -196,6 +196,8 @@ ranking. El script no registra la query (`?provincia=`, `?r=`) ni el hash, y res
      opcional `UMAMI_API_URL` (por defecto `https://stats.padelful.com/api`).
    - Secreto: `UMAMI_API_KEY` (stats.padelful.com → Settings → API keys).
    - El job usa `github.token` (permiso `issues: write`) y crea la etiqueta `reneutralizar` si no existe.
-   - Abre un issue por cada tema con más del 60 % de acierto y al menos 30 apuestas en los últimos 30 días,
-     salvo que ya haya uno abierto para ese tema. Sin las dos variables, el job termina sin hacer nada.
+   - Abre un issue por cada pregunta cuyo acierto supere claramente su azar (test binomial unilateral, z > 2,33) con al
+     menos 30 apuestas en los últimos 30 días, salvo que ya haya uno abierto para esa pregunta. El azar de cada pregunta
+     sale de `data/dataset.json`: partidos que defienden el enfoque más defendido entre los que se ofrecen, en la provincia
+     más generosa. Sin las dos variables, el job termina sin hacer nada.
    - En local: `UMAMI_API_KEY=… UMAMI_WEBSITE_ID=… npx tsx scripts/guesses.ts --no-publish`.

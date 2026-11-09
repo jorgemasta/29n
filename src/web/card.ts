@@ -2,6 +2,7 @@
 // link to the PDF page, and the grey row of a party with no card.
 import type { RevealedParty, PartyCard } from '../game';
 import { h, type Child } from './dom';
+import { icon } from './icons';
 
 /**
  * `<details>` card: summary = letter + `title` (+ PRUEBA / SOLO PRIVADO labels and `chips`),
@@ -27,7 +28,7 @@ export function revealedCard(
           h('p', {}, `«${c.text}»`),
           h('footer', {},
             `— ${t.manifestoTitle}, pág. ${c.page} · `,
-            h('a', { href: c.link, target: '_blank', rel: 'noopener' }, 'Abrir PDF en la página ↗'),
+            h('a', { href: c.link, target: '_blank', rel: 'noopener' }, 'Abrir PDF en la página', icon('external')),
           ),
         ),
       ),

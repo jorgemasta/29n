@@ -3,6 +3,7 @@
 import data from '../../data/dataset.json';
 import type { Dataset, Mode } from '../dataset';
 import { setupPublication } from '../launch';
+import { Pulse } from '../pulse';
 
 const publication = setupPublication(data as Dataset, process.env);
 if (publication.errors.length) {
@@ -13,6 +14,13 @@ export const mode: Mode = publication.mode;
 export const dataset: Dataset = publication.dataset;
 /** Only the checked production build lets search engines in (meta robots, robots.txt). */
 export const indexable = publication.indexable;
+
+/**
+ * The frozen pulse list (data/pulse.json, written by `npm run pulse`); null until it is taken, so
+ * the site builds without it.
+ */
+const pulseFile = Object.values(import.meta.glob<{ default: unknown }>('../../data/pulse.json', { eager: true }))[0];
+export const pulse: Pulse | null = pulseFile ? Pulse.parse(pulseFile.default) : null;
 
 /** "14 nov, 09:30" (Europe/Madrid). */
 export const shortDate = (iso: string) =>

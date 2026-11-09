@@ -1,4 +1,4 @@
-// Share card, link preview and ?r=reto: pure content derived from the game result (canvas drawing stays thin).
+// Share card, link preview and ?r=reto: pure content derived from Game.affinity() (canvas drawing stays thin).
 import { describe, expect, it } from 'vitest';
 import {
   FORMATS,
@@ -12,40 +12,38 @@ import {
   challengeHomeText,
   variantAvailable,
 } from '../src/share';
-import { createGame, type RankingRow, type Result } from '../src/game';
-import { topicsDataset } from './fixtures/topics-dataset';
+import { createGame, type Affinity, type AffinityRow, type ThemeAffinity } from '../src/game';
+import { themesDataset } from './fixtures/themes-dataset';
 
 const party = (id: string, name = `Partido ${id.toUpperCase()}`) => ({ id, name, acronym: id.toUpperCase(), test: true });
-const row = (id: string, percent: number, rank: number, tie = false): RankingRow =>
-  ({ party: party(id), points: percent / 10, percent, topics: 1, rank, tie }) as RankingRow;
+const row = (id: string, percent: number, rank: number, tie = false): AffinityRow =>
+  ({ party: party(id), points: percent / 25, percent, rank, tie }) as AffinityRow;
+const theme = (title: string, rows: AffinityRow[], questions = 3, none = 0): ThemeAffinity =>
+  ({ theme: { id: title.toLowerCase(), title, order: 1 }, questions, none, rows }) as ThemeAffinity;
 
-function result(r: Partial<Result> = {}): Result {
+const vivienda = theme('Vivienda', [row('a', 67, 1), row('b', 33, 2), row('c', 0, 3), row('d', 0, 3, true)]);
+const sanidad = theme('Sanidad', [row('c', 50, 1), row('d', 17, 2), row('a', 0, 3), row('b', 0, 3, true)], 3, 1);
+
+function affinity(a: Partial<Affinity> = {}): Affinity {
   return {
-    available: true,
-    topics: 8,
-    none: 0,
-    allNone: false,
-    distinctParties: 4,
-    ranking: [row('a', 38, 1), row('b', 25, 2), row('c', 13, 3), row('d', 13, 3, true), row('e', 0, 5)],
-    pending: [],
+    themes: [vivienda, sanidad],
+    ranking: [row('a', 38, 1), row('c', 25, 2), row('b', 13, 3), row('d', 13, 3, true), row('e', 0, 5)],
+    missingManifestos: [],
     noProvince: false,
-    topicsWithNews: 0,
-    guesses: { total: 0, wrong: 0, surprises: [] },
-    ...r,
-  } as Result;
+    ...a,
+  } as Affinity;
 }
 
 const texts = (c: ReturnType<typeof cardContent>) => c.lines.map((l) => l.text);
 const names = ['Partido A', 'Partido B', 'Partido C', 'Partido D', 'Partido E'];
 
 describe('default card ("Sin partidos")', () => {
-  it('says how many different parties in how many topics, and never names a party', () => {
-    const c = cardContent(result(), 'no-parties');
+  it('names the themes played and how many different parties coincided, never which ones', () => {
+    const c = cardContent(affinity(), 'no-parties');
     expect(texts(c)).toEqual([
       '29N · Elegido a ciegas',
-      '4 partidos',
-      'distintos en 8 temas, sin saber de quién era cada propuesta.',
-      'Vas por libre.',
+      'He hecho Vivienda y Sanidad a ciegas: coincidí con 4 partidos distintos.',
+      '6 preguntas, sin saber qué partidos había detrás de cada propuesta.',
       '¿Y tú? Lee las propuestas sin saber de quién son.',
       '29n.jorgemasta.com',
       'Sin registro · Sin datos personales · Con citas de los programas',
@@ -55,42 +53,48 @@ describe('default card ("Sin partidos")', () => {
     expect(c.bars).toEqual([]);
   });
 
-  it('labels 1 party as "Lo tengo claro." and 2–3 as "Con matices."', () => {
-    expect(texts(cardContent(result({ distinctParties: 1 }), 'no-parties')).slice(1, 4)).toEqual([
-      '1 partido',
-      'en 8 temas, sin saber de quién era cada propuesta.',
-      'Lo tengo claro.',
+  it('is the default even when a ranking exists', () => {
+    expect(cardContent(affinity(), 'no-parties').variant).toBe('no-parties');
+    expect(SHARE_TEXT).not.toMatch(/Partido/);
+  });
+
+  it('works from one theme, with one party or none', () => {
+    const one = theme('Vivienda', [row('a', 100, 1), row('b', 0, 2)], 1);
+    expect(texts(cardContent(affinity({ themes: [one], ranking: null }), 'no-parties')).slice(1, 3)).toEqual([
+      'He hecho Vivienda a ciegas: coincidí con 1 partido.',
+      '1 pregunta, sin saber qué partidos había detrás de cada propuesta.',
     ]);
-    expect(texts(cardContent(result({ distinctParties: 3 }), 'no-parties'))).toContain('Con matices.');
+    const nobody = theme('Sanidad', [row('a', 0, 1), row('b', 0, 1, true)], 3, 3);
+    expect(texts(cardContent(affinity({ themes: [nobody], ranking: null }), 'no-parties'))[1]).toBe(
+      'He hecho Sanidad a ciegas: no coincidí con ningún partido.',
+    );
   });
 
-  it('adds the bets line only with 3 bets or more', () => {
-    const withChanges = (total: number, wrong: number) =>
-      texts(cardContent(result({ guesses: { total, wrong, surprises: [] } }), 'no-parties'));
-    expect(withChanges(2, 2).join('\n')).not.toMatch(/pensaba/);
-    expect(withChanges(5, 3)).toContain('3 de 5 veces no era de quien yo pensaba.');
-    expect(withChanges(3, 1)).toContain('1 de 3 veces no era de quien yo pensaba.');
-  });
-
-  it('when nothing convinced the voter, says so without a party count', () => {
-    const c = cardContent(result({ allNone: true, distinctParties: 0, none: 6, topics: 6, ranking: [] }), 'no-parties');
-    expect(texts(c).slice(1, 3)).toEqual(['Ninguna', 'me convenció en 6 temas, sin saber de quién era cada propuesta.']);
+  it('lists up to 3 themes by name and counts them beyond that', () => {
+    const t = (title: string) => theme(title, [row('a', 100, 1)], 1);
+    expect(texts(cardContent(affinity({ themes: [t('Vivienda'), t('Sanidad'), t('Empleo')] }), 'no-parties'))[1]).toBe(
+      'He hecho Vivienda, Sanidad y Empleo a ciegas: coincidí con 1 partido.',
+    );
+    expect(texts(cardContent(affinity({ themes: ['A', 'B', 'C', 'D'].map(t) }), 'no-parties'))[1]).toBe(
+      'He hecho 4 temáticas a ciegas: coincidí con 1 partido.',
+    );
   });
 });
 
-describe('ranking card ("Con mi ranking")', () => {
-  it('shows the top 3, how many more, topics, "Ninguna", pending programmes and the disclaimer', () => {
-    const c = cardContent(result({ none: 1, pending: [party('f') as never] }), 'ranking');
+describe('ranking card ("Con mi ranking"), only if the voter picks it', () => {
+  it('shows the top 3, how many more, themes and questions, "Ninguna", missing manifestos and the disclaimer', () => {
+    const c = cardContent(affinity({ missingManifestos: [party('f')] as never }), 'ranking');
+    expect(c.variant).toBe('ranking');
     expect(c.bars).toEqual([
       { text: 'Partido A 38 %', percent: 38 },
-      { text: 'Partido B 25 %', percent: 25 },
-      { text: 'Partido C 13 %', percent: 13 },
+      { text: 'Partido C 25 %', percent: 25 },
+      { text: 'Partido B 13 %', percent: 13 },
     ]);
     expect(texts(c)).toEqual([
       '29N · Con quién coincido a ciegas',
       '+2 partidos más',
-      'En 8 temas · 1 vez ninguna me convenció',
-      '⏳ Falta 1 programa.',
+      'En 2 temáticas, 6 preguntas · 1 vez ninguna me convenció',
+      'Falta 1 programa.',
       'No es una recomendación de voto.',
       '29n.jorgemasta.com',
     ]);
@@ -98,45 +102,53 @@ describe('ranking card ("Con mi ranking")', () => {
 
   it('pluralises and leaves out what does not apply', () => {
     const c = cardContent(
-      result({ none: 2, ranking: [row('a', 50, 1), row('b', 25, 2)], pending: [party('f'), party('g')] as never }),
+      affinity({
+        themes: [vivienda, theme('Sanidad', sanidad.rows, 3, 2)],
+        ranking: [row('a', 50, 1), row('b', 25, 2)],
+        missingManifestos: [party('f'), party('g')] as never,
+      }),
       'ranking',
     );
     expect(texts(c)).toEqual([
       '29N · Con quién coincido a ciegas',
-      'En 8 temas · 2 veces ninguna me convenció',
-      '⏳ Faltan 2 programas.',
+      'En 2 temáticas, 6 preguntas · 2 veces ninguna me convenció',
+      'Faltan 2 programas.',
       'No es una recomendación de voto.',
       '29n.jorgemasta.com',
     ]);
-    expect(texts(cardContent(result(), 'ranking'))).toContain('En 8 temas');
+    expect(texts(cardContent(affinity({ themes: [vivienda, vivienda] }), 'ranking'))).toContain('En 2 temáticas, 6 preguntas');
   });
 
   it('marks ties', () => {
-    const c = cardContent(result({ ranking: [row('a', 40, 1, true), row('b', 40, 1, true), row('c', 20, 3)] }), 'ranking');
+    const c = cardContent(affinity({ ranking: [row('a', 40, 1, true), row('b', 40, 1, true), row('c', 20, 3)] }), 'ranking');
     expect(c.bars.map((b) => b.text)).toEqual(['Partido A 40 % (empate)', 'Partido B 40 % (empate)', 'Partido C 20 %']);
   });
 
-  it('is not offered when every choice was "Ninguna"', () => {
-    expect(variantAvailable(result(), 'ranking')).toBe(true);
-    expect(variantAvailable(result({ allNone: true, ranking: [] }), 'ranking')).toBe(false);
-    expect(variantAvailable(result({ allNone: true, ranking: [] }), 'no-parties')).toBe(true);
-    expect(variantAvailable(result({ available: false }), 'no-parties')).toBe(false);
+  it('is offered only with an overall ranking (2 themes) where some party coincided', () => {
+    expect(variantAvailable(affinity(), 'ranking')).toBe(true);
+    expect(variantAvailable(affinity({ themes: [vivienda], ranking: null }), 'ranking')).toBe(false);
+    expect(variantAvailable(affinity({ ranking: [row('a', 0, 1, true), row('b', 0, 1, true)] }), 'ranking')).toBe(false);
+    expect(variantAvailable(affinity({ themes: [vivienda], ranking: null }), 'no-parties')).toBe(true);
+    expect(variantAvailable(affinity({ themes: [], ranking: null }), 'no-parties')).toBe(false);
+  });
+
+  it('falls back to the default card when the ranking is not available', () => {
+    expect(cardContent(affinity({ themes: [vivienda], ranking: null }), 'ranking').variant).toBe('no-parties');
   });
 });
 
 describe('alt text', () => {
   it('is built from the same content as the image', () => {
-    const c = cardContent(result({ guesses: { total: 5, wrong: 3, surprises: [] } }), 'no-parties');
-    expect(altText(c)).toBe(
-      'Tarjeta de 29N. 29N · Elegido a ciegas. 4 partidos distintos en 8 temas, sin saber de quién era cada propuesta. ' +
-        'Vas por libre. 3 de 5 veces no era de quien yo pensaba. ¿Y tú? Lee las propuestas sin saber de quién son. ' +
+    expect(altText(cardContent(affinity(), 'no-parties'))).toBe(
+      'Tarjeta de 29N. 29N · Elegido a ciegas. He hecho Vivienda y Sanidad a ciegas: coincidí con 4 partidos distintos. ' +
+        '6 preguntas, sin saber qué partidos había detrás de cada propuesta. ¿Y tú? Lee las propuestas sin saber de quién son. ' +
         '29n.jorgemasta.com. Sin registro · Sin datos personales · Con citas de los programas.',
     );
   });
 
   it('includes the ranking bars in the ranking variant', () => {
-    const alt = altText(cardContent(result(), 'ranking'));
-    expect(alt).toContain('Partido A 38 %. Partido B 25 %. Partido C 13 %. +2 partidos más.');
+    const alt = altText(cardContent(affinity(), 'ranking'));
+    expect(alt).toContain('Partido A 38 %. Partido C 25 %. Partido B 13 %. +2 partidos más.');
     expect(alt).toContain('No es una recomendación de voto.');
   });
 });
@@ -150,26 +162,37 @@ describe('formats and accompanying text', () => {
   it('shares the same text and a clean challenge link, with no user data', () => {
     expect(CHALLENGE_URL).toBe('https://29n.jorgemasta.com/?r=reto');
     expect(SHARE_TEXT).toBe(
-      'He leído propuestas de los partidos para el 29N sin saber de quién eran. Me he llevado alguna sorpresa. ¿Y tú? 29n.jorgemasta.com/?r=reto',
+      'He elegido entre propuestas de los partidos para el 29N sin saber de quién eran. ¿Con cuántos coincides tú? 29n.jorgemasta.com/?r=reto',
     );
   });
 
   it('works on a real result from the engine', () => {
-    let p = createGame(topicsDataset, null, 's');
-    for (const t of p.topics().slice(0, 5)) p = p.choose(t.id, 'A');
-    const r = p.result();
-    const c = cardContent(r, 'no-parties');
-    expect(c.lines[1]!.text).toBe(`${r.distinctParties} ${r.distinctParties === 1 ? 'partido' : 'partidos'}`);
-    expect(cardContent(r, 'ranking').bars.length).toBe(Math.min(3, r.ranking.length));
+    const pick = (g: ReturnType<typeof createGame>, q: string) => g.chooseApproach(q, 'A');
+    const game = pick(pick(pick(createGame(themesDataset, null, 's'), 'alquiler'), 'compra'), 'listas')
+      .revealTheme('vivienda')
+      .revealTheme('sanidad');
+    const a = game.affinity();
+    const distinct = new Set(a.themes.flatMap((t) => t.rows.filter((r) => r.points > 0).map((r) => r.party.id))).size;
+    expect(texts(cardContent(a, 'no-parties'))[1]).toMatch(/^He hecho Vivienda y Sanidad a ciegas: /);
+    expect(texts(cardContent(a, 'no-parties'))[1]).toContain(distinct === 0 ? 'ningún partido' : `${distinct} partido`);
+    expect(texts(cardContent(a, 'no-parties'))[2]).toMatch(/^3 preguntas/);
+    if (variantAvailable(a, 'ranking')) expect(cardContent(a, 'ranking').bars.length).toBe(Math.min(3, a.ranking!.length));
   });
 });
 
 describe('link preview and ?r=reto', () => {
   it('has the og texts and a 1200×630 image', () => {
     expect(OG.title).toBe('29N: lee lo que proponen los partidos sin saber de quién es');
-    expect(OG.challengeTitle).toBe('Te han retado: ¿con quién coincides sin saberlo?');
-    expect(OG.description).toBe('Elige la propuesta que más te convence y descubre de qué partido era. Gratis, sin registrarte, sin datos personales.');
-    expect(OG.image).toEqual({ path: '/og.png', width: 1200, height: 630 });
+    expect(OG.challengeTitle).toBe('Te reto: ¿con cuántos partidos coincides a ciegas?');
+    expect(OG.description).toBe(
+      'Cada pregunta, 3 propuestas sin firma. Elige la que más te convence y descubre qué partidos la defienden. Gratis, sin registrarte, sin datos personales.',
+    );
+    expect(OG.image).toEqual({
+      path: '/og.png',
+      width: 1200,
+      height: 630,
+      alt: 'Tres propuestas sin firma, A, B y C, y una de ellas elegida. Elecciones generales · 29 de noviembre.',
+    });
   });
 
   it('detects the challenge only from r=reto', () => {
@@ -177,7 +200,7 @@ describe('link preview and ?r=reto', () => {
     expect(isChallenge('?provincia=35&r=reto')).toBe(true);
     expect(isChallenge('')).toBe(false);
     expect(isChallenge('?r=otra')).toBe(false);
-    expect(challengeHomeText('?r=reto')).toBe('Alguien te reta: ¿con quién coincides sin saberlo?');
+    expect(challengeHomeText('?r=reto')).toBe('Alguien te reta: elige a ciegas y mira con cuántos partidos coincides.');
     expect(challengeHomeText('')).toBeNull();
   });
 

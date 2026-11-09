@@ -1,12 +1,12 @@
 // FICTIONAL v2 themes for the private prototype (#19, #24): four national themes and a regional one
 // ("Tu comunidad: Canarias"), each with 3 base questions and 2 follow-up ones, and 3 approaches per
-// question, written by hand over the fictional v1 proposals. Each stance quotes the party's literal
-// text, taken from its processed v1 position on the given topic (so the quote is in its fictional PDF).
-// The first question on each topic takes the topic's id: until #21 keys positions by question, each
-// party's position on that topic is its concrete proposal there (exact figures and feasibility, shown
-// at the reveal). Other questions show no concrete proposal yet.
-// #20/#21 replace this with processManifesto per question + settleApproaches on the fake AI.
+// question, written by hand over the fictional v1 proposals. Each question names the v1 topic whose
+// fictional proposal is, for the parties it involves, their position on it: processManifesto
+// extracts it per question (SIMULATED_QUESTIONS), and each stance quotes that position (so the quote
+// is in its fictional PDF and the reveal shows its concrete proposal and feasibility).
+// #20's settleApproaches can replace the hand-written approaches.
 import type { Approach, PartyStance, Position, Question, Theme } from '../src/dataset/schema';
+import type { QuestionToProcess } from '../src/pipeline';
 
 /** Fictional party by letter: "a" → prueba-a. */
 type Letter = 'a' | 'b' | 'c' | 'd' | 'e';
@@ -725,11 +725,21 @@ const THEMES: ThemeDraft[] = [
   },
 ];
 
+const lettersOf = (q: QuestionDraft): Letter[] => [...new Set([...q.approaches.flatMap((a) => [...(a.full ?? []), ...(a.partial ?? [])]), ...(q.other ?? [])])];
+
+/**
+ * Questions the fictional programmes are processed for: each with its v1 topic (whose fictional
+ * proposal is the position) and the parties it involves (the others propose nothing on it).
+ */
+export const SIMULATED_QUESTIONS: (QuestionToProcess & { topic: string; parties: string[] })[] = THEMES.flatMap((t) =>
+  t.questions.map((q) => ({ id: q.id, text: q.text, topic: q.topic, parties: lettersOf(q).map((l) => `prueba-${l}`) })),
+);
+
 export function simulatedThemes(positions: Position[]): { themes: Theme[]; questions: Question[] } {
-  const quoteOf = (letter: Letter, topic: string) => {
+  const quoteOf = (letter: Letter, question: string) => {
     const party = `prueba-${letter}`;
-    const p = positions.find((x) => x.party === party && x.topic === topic);
-    if (p?.state !== 'proposes') throw new Error(`${party} no tiene propuesta de ${topic}`);
+    const p = positions.find((x) => x.party === party && x.question === question);
+    if (p?.state !== 'proposes') throw new Error(`${party} no tiene propuesta en ${question}`);
     return { party, quote: p.quotes[0]! };
   };
   const toQuestion = (theme: string, q: QuestionDraft, order: number): Question => ({
@@ -738,7 +748,7 @@ export function simulatedThemes(positions: Position[]): { themes: Theme[]; quest
     text: q.text,
     followUp: q.followUp ?? false,
     order,
-    origin: { cis: q.cis ?? null, manifestos: new Set(q.approaches.flatMap((a) => [...(a.full ?? []), ...(a.partial ?? [])])).size },
+    origin: { cis: q.cis ?? null, manifestos: lettersOf(q).length },
     approaches: q.approaches.map(
       (a): Approach => ({
         id: a.id,
@@ -747,12 +757,12 @@ export function simulatedThemes(positions: Position[]): { themes: Theme[]; quest
         figure: a.figure ?? null,
         filler: a.filler ?? false,
         stances: [
-          ...(a.full ?? []).map((l): PartyStance => ({ ...quoteOf(l, q.topic), stance: 'full' })),
-          ...(a.partial ?? []).map((l): PartyStance => ({ ...quoteOf(l, q.topic), stance: 'partial' })),
+          ...(a.full ?? []).map((l): PartyStance => ({ ...quoteOf(l, q.id), stance: 'full' })),
+          ...(a.partial ?? []).map((l): PartyStance => ({ ...quoteOf(l, q.id), stance: 'partial' })),
         ],
       }),
     ),
-    otherProposals: (q.other ?? []).map((l) => quoteOf(l, q.topic)),
+    otherProposals: (q.other ?? []).map((l) => quoteOf(l, q.id)),
   });
   return {
     themes: THEMES.map((t) => t.theme),

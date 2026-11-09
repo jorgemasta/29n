@@ -1,8 +1,8 @@
 // V13 (double-blind feasibility) + V8 (feasibility sources).
-// Two independent evaluations get ONLY the topic, the neutral text and the quotes (with every
-// party's identifying terms masked); never the party. Each source must be on an institutional
+// Two independent evaluations get ONLY the question, the concrete proposal and the quotes (with
+// every party's identifying terms masked); never the party. Each source must be on an institutional
 // domain and answer HTTP 200, else it is removed; an evaluation left without sources is repeated.
-import type { Quote, ReportEntry, Assessment, Source, FeasibilityNote, NeutralText } from '../dataset/schema';
+import type { Quote, ReportEntry, Assessment, Source, FeasibilityNote, Proposal } from '../dataset/schema';
 import type { AIAdapter } from '../ai/adapter';
 import { isInstitutionalDomain } from '../registry/institutional-domains';
 import { RUBRIC_VERSION } from '../registry/rubric';
@@ -35,14 +35,17 @@ type Annotate = (check: ReportEntry['check'], result: ReportEntry['result'], det
 
 export async function assessFeasibility(args: {
   ai: AIAdapter;
-  topic: { id: string; title: string; question: string };
-  text: NeutralText;
+  question: { id: string; text: string };
+  proposal: Proposal;
   quotes: Quote[];
   terms: IdentifyingTerms;
   checkUrl: CheckUrl;
   annotate: Annotate;
 }): Promise<FeasibilityNote> {
-  const { ai, topic, text, terms, annotate } = args;
+  const { ai, question, terms, annotate } = args;
+  const hide = (t: string) => hideMarks(t, terms);
+  const p = args.proposal;
+  const proposal = { what: hide(p.what), how: hide(p.how), figure: p.figure === null ? null : hide(p.figure) };
   const quotes = args.quotes.map((c) => ({ text: hideMarks(c.text, terms), page: c.page }));
 
   // One HTTP check per URL per run.
@@ -60,7 +63,7 @@ export async function assessFeasibility(args: {
         task: 'assess-feasibility',
         instructions: FEASIBILITY_INSTRUCTIONS,
         // `assessment` keeps the two evaluations independent (and distinct in the AI cache).
-        input: { topic, text, quotes, assessment, ...(repeat ? { repeat, rejectedSources: rejected } : {}) },
+        input: { question, proposal, quotes, assessment, ...(repeat ? { repeat, rejectedSources: rejected } : {}) },
         schema: FeasibilityResponse,
       });
       const sources: Source[] = [];

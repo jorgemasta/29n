@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createFakeAI, type FakeResponse, type FakeResponses } from '../src/ai/fake';
 import { Dataset, Question } from '../src/dataset/schema';
 import { GUESS_ROUNDS, MAX_REWRITES } from '../src/pipeline/approach-checks';
-import { settleApproaches, type ApproachCheck, type QuestionSpec, type SettlePosition } from '../src/pipeline/settle';
+import { publishSettled, settleApproaches, type ApproachCheck, type QuestionSpec, type SettlePosition } from '../src/pipeline/settle';
 
 const question: QuestionSpec = {
   id: 'alquiler',
@@ -215,17 +215,102 @@ describe("settleApproaches (test point A')", () => {
     expect(ai.calls.filter((c) => c.task === 'rewrite-approach')).toHaveLength(0);
   });
 
-  it('keeps frozen approaches as published and only classifies the parties (seam for #28)', async () => {
-    const first = await settleApproaches({ question, positions }, fakeAi(() => threeApproaches));
-    const frozen = first.question!.approaches;
-    const reworded = { approaches: threeApproaches.approaches.map((a) => ({ ...a, what: 'Texto distinto que no debe publicarse.' })) };
-    const ai = fakeAi(() => reworded);
-    const result = await settleApproaches({ question, positions, frozen }, ai);
+  describe('late manifesto: frozen approaches, only the new party is classified (#28)', () => {
+    /** The question as published with pej, otp, ter and cua (qui and sex arrive late). */
+    const published = async () => (await settleApproaches({ question, positions }, fakeAi(() => threeApproaches))).question!;
+    const frozenOf = (q: Question, parties: string[]) => ({ approaches: q.approaches, otherProposals: q.otherProposals, parties });
+    const texts = (q: Pick<Question, 'approaches'>) => q.approaches.map(({ id, what, how, figure }) => ({ id, what, how, figure }));
+    /** A pass answer that keeps the frozen texts and places only `party` (or nobody). */
+    const placing = (q: Question, party?: Id, at?: number, level: 'full' | 'partial' = 'full') => ({
+      approaches: q.approaches.map((a, i) => ({ what: a.what, how: a.how, figure: a.figure, filler: a.filler, stances: party && i === at ? [stance(party, level)] : [] })),
+    });
 
-    expect(result.question!.approaches.map(({ id, what, how, figure, filler }) => ({ id, what, how, figure, filler }))).toEqual(
-      frozen.map(({ id, what, how, figure, filler }) => ({ id, what, how, figure, filler })),
-    );
-    expect((settleCalls(ai)[0]!.input as { frozenApproaches: unknown[] }).frozenApproaches).toHaveLength(3);
+    it('classifies the new party into a frozen approach; approaches and the other parties stay as published', async () => {
+      const q = await published();
+      const result = await settleApproaches({ question, positions: [...positions, proposes('qui')], frozen: frozenOf(q, ['qui']) }, fakeAi(() => placing(q, 'qui', 2, 'partial')));
+
+      expect(result.publishable).toBe(true);
+      expect(texts(result.question!)).toEqual(texts(q));
+      expect(result.question!.approaches[2]!.stances).toContainEqual({ party: 'qui', stance: 'partial', quote: { text: QUOTES.qui, page: 3 } });
+      expect(result.question!.approaches[0]!.stances).toContainEqual({ party: 'qui', stance: 'none' });
+      // Everyone else keeps exactly the stance they had.
+      for (const [i, a] of q.approaches.entries()) {
+        expect(result.question!.approaches[i]!.stances.filter((s) => s.party !== 'qui')).toEqual(a.stances);
+      }
+      expect(result.question!.otherProposals).toEqual(q.otherProposals);
+    });
+
+    it('sends the AI the frozen approaches and only the new party', async () => {
+      const q = await published();
+      const ai = fakeAi(() => placing(q, 'qui', 0));
+      await settleApproaches({ question, positions: [...positions, proposes('qui')], frozen: frozenOf(q, ['qui']) }, ai);
+
+      const calls = settleCalls(ai).map((c) => c.input as { positions: { party: string }[]; frozenApproaches: { what: string }[] });
+      expect(calls).toHaveLength(2);
+      for (const input of calls) {
+        expect(input.positions.map((p) => p.party)).toEqual(['qui']);
+        expect(input.frozenApproaches.map((a) => a.what)).toEqual(q.approaches.map((a) => a.what));
+      }
+    });
+
+    it('a new party that fits no frozen approach proposes something else', async () => {
+      const q = await published();
+      const result = await settleApproaches({ question, positions: [...positions, proposes('qui')], frozen: frozenOf(q, ['qui']) }, fakeAi(() => placing(q)));
+
+      expect(result.publishable).toBe(true);
+      expect(texts(result.question!)).toEqual(texts(q));
+      expect(result.question!.otherProposals).toEqual([{ party: 'qui', quote: { text: QUOTES.qui, page: 3 } }]);
+      expect(result.question!.approaches.every((a) => a.stances.some((s) => s.party === 'qui' && s.stance === 'none'))).toBe(true);
+    });
+
+    it('ignores rewordings: the published text is kept whatever the AI writes', async () => {
+      const q = await published();
+      const reworded = { approaches: placing(q, 'qui', 1).approaches.map((a) => ({ ...a, what: 'Texto distinto que no debe publicarse.' })) };
+      const result = await settleApproaches({ question, positions: [...positions, proposes('qui')], frozen: frozenOf(q, ['qui']) }, fakeAi(() => reworded));
+
+      expect(texts(result.question!)).toEqual(texts(q));
+      expect(result.question!.approaches[1]!.stances).toContainEqual(expect.objectContaining({ party: 'qui', stance: 'full' }));
+    });
+
+    it('a new party without a proposal leaves the question as published, without calling the AI', async () => {
+      const q = await published();
+      const ai = fakeAi(() => placing(q));
+      const result = await settleApproaches({ question, positions: [...positions, { party: 'qui', state: 'noProposal' }], frozen: frozenOf(q, ['qui']) }, ai);
+
+      expect(result.publishable).toBe(true);
+      expect(result.question).toEqual(q);
+      expect(ai.calls).toHaveLength(0);
+    });
+
+    it('a changed manifesto moves only that party; the others keep their place', async () => {
+      const q = await published();
+      const result = await settleApproaches({ question, positions, frozen: frozenOf(q, ['otp']) }, fakeAi(() => placing(q, 'otp', 2)));
+
+      expect(result.question!.approaches[1]!.stances).toContainEqual({ party: 'otp', stance: 'none' });
+      expect(result.question!.approaches[2]!.stances).toContainEqual(expect.objectContaining({ party: 'otp', stance: 'full' }));
+      expect(result.question!.approaches[0]!.stances).toEqual(q.approaches[0]!.stances);
+    });
+
+    it('a frozen filler approach the new party defends stops being filler, with the same text', async () => {
+      const withFiller = { approaches: [threeApproaches.approaches[0]!, threeApproaches.approaches[1]!, { ...filler, filler: true, stances: [] }] };
+      const q = (await settleApproaches({ question, positions: positions.filter((p) => p.party !== 'ter') }, fakeAi(() => withFiller))).question!;
+      expect(q.approaches[2]!.filler).toBe(true);
+      const result = await settleApproaches({ question, positions: [...positions, proposes('qui')], frozen: frozenOf(q, ['qui']) }, fakeAi(() => placing(q, 'qui', 2)));
+
+      expect(result.publishable).toBe(true);
+      expect(texts(result.question!)).toEqual(texts(q));
+      expect(result.question!.approaches[2]!.filler).toBe(false);
+      expect(Question.safeParse(result.question).success).toBe(true);
+    });
+
+    it('a pass that classifies an already-published party is not valid (it is not sent to the AI)', async () => {
+      const q = await published();
+      const meddling = { approaches: placing(q, 'qui', 0).approaches.map((a, i) => (i === 1 ? { ...a, stances: [stance('pej')] } : a)) };
+      const result = await settleApproaches({ question, positions: [...positions, proposes('qui')], frozen: frozenOf(q, ['qui']) }, fakeAi(() => meddling));
+
+      expect(result.publishable).toBe(false);
+      expect(result.report.reason).toMatch(/no coinciden/);
+    });
   });
 
   it('the settled question plays in a valid v2 dataset (V9)', async () => {
@@ -236,7 +321,7 @@ describe("settleApproaches (test point A')", () => {
     const dataset = {
       version: 2, generated: '2026-11-09', origin: 'test', parties,
       topics: [{ id: 'vivienda', title: 'Vivienda', question: '¿Qué harían con la vivienda?', scope: 'national', order: 1 }],
-      positions: [], reports: [],
+      topicPositions: [], positions: [], reports: [],
       themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
       questions: [q],
     };
@@ -293,9 +378,11 @@ describe('approach checks (V3, V4, V5, V6, V10, V11)', () => {
 
     it('never rewrites a frozen approach: the question is not publishable', async () => {
       const first = await settleApproaches({ question, positions }, fakeAi(() => threeApproaches));
-      const frozen = first.question!.approaches.map((a, i) => (i === 1 ? { ...a, ...marked } : a));
-      const ai = fakeAi(() => threeApproaches, { 'rewrite-approach': () => taxCut });
-      const result = await settleApproaches({ question, positions, frozen }, ai);
+      const approaches = first.question!.approaches.map((a, i) => (i === 1 ? { ...a, ...marked } : a));
+      const late = { approaches: approaches.map(({ what, how, figure, filler }) => ({ what, how, figure, filler, stances: [] })) };
+      const ai = fakeAi(() => late, { 'rewrite-approach': () => taxCut });
+      const frozen = { approaches, otherProposals: [], parties: ['qui'] };
+      const result = await settleApproaches({ question, positions: [...positions, proposes('qui')], frozen }, ai);
 
       expect(result.publishable).toBe(false);
       expect(rewriteCalls(ai)).toHaveLength(0);
@@ -494,5 +581,34 @@ describe('approach checks (V3, V4, V5, V6, V10, V11)', () => {
     const parties = (ai.calls.find((c) => c.task === 'guess-party')!.input as { parties: { id: string; name: string }[] }).parties;
     expect(parties).toContainEqual(expect.objectContaining({ id: 'pp', name: 'Partido Popular' }));
     expect(parties).toContainEqual(expect.objectContaining({ id: 'otp', name: 'otp' }));
+  });
+});
+
+describe('publishSettled: the settled question and its report go into the dataset (#29)', () => {
+  const base = Dataset.parse({
+    version: 2, generated: '2026-11-09', origin: 'test',
+    parties: Object.keys(QUOTES).map((id) => ({ id, name: id, acronym: id, scope: { type: 'national' }, manifesto: { state: 'pending' } })),
+    topics: [{ id: 'vivienda', title: 'Vivienda', question: '¿Qué?', scope: 'national', order: 1 }],
+    topicPositions: [], positions: [], reports: [],
+    themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
+    questions: [],
+  });
+  const ai = () => createFakeAI({ 'settle-approaches': () => threeApproaches });
+  const positions = (Object.keys(QUOTES) as Id[]).map(proposes);
+
+  it('keeps the report with the question text and theme, and the question when publishable', async () => {
+    const result = await settleApproaches({ question, positions }, ai(), { checks: [] });
+    const ds = Dataset.parse(publishSettled(base, result));
+    expect(ds.questions!.map((q) => q.id)).toEqual(['alquiler']);
+    expect(ds.approachReports).toEqual([expect.objectContaining({ question: 'alquiler', theme: 'vivienda', text: question.text, publishable: true })]);
+  });
+
+  it('an unpublishable question leaves the dataset with its reason, and replaces an earlier report', async () => {
+    const first = publishSettled(base, await settleApproaches({ question, positions }, ai(), { checks: [] }));
+    const failed = await settleApproaches({ question, positions: [] }, ai(), { checks: [] });
+    const ds = Dataset.parse(publishSettled(first, failed));
+    expect(ds.questions).toEqual([]);
+    expect(ds.approachReports).toHaveLength(1);
+    expect(ds.approachReports![0]).toMatchObject({ question: 'alquiler', publishable: false, reason: expect.any(String) });
   });
 });

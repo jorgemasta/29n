@@ -105,13 +105,51 @@ export const FeasibilityNote = z.object({
   versions: z.object({ prompt: z.string(), rubric: z.string() }),
 });
 
-const basePosition = { party: id, topic: id, versions: Versions };
+/**
+ * A party's concrete proposal on a question, in its own terms: what / how / figure with the exact
+ * figures of its manifesto. Not neutralised: it is only shown at the reveal, never blind (blind,
+ * the voter sees approaches).
+ */
+export const Proposal = z.object({
+  what: z.string().min(1),
+  how: z.string().min(1),
+  figure: z.string().min(1).nullable(),
+});
 
+const basePosition = { party: id, question: id, versions: Versions };
+
+/**
+ * Position ("postura"): what one party says about one question, produced by `processManifesto`
+ * (one per party × question) and the input of `settleApproaches`, which groups the `proposes` ones
+ * into the question's 3 approaches. The reveal shows `proposal`, `quotes` and `feasibility`.
+ */
 export const Position = z.discriminatedUnion('state', [
-  z.object({ ...basePosition, state: z.literal('proposes'), text: NeutralText, quotes: z.array(Quote).min(1), feasibility: FeasibilityNote.optional() }),
+  z.object({
+    ...basePosition,
+    state: z.literal('proposes'),
+    proposal: Proposal,
+    /** Literal quotes, verified in the PDF (V1) with their right page (V2). */
+    quotes: z.array(Quote).min(1),
+    /** Feasibility of this concrete proposal (V13, V8). */
+    feasibility: FeasibilityNote.optional(),
+  }),
+  /** Confirmed absence (V12): "no propone nada". */
   z.object({ ...basePosition, state: z.literal('noProposal') }),
   /** Extracted but discarded by a check: "No pudimos verificar su propuesta". */
   z.object({ ...basePosition, state: z.literal('unverified') }),
+]);
+
+const baseTopicPosition = { party: id, topic: id, versions: Versions };
+
+/**
+ * v1 (legacy): one party's neutralised card on a topic. Only kept, under `topicPositions`, while the
+ * v1 topic views, methodology and reports still read it (#24, #29 remove it); the pipeline no longer
+ * produces it.
+ */
+export const TopicPosition = z.discriminatedUnion('state', [
+  z.object({ ...baseTopicPosition, state: z.literal('proposes'), text: NeutralText, quotes: z.array(Quote).min(1), feasibility: FeasibilityNote.optional() }),
+  z.object({ ...baseTopicPosition, state: z.literal('noProposal') }),
+  z.object({ ...baseTopicPosition, state: z.literal('unverified') }),
 ]);
 
 /**
@@ -192,6 +230,11 @@ export const Question = z.object({
   theme: id,
   /** Neutral open question: "¿Qué harían…?". */
   text: z.string().min(1),
+  /**
+   * Public search terms of V12 ("cómo lo buscamos"): the pages where they appear get a second read
+   * before a party is marked "no propone nada". From the pulse; absent, the question's own words.
+   */
+  keywords: z.array(z.string().min(1)).min(1).optional(),
   followUp: z.boolean(),
   /** Order within the theme (from the pulse). */
   order: z.number().int(),
@@ -203,8 +246,8 @@ export const Question = z.object({
 export const Check = z.enum(['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13']);
 
 export const ReportEntry = z.object({
-  /** Absent for programme-level checks (V7) and for answers to questions. */
-  topic: id.optional(),
+  /** Question of the position this entry is about. Absent for programme-level checks (V7) and suggested answers. */
+  question: id.optional(),
   /** Suggested question this entry is about (answers, not positions). */
   suggestedQuestion: id.optional(),
   check: Check,
@@ -212,18 +255,41 @@ export const ReportEntry = z.object({
   result: z.enum(['pass', 'fix', 'rewrite', 'discard', 'block', 'extract', 'warning']),
   detail: z.string(),
   /**
-   * Party whose publication triggered this entry: a re-check (V5, V11) of this party's published
-   * position against the topic with the new one in it. Replaced each time that party is published.
+   * Party whose publication triggered this entry (a re-check of this party's published data).
+   * Replaced each time that party is published.
    */
   origin: id.optional(),
 });
 
-/** Outcome of one position in the report: final state, rewrites asked for, why it was discarded. */
+/** Outcome of one position in the report: final state and why it was discarded. */
 export const PositionSummary = z.object({
-  topic: id,
+  question: id,
   state: z.enum(['proposes', 'noProposal', 'unverified']),
-  rewrites: z.number().int().min(0),
   reason: z.string().optional(),
+});
+
+/** One step of settling a question's approaches: `agreement` (the two passes) or a check V1–V13 on an approach. */
+export const ApproachReportEntry = z.object({
+  check: z.union([Check, z.literal('agreement')]),
+  approach: z.string().optional(),
+  result: z.enum([...ReportEntry.shape.result.options, 'retry']),
+  detail: z.string(),
+});
+
+/**
+ * Public report of settling one question's approaches (settleApproaches). An unpublishable one is
+ * listed in the methodology ("preguntas no publicadas") with its reason, so it keeps text and theme.
+ */
+export const ApproachReport = z.object({
+  question: z.string(),
+  theme: z.string().optional(),
+  text: z.string().optional(),
+  promptVersion: z.string(),
+  /** Rounds of two passes used (1, or 2 after a retry). */
+  rounds: z.number().int().min(0),
+  publishable: z.boolean(),
+  reason: z.string().optional(),
+  entries: z.array(ApproachReportEntry),
 });
 
 /** Public verification report, one per programme. */
@@ -250,7 +316,10 @@ export const Dataset = z
     origin: z.enum(['real', 'simulated', 'test']),
     note: z.string().optional(),
     parties: z.array(Party),
-    topics: z.array(Topic).min(1),
+    /** v1 (legacy) topics and their neutral cards: see TopicPosition. */
+    topics: z.array(Topic),
+    topicPositions: z.array(TopicPosition),
+    /** One position per party × processed question (published in `questions` or not). */
     positions: z.array(Position),
     reports: z.array(Report),
     /** Suggested questions of the "Preguntar" tab and their precomputed answers. */
@@ -259,26 +328,29 @@ export const Dataset = z
     /** v2: themes and their questions with 3 approaches each. Optional until v1 topics go away (#24). */
     themes: z.array(Theme).optional(),
     questions: z.array(Question).optional(),
+    /** v2: one settle report per question, published or not (the unpublished ones say why). */
+    approachReports: z.array(ApproachReport).optional(),
   })
   .superRefine((d, ctx) => {
     const parties = new Set(d.parties.map((p) => p.id));
     const topics = new Set(d.topics.map((t) => t.id));
+    const seenTopic = new Set<string>();
+    d.topicPositions.forEach((p, i) => {
+      const key = `${p.party}/${p.topic}`;
+      if (!parties.has(p.party)) ctx.addIssue({ code: 'custom', path: ['topicPositions', i, 'party'], message: `partido desconocido: ${p.party}` });
+      if (!topics.has(p.topic)) ctx.addIssue({ code: 'custom', path: ['topicPositions', i, 'topic'], message: `tema desconocido: ${p.topic}` });
+      if (seenTopic.has(key)) ctx.addIssue({ code: 'custom', path: ['topicPositions', i], message: `más de un estado para ${key}` });
+      seenTopic.add(key);
+    });
+    // Positions: known party, at most one state per party × question. A position may be about a
+    // question not in `questions` (processed but not published: settleApproaches found no 3 approaches).
     const seen = new Set<string>();
     d.positions.forEach((p, i) => {
-      const key = `${p.party}/${p.topic}`;
+      const key = `${p.party}/${p.question}`;
       if (!parties.has(p.party)) ctx.addIssue({ code: 'custom', path: ['positions', i, 'party'], message: `partido desconocido: ${p.party}` });
-      if (!topics.has(p.topic)) ctx.addIssue({ code: 'custom', path: ['positions', i, 'topic'], message: `tema desconocido: ${p.topic}` });
       if (seen.has(key)) ctx.addIssue({ code: 'custom', path: ['positions', i], message: `más de un estado para ${key}` });
       seen.add(key);
     });
-    // Every published party has exactly one state per topic.
-    for (const party of d.parties) {
-      if (party.manifesto.state !== 'published') continue;
-      for (const topic of d.topics) {
-        if (!seen.has(`${party.id}/${topic.id}`))
-          ctx.addIssue({ code: 'custom', path: ['positions'], message: `falta el estado de ${party.id}/${topic.id}` });
-      }
-    }
     // Answers: known party and question, at most one per party × question. A missing answer is
     // allowed (a party processed before a question was added): it is simply not shown.
     const questions = new Set((d.suggestedQuestions ?? []).map((p) => p.id));
@@ -338,7 +410,9 @@ export type Party = z.infer<typeof Party>;
 export type Topic = z.infer<typeof Topic>;
 export type Quote = z.infer<typeof Quote>;
 export type NeutralText = z.infer<typeof NeutralText>;
+export type Proposal = z.infer<typeof Proposal>;
 export type Position = z.infer<typeof Position>;
+export type TopicPosition = z.infer<typeof TopicPosition>;
 export type AssessmentLevel = z.infer<typeof AssessmentLevel>;
 export type FeasibilityResult = z.infer<typeof FeasibilityResult>;
 export type Source = z.infer<typeof Source>;
@@ -357,3 +431,5 @@ export type Approach = z.infer<typeof Approach>;
 export type OtherProposal = z.infer<typeof OtherProposal>;
 export type QuestionOrigin = z.infer<typeof QuestionOrigin>;
 export type Question = z.infer<typeof Question>;
+export type ApproachReportEntry = z.infer<typeof ApproachReportEntry>;
+export type ApproachReport = z.infer<typeof ApproachReport>;

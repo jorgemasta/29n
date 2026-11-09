@@ -8,11 +8,13 @@ import {
   startedEvent,
   sawResultEvent,
   confirmEvents,
+  guessEvents,
   type AnalyticsEvent,
 } from '../src/analytics/events';
 import { createUmamiCounter, createGitHubPorts } from '../src/guesses/adapters';
-import { checkGuesses, HIT_THRESHOLD, MIN_GUESSES, type GuessPorts } from '../src/guesses';
+import { checkGuesses, questionChances, MIN_GUESSES, type GuessPorts } from '../src/guesses';
 import { topicsDataset } from './fixtures/topics-dataset';
+import { themesDataset } from './fixtures/themes-dataset';
 
 type P = ReturnType<typeof createGame>;
 const newGame = () => createGame(topicsDataset, null, 's', undefined, { mode: 'private' });
@@ -25,7 +27,7 @@ const confirm = (before: P, topic: string, party: string | null, guess?: string)
   return { after, events: confirmEvents(before, after, topic) };
 };
 
-const PARTIES = topicsDataset.parties.flatMap((p) => [p.id, p.name, p.acronym]).filter(Boolean) as string[];
+const PARTIES = [...topicsDataset.parties, ...themesDataset.parties].flatMap((p) => [p.id, p.name, p.acronym]).filter(Boolean) as string[];
 /** No event may carry a party (id, name, acronym) or ranking data, anywhere. */
 const noParties = (events: AnalyticsEvent[]) => {
   for (const e of events) {
@@ -33,7 +35,7 @@ const noParties = (events: AnalyticsEvent[]) => {
     const values = Object.values(e.data ?? {}).map(String);
     for (const v of values) for (const p of PARTIES) expect(v.toLowerCase()).not.toBe(p.toLowerCase());
     // field names: only 'topic' / 'variant' (the share variant 'ranking' names the card type, not its content)
-    expect(Object.keys(e.data ?? {}).every((k) => k === 'topic' || k === 'variant')).toBe(true);
+    expect(Object.keys(e.data ?? {}).every((k) => k === 'topic' || k === 'question' || k === 'variant')).toBe(true);
     expect(e.name).not.toMatch(/ranking|porcentaje|puntos|partido|eleccion|letra|provincia/i);
   }
 };
@@ -50,19 +52,9 @@ describe('analytics events', () => {
     expect(events).toEqual([{ name: 'topic-completed', data: { topic: 'vivienda' } }]);
   });
 
-  it('a bet sends the topic and hit/miss, never the party chosen or bet on', () => {
-    const hit = confirm(newGame(), 'vivienda', 'uno', 'uno').events;
-    expect(hit).toContainEqual({ name: 'guess-hit', data: { topic: 'vivienda' } });
-    const failure = confirm(newGame(), 'vivienda', 'uno', 'dos').events;
-    expect(failure).toContainEqual({ name: 'guess-miss', data: { topic: 'vivienda' } });
-    expect(failure.some((e) => e.name === 'guess-hit')).toBe(false);
-    noParties([...hit, ...failure]);
-  });
-
-  it('the bet event is the same whatever party was chosen (only hit/miss varies)', () => {
-    const a = confirm(newGame(), 'vivienda', 'uno', 'uno').events;
-    const b = confirm(newGame(), 'vivienda', 'dos', 'dos').events;
-    expect(a).toEqual(b);
+  it('v1 bets send nothing any more: guesses are measured per question (v2)', () => {
+    const { events } = confirm(newGame(), 'vivienda', 'uno', 'uno');
+    expect(events.some((e) => e.name.startsWith('guess-'))).toBe(false);
   });
 
   it('sends "5 topics completed" exactly when the fifth topic is done', () => {
@@ -76,8 +68,7 @@ describe('analytics events', () => {
       p = r.after;
     }
     noParties(all);
-    // the ranking is now available but no event carries it
-    expect(p.result().available).toBe(true);
+    // no event carries the result
     noParties([sawResultEvent()]);
   });
 
@@ -107,6 +98,45 @@ describe('analytics events', () => {
   });
 });
 
+describe('guess events (v2, #26)', () => {
+  const fresh = () => createGame(themesDataset, null, 's');
+  const letterOf = (game: P, questionId: string, what: string) => game.question(questionId).approaches.find((a) => a.what === what)!.letter;
+  /** Chooses "control" (aaa full, bbb partial) in alquiler with a guess, "none" in compra, and reveals vivienda. */
+  const reveal = (guess?: string) => {
+    const game = fresh();
+    return game
+      .chooseApproach('alquiler', letterOf(game, 'alquiler', 'Enfoque uno'), guess ? { guess } : undefined)
+      .chooseApproach('compra', NONE)
+      .revealTheme('vivienda');
+  };
+
+  it('a guess sends only the question and hit or miss, never the party guessed or chosen', () => {
+    const hit = guessEvents(reveal('bbb'), ['alquiler', 'compra']);
+    expect(hit).toEqual([{ name: 'guess-hit', data: { question: 'alquiler' } }]);
+    const miss = guessEvents(reveal('ccc'), ['alquiler', 'compra']);
+    expect(miss).toEqual([{ name: 'guess-miss', data: { question: 'alquiler' } }]);
+    noParties([...hit, ...miss]);
+    expect(JSON.stringify([...hit, ...miss])).not.toMatch(/aaa|bbb|ccc|nada|control|uno/);
+  });
+
+  it('two different right guesses send the same event', () => {
+    expect(guessEvents(reveal('aaa'), ['alquiler'])).toEqual(guessEvents(reveal('bbb'), ['alquiler']));
+  });
+
+  it('no guess, or a theme not revealed yet, sends nothing', () => {
+    expect(guessEvents(reveal(), ['alquiler', 'compra'])).toEqual([]);
+    const blind = fresh().chooseApproach('alquiler', 'A', { guess: 'aaa' });
+    expect(guessEvents(blind, ['alquiler'])).toEqual([]);
+  });
+
+  it('a question id that is also a party id cannot be sent', () => {
+    expect(isValidEvent({ name: 'guess-hit', data: { question: 'alquiler' } }, { parties: ['aaa'] })).toBe(true);
+    expect(isValidEvent({ name: 'guess-hit', data: { question: 'aaa' } }, { parties: ['aaa'] })).toBe(false);
+    expect(isValidEvent({ name: 'guess-hit', data: { topic: 'alquiler' } })).toBe(false);
+    expect(isValidEvent({ name: 'guess-hit', data: { question: 'alquiler', party: 'aaa' } })).toBe(false);
+  });
+});
+
 describe('client privacy', () => {
   it('the engine and the client app make no network calls; only src/web/analitica.ts talks to Umami', async () => {
     const { readFileSync, readdirSync } = await import('node:fs');
@@ -123,7 +153,7 @@ describe('client privacy', () => {
   });
 });
 
-describe('bet hit rate check', () => {
+describe('guess hit rate check, per question vs chance', () => {
   const ports = (counts: Record<string, { hits: number; failures: number }>, opened: string[] = []) => {
     const openedIssues: { title: string; body: string; labels: string[] }[] = [];
     const p: GuessPorts = {
@@ -136,41 +166,67 @@ describe('bet hit rate check', () => {
     return { p, openedIssues };
   };
 
-  it('opens one issue per topic whose hit rate is above 60 % with enough bets', async () => {
+  const QUESTIONS = [
+    { id: 'alquiler', text: '¿Qué harían para que el alquiler sea asequible?', chance: 0.5 },
+    { id: 'compra', text: '¿Qué harían para que comprar casa sea posible?', chance: 0.25 },
+    { id: 'listas', text: '¿Qué harían con las listas de espera?', chance: 0.5 },
+  ];
+
+  it('compares each question with its own chance: the same hit rate can be chance on one and a leak on another', async () => {
     const { p, openedIssues } = ports({
-      vivienda: { hits: 70, failures: 30 }, // 70 % → issue
-      empleo: { hits: 60, failures: 40 }, // exactly 60 % → not above
-      sanidad: { hits: 9, failures: 1 }, // 90 % but too few bets
+      alquiler: { hits: 55, failures: 45 }, // 55 % vs 50 % chance → ok
+      compra: { hits: 55, failures: 45 }, // 55 % vs 25 % chance → issue
     });
-    const r = await checkGuesses(p, { topics: topicsDataset.topics });
-    expect(HIT_THRESHOLD).toBe(0.6);
-    expect(MIN_GUESSES).toBeGreaterThan(10);
+    const r = await checkGuesses(p, { questions: QUESTIONS });
     expect(openedIssues).toHaveLength(1);
-    expect(openedIssues[0]!.title).toContain('Vivienda');
-    expect(openedIssues[0]!.title).toContain('70 %');
-    expect(openedIssues[0]!.body).toMatch(/neutraliz/i);
+    expect(openedIssues[0]!.title).toContain('comprar casa');
+    expect(openedIssues[0]!.title).toContain('55 %');
+    expect(openedIssues[0]!.body).toContain('25 %');
+    expect(openedIssues[0]!.body).not.toMatch(/aaa|bbb|ccc/);
     expect(openedIssues[0]!.labels).toContain('reneutralizar');
-    expect(r.topics.find((t) => t.topic === 'vivienda')).toMatchObject({ guesses: 100, rate: 0.7, action: 'opened' });
-    expect(r.topics.find((t) => t.topic === 'sanidad')).toMatchObject({ action: 'fewGuesses' });
-    expect(r.topics.find((t) => t.topic === 'empleo')).toMatchObject({ action: 'ok' });
+    expect(r.questions.find((t) => t.question === 'compra')).toMatchObject({ guesses: 100, rate: 0.55, chance: 0.25, action: 'opened' });
+    expect(r.questions.find((t) => t.question === 'alquiler')).toMatchObject({ chance: 0.5, action: 'ok' });
   });
 
-  it('does not open a duplicate while an issue for that topic is still open', async () => {
-    const { p, openedIssues } = ports({ vivienda: { hits: 80, failures: 20 } }, ['Reneutralizar «Vivienda y alquiler»: 75 % de acierto']);
-    const r = await checkGuesses(p, { topics: topicsDataset.topics });
+  it('says nothing below the minimum number of guesses, however high the rate', async () => {
+    const { p, openedIssues } = ports({ compra: { hits: MIN_GUESSES - 1, failures: 0 } });
+    const r = await checkGuesses(p, { questions: QUESTIONS });
+    expect(MIN_GUESSES).toBeGreaterThan(10);
     expect(openedIssues).toHaveLength(0);
-    expect(r.topics[0]).toMatchObject({ topic: 'vivienda', action: 'alreadyOpen' });
+    expect(r.questions[0]).toMatchObject({ question: 'compra', action: 'fewGuesses' });
   });
 
-  it('ignores topics unknown to the dataset', async () => {
-    const { p, openedIssues } = ports({ 'uno': { hits: 100, failures: 0 } });
-    await checkGuesses(p, { topics: topicsDataset.topics });
+  it('a rate a little above chance is noise, not a leak', async () => {
+    const { p, openedIssues } = ports({ compra: { hits: 9, failures: 21 } }); // 30 % of 30 vs 25 %
+    await checkGuesses(p, { questions: QUESTIONS });
     expect(openedIssues).toHaveLength(0);
+  });
+
+  it('does not open a duplicate while an issue for that question is still open', async () => {
+    const { p, openedIssues } = ports({ compra: { hits: 80, failures: 20 } }, ['Reneutralizar «¿Qué harían para que comprar casa sea posible?»: 70 % de acierto']);
+    const r = await checkGuesses(p, { questions: QUESTIONS });
+    expect(openedIssues).toHaveLength(0);
+    expect(r.questions[0]).toMatchObject({ question: 'compra', action: 'alreadyOpen' });
+  });
+
+  it('ignores questions unknown to the dataset', async () => {
+    const { p, openedIssues } = ports({ aaa: { hits: 100, failures: 0 } });
+    expect((await checkGuesses(p, { questions: QUESTIONS })).questions).toEqual([]);
+    expect(openedIssues).toHaveLength(0);
+  });
+
+  it('chance per question from the dataset: the most generous approach in the most generous province', () => {
+    const chances = questionChances(themesDataset);
+    // alquiler: 2 of 4 national parties defend "control"; in 08 (+bcn) 2/5, in 35 (+isla) 2/5 → 0.5.
+    expect(chances.find((q) => q.id === 'alquiler')).toEqual({ id: 'alquiler', text: '¿Qué harían para que el alquiler sea asequible?', chance: 0.5 });
+    expect(chances.find((q) => q.id === 'compra')!.chance).toBe(0.25);
+    // ref (Canarias only): mantener has aaa+bbb of aaa, bbb, ccc, nada, isla → 0.4.
+    expect(chances.find((q) => q.id === 'ref')!.chance).toBe(0.4);
   });
 });
 
 describe('bet check adapters', () => {
-  it('reads per-topic hit and miss counts from the Umami API', async () => {
+  it('reads per-question hit and miss counts from the Umami API', async () => {
     const urls: string[] = [];
     const count = createUmamiCounter({
       base: 'https://api.umami.is/v1/',
@@ -182,12 +238,12 @@ describe('bet check adapters', () => {
         urls.push(url);
         expect(init.headers['x-umami-api-key']).toBe('clave');
         const hit = url.includes('event=guess-hit');
-        return { ok: true, status: 200, json: async () => (hit ? [{ value: 'vivienda', total: 7 }] : [{ value: 'vivienda', total: 3 }, { value: 'empleo', total: 5 }]) };
+        return { ok: true, status: 200, json: async () => (hit ? [{ value: 'alquiler', total: 7 }] : [{ value: 'alquiler', total: 3 }, { value: 'compra', total: 5 }]) };
       },
     });
-    expect(await count()).toEqual({ vivienda: { hits: 7, failures: 3 }, empleo: { hits: 0, failures: 5 } });
+    expect(await count()).toEqual({ alquiler: { hits: 7, failures: 3 }, compra: { hits: 0, failures: 5 } });
     expect(urls[0]).toMatch(/^https:\/\/api\.umami\.is\/v1\/websites\/web-1\/event-data\/values\?startAt=0&endAt=2592000000&/);
-    expect(urls[0]).toContain('propertyName=topic');
+    expect(urls[0]).toContain('propertyName=question');
   });
 
   it('sends the key as a bearer token to a self-hosted instance', async () => {

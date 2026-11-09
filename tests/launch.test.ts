@@ -57,7 +57,7 @@ describe('production build', () => {
   });
 
   it('an invalid dataset fails the build', () => {
-    const c = prod({ ...real, positions: [...real.positions, real.positions[0]!] });
+    const c = prod({ ...real, topicPositions: [...real.topicPositions, real.topicPositions[0]!] });
     expect(c.errors.length).toBeGreaterThan(0);
   });
 
@@ -97,23 +97,24 @@ function listFiles(dir: string): string[] {
 }
 
 describe('no aggregated affinity statistics are published (art. 69 LOREG)', () => {
-  it('analytics events can only carry a topic or the share-card type', () => {
-    for (const fields of Object.values(EVENTS)) for (const c of fields) expect(['topic', 'variant']).toContain(c);
+  it('analytics events can only carry a topic, a question or the share-card type', () => {
+    for (const fields of Object.values(EVENTS)) for (const c of fields) expect(['topic', 'question', 'variant']).toContain(c);
     for (const name of Object.keys(EVENTS)) expect(name).not.toMatch(/afinidad|ranking|partido|resultado-|porcentaje/);
   });
 
   it('the affinity result is only computed on the device: nothing server-side, build-time or scheduled touches it', () => {
-    // The result lives in the engine (src/game: Game.affinity, v1 Game.result) and is shown/shared
-    // only by client modules. Nobody else may build a game or read its result.
+    // The result lives in the engine (src/game: Game.affinity) and is shown/shared only by client
+    // modules. Nobody else may build a game or read its result.
     const client = ['src/game/', 'src/web/', 'src/share/'];
     const code = [...listFiles('src'), ...listFiles('scripts')].filter((f) => /\.(ts|astro|mjs)$/.test(f));
-    const computesResult = /\.affinity\(\)|\.result\(\)|\.ranking\b|\bcreateGame\(/;
+    const computesResult = /\.affinity\(\)|\.ranking\b|\bcreateGame\(/;
     const offenders = code.filter((f) => !client.some((d) => f.startsWith(d))).filter((f) => computesResult.test(readFileSync(f, 'utf8')));
     expect(offenders).toEqual([]);
     // The pattern must match the real API, or this rule silently checks nothing (it once looked
     // for names that no longer existed).
     expect(readFileSync('src/web/result.ts', 'utf8')).toMatch(computesResult);
     expect(readFileSync('src/web/app.ts', 'utf8')).toMatch(computesResult);
+    expect(readFileSync('src/web/share.ts', 'utf8')).toMatch(computesResult);
   });
 
   it('no page or workflow publishes affinity counts', () => {

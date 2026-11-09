@@ -2,31 +2,9 @@
 // the watcher). Real data replaces simulated data entirely; the party's previous positions and
 // report are replaced by the new ones, the other parties are kept as they were.
 import { buildDataset, validateDataset } from '../dataset';
-import type { Dataset, Report, Party, SuggestedQuestion, Topic } from '../dataset/schema';
+import type { Dataset, Party, SuggestedQuestion } from '../dataset/schema';
 import { SUGGESTED_QUESTIONS } from '../registry/questions';
-import type { ProcessOptions, ProcessResult, Revision } from './index';
-
-/** What processManifesto needs from the current dataset: the published parties and positions (V5, V11). */
-export function publishedContext(previous: Dataset): Pick<ProcessOptions, 'published'> {
-  const priorData = previous.origin === 'real' ? previous : { parties: [], positions: [] };
-  return { published: { parties: priorData.parties, positions: priorData.positions } };
-}
-
-/**
- * Other parties' reports with this publication's re-checks (V5, V11) as warnings: the previous
- * warnings from the same party are replaced; their positions are never touched.
- */
-function withRevisions(report: Report, published: string, revisions: Revision[]): Report {
-  return {
-    ...report,
-    entries: [
-      ...report.entries.filter((e) => e.origin !== published),
-      ...revisions
-        .filter((r) => r.party === report.party)
-        .map((r) => ({ topic: r.topic, check: r.check, result: 'warning' as const, detail: r.detail, origin: published })),
-    ],
-  };
-}
+import type { ProcessResult } from './index';
 
 export type Merge = { ok: true; dataset: Dataset } | { ok: false; reason: string };
 
@@ -36,7 +14,6 @@ export function mergeManifesto(
   party: Party,
   result: ProcessResult,
   args: {
-    topics: Topic[];
     /** Suggested questions (default: registry/questions). */
     suggestedQuestions?: SuggestedQuestion[];
     generated: string;
@@ -45,11 +22,15 @@ export function mergeManifesto(
      * processed programme is listed as "⏳ programa pendiente", scope always comes from the
      * registry (criterion data may have changed) and parties no longer registered are dropped. */
     registry?: Record<string, Omit<Party, 'manifesto'>>;
+    /** The published questions (and their settle reports) with this party classified into their
+     * frozen approaches (`classifyLateParty`, #28). Default: the previous ones, as they were. */
+    settled?: Pick<Dataset, 'questions' | 'approachReports'>;
   },
 ): Merge {
   if (!result.publishable) return { ok: false, reason: result.report.reason ?? 'no publicable' };
   if (party.manifesto.state !== 'published') return { ok: false, reason: 'el partido no tiene programa' };
-  const priorData = previous.origin === 'real' ? previous : { parties: [], positions: [], reports: [], answers: [] };
+  const priorData: Pick<Dataset, 'parties' | 'positions' | 'reports' | 'answers' | 'topics' | 'topicPositions' | 'themes' | 'questions' | 'approachReports'> =
+    previous.origin === 'real' ? previous : { parties: [], positions: [], reports: [], answers: [], topics: [], topicPositions: [] };
   const withHash: Party = {
     ...party,
     manifesto: { ...party.manifesto, hashPdf: result.report.hashPdf, ...(args.date ? { date: args.date } : {}) },
@@ -63,13 +44,18 @@ export function mergeManifesto(
     : processed;
   const dataset = buildDataset({
     parties,
-    topics: args.topics,
+    // Themes and settled questions stay as they are; the late-manifesto classification (#28) only
+    // adds this party's stances to their frozen approaches.
+    ...(priorData.themes ? { themes: priorData.themes } : {}),
+    ...((args.settled?.questions ?? priorData.questions) ? { questions: args.settled?.questions ?? priorData.questions } : {}),
+    topics: priorData.topics,
+    topicPositions: priorData.topicPositions.filter((p) => p.party !== party.id),
     suggestedQuestions: args.suggestedQuestions ?? SUGGESTED_QUESTIONS,
     results: [
       ...priorData.reports
         .filter((i) => i.party !== party.id && (!registry || registry[i.party]))
         .map((report) => ({
-          report: withRevisions(report, party.id, result.revisions),
+          report,
           positions: priorData.positions.filter((p) => p.party === report.party),
           // Answers to questions no longer suggested are dropped (V9 rejects unknown questions).
           answers: (priorData.answers ?? []).filter(
@@ -81,6 +67,9 @@ export function mergeManifesto(
     generated: args.generated,
     origin: 'real',
   });
+  // Settle reports (#29) of the published and unpublished questions are kept across publications.
+  const approachReports = args.settled?.approachReports ?? priorData.approachReports;
+  if (approachReports) dataset.approachReports = approachReports;
   const v = validateDataset(dataset);
   if (!v.valid) return { ok: false, reason: `V9: el dataset no valida: ${v.errors.join('; ')}` };
   return { ok: true, dataset };

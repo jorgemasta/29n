@@ -1,6 +1,7 @@
 // "Mi resultado" (#25) and "Tus datos". Rendering only: the numbers come from the engine
 // (Game.affinity, computed on the device). Nothing here leaves the browser.
 import { MIN_THEMES_FOR_RANKING, type AffinityRow, type Game, type ThemeAffinity } from '../game';
+import { guessScoreBlock } from './guess';
 import { provinceName } from './province';
 import { button, h } from './dom';
 import { icon } from './icons';
@@ -56,7 +57,7 @@ export function resultView(game: Game, actions: ResultActions): HTMLElement {
         )
       : h('p', { class: 'grey' }, `Desde ${MIN_THEMES_FOR_RANKING} temáticas verás también con quién coincides en conjunto.`),
     ...r.themes.map(themeBlock),
-    // #26: "cuántas veces acertaste" (bets in the sheet) goes here, between the themes and the notes.
+    guessScoreBlock(game),
     ...r.missingManifestos.map((p) => h('p', { class: 'grey-row' }, icon('clock'), ` Falta el programa de ${p.name}: aún no lo ha publicado. Tu resultado puede cambiar.`)),
     r.noProvince ? h('p', { class: 'grey-row' }, 'Solo partidos nacionales. ', link('Elige provincia', '#provincia'), ' para incluir los de tu zona.') : null,
     h('p', { class: 'grey' },
@@ -66,7 +67,7 @@ export function resultView(game: Game, actions: ResultActions): HTMLElement {
       link('Más en la metodología', '/metodologia/')),
     h('p', { class: 'note' }, 'Esto no es una recomendación de voto. Es un resumen de lo que elegiste.'),
     keepPlaying,
-    h('div', { class: 'list-links' }, link('Ver las temáticas', '#tematicas'), startOver(actions.clearAll)),
+    h('div', { class: 'list-links' }, link('Compartir', '#compartir'), link('Ver las temáticas', '#tematicas'), startOver(actions.clearAll)),
   );
 }
 

@@ -1,10 +1,10 @@
 // Client app: first-visit home → province → pick themes → theme (questions with 3 approaches,
 // confirmed in a sheet → summary → reveal → optional follow-up questions) → next picked theme. All
 // logic lives in the game engine; this file only routes (#portada, #provincia, #elegir, #tematicas,
-// #tematica/<theme>[/<question>], #resultado, #preguntar[/<id>], #datos) and keeps the header chip
+// #tematica/<theme>[/<question>], #resultado, #compartir, #preguntar[/<id>], #datos) and keeps the header chip
 // "Temáticas · n/N" up to date. Screens: src/web/themes.ts. Choices never
 // leave the browser.
-// Not here yet: guess in the sheet (#26), share (#30).
+// The guess (#26) is asked in the sheet unless turned off.
 import type { Dataset, Mode } from '../dataset/schema';
 import { challengeHomeText } from '../share';
 import { createGame, type GameState, type Game } from '../game';
@@ -15,8 +15,8 @@ import { zoneNotice, partiesBlock, provinceChip, provinceView } from './province
 import { dataView, resultView, startOver } from './result';
 import { homeView } from './home';
 import { TEXT_SIZE_KEY, largeText } from './text-size';
-import { setupAnalytics, trackResult, trackStarted } from './analytics';
-import { challengeNotice } from './share';
+import { setupAnalytics, trackGuesses, trackResult, trackStarted } from './analytics';
+import { challengeNotice, shareView } from './share';
 import { h } from './dom';
 import { icon } from './icons';
 import { pickThemesView, questionView, revealView, summaryView, themeHref, themesListView, themesProgress } from './themes';
@@ -25,7 +25,7 @@ const SEED_KEY = '29n:seed';
 const STATE_KEY = '29n:state';
 /** { code: "35" } or { code: null } ("Prefiero no decirlo"); absent = not asked yet. */
 const PROVINCE_KEY = '29n:province';
-/** { noGuess: true } after "No preguntarme más" (reactivated in Tus datos). */
+/** { noGuess: true } after "No volver a preguntarme" (reactivated in Tus datos). */
 const PREFERENCES_KEY = '29n:preferences';
 const KEYS = [SEED_KEY, STATE_KEY, PROVINCE_KEY, PREFERENCES_KEY, TEXT_SIZE_KEY];
 /** The province summary shows ~2 s on the screen after choosing (ux-spec screen 3). */
@@ -52,11 +52,12 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
     save(SEED_KEY, seed);
   }
   let preferences = read<Preferences>(PREFERENCES_KEY) ?? {};
+  const newGame = (state?: GameState) => createGame(dataset, province ?? null, seed!, state, { mode, guess: !preferences.noGuess });
   const changePreferences = (changes: Preferences) => {
     preferences = { ...preferences, ...changes };
     save(PREFERENCES_KEY, preferences);
+    game = newGame(game.state);
   };
-  const newGame = (state?: GameState) => createGame(dataset, province ?? null, seed!, state, { mode });
   let game: Game = newGame(read<GameState>(STATE_KEY) ?? undefined);
   setupAnalytics(dataset.parties.map((p) => p.id));
   /** Saved on every confirmed action; an unconfirmed choice is never saved. */
@@ -91,12 +92,15 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
     if (id) {
       trackStarted(game);
       return questionView(game, id, {
-        choose: (letter) => {
-          update(game.chooseApproach(id, letter));
+        choose: (letter, guess) => {
+          update(game.chooseApproach(id, letter, guess === undefined ? undefined : { guess }));
+          // A follow-up question answered after the reveal is judged right away.
+          if (v.revealed) trackGuesses(game, [id]);
           // After the reveal, follow-up questions go one after another, then back to the reveal.
           const followUp = game.theme(themeId).nextFollowUp;
           show((v.revealed && followUp ? themeHref(themeId, followUp) : themeHref(themeId)).slice(1));
         },
+        disableGuess: () => changePreferences({ noGuess: true }),
       });
     }
     if (v.revealed)
@@ -109,6 +113,7 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
       });
     return summaryView(game, themeId, () => {
       update(game.revealTheme(themeId));
+      trackGuesses(game, [...v.questions, ...v.followUps].map((q) => q.question.id));
       render();
     });
   };
@@ -130,7 +135,8 @@ export function mountApp(root: HTMLElement, dataset: Dataset, mode: Mode): void 
     else if (path === 'resultado') {
       trackResult(game);
       screen = resultView(game, { nextTheme: () => goToNext(), clearAll });
-    } else if (path === 'preguntar') screen = questionsView(game);
+    } else if (path === 'compartir') screen = shareView(game);
+    else if (path === 'preguntar') screen = questionsView(game);
     else if (route === 'preguntar' && game.suggestedQuestions().some((p) => p.id === rest[0])) screen = answerView(game, rest[0]!);
     if (!screen) return goToNext(); // start: the next theme not revealed yet, or the list
     root.replaceChildren(screen);
