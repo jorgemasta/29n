@@ -1607,6 +1607,104 @@
         ],
         "additionalProperties": false
       }
+    },
+    "approachReports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "theme": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "rounds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "publishable": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "check": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "V1",
+                        "V2",
+                        "V3",
+                        "V4",
+                        "V5",
+                        "V6",
+                        "V7",
+                        "V8",
+                        "V9",
+                        "V10",
+                        "V11",
+                        "V12",
+                        "V13"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "const": "agreement"
+                    }
+                  ]
+                },
+                "approach": {
+                  "type": "string"
+                },
+                "result": {
+                  "type": "string",
+                  "enum": [
+                    "pass",
+                    "fix",
+                    "rewrite",
+                    "discard",
+                    "block",
+                    "extract",
+                    "warning",
+                    "retry"
+                  ]
+                },
+                "detail": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "check",
+                "result",
+                "detail"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "question",
+          "promptVersion",
+          "rounds",
+          "publishable",
+          "entries"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [

@@ -14,7 +14,7 @@ import { icon } from './icons';
 /** Where each kind of AI content is explained. */
 export const AI_EXPLAINED = {
   /** Approaches: the neutral texts and how parties were grouped into them. */
-  approaches: '/metodologia/#proceso',
+  approaches: '/metodologia/#enfoques',
   /** A party's concrete proposal, rewritten with the common template. */
   proposal: '/metodologia/#proceso',
 } as const;

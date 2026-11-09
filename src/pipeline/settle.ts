@@ -13,7 +13,10 @@
 import { z } from 'zod';
 import type { AIAdapter } from '../ai/adapter';
 import {
+  ApproachReport,
+  ApproachReportEntry,
   Check,
+  type Dataset,
   Question,
   type Approach,
   type OtherProposal,
@@ -69,24 +72,9 @@ export interface SettleOptions {
 /** Two passes per round; one retry. */
 export const MAX_ROUNDS = 2;
 
-export const SettleEntry = z.object({
-  /** `agreement`: the two passes. V1–V13: a check on an approach. */
-  check: z.union([Check, z.literal('agreement')]),
-  approach: z.string().optional(),
-  result: z.enum([...ReportEntry.shape.result.options, 'retry']),
-  detail: z.string(),
-});
-
-/** Report of one question's settling, published next to the per-manifesto reports. */
-export const SettleReport = z.object({
-  question: z.string(),
-  promptVersion: z.string(),
-  /** Rounds of two passes used (1, or 2 after a retry). */
-  rounds: z.number().int().min(0),
-  publishable: z.boolean(),
-  reason: z.string().optional(),
-  entries: z.array(SettleEntry),
-});
+/** The settle report lives in the dataset schema (`approachReports`), so the site can show it. */
+export const SettleEntry = ApproachReportEntry;
+export const SettleReport = ApproachReport;
 export type SettleEntry = z.infer<typeof SettleEntry>;
 export type SettleReport = z.infer<typeof SettleReport>;
 
@@ -111,7 +99,7 @@ export async function settleApproaches(input: SettleInput, ai: AIAdapter, option
   const result = (publishable: boolean, rounds: number, q: Question | null, reason?: string): SettleResult => ({
     question: publishable ? q : null,
     publishable,
-    report: { question: question.id, promptVersion: SETTLE_PROMPT_VERSION, rounds, publishable, ...(reason ? { reason } : {}), entries },
+    report: { question: question.id, theme: question.theme, text: question.text, promptVersion: SETTLE_PROMPT_VERSION, rounds, publishable, ...(reason ? { reason } : {}), entries },
   });
 
   if (proposing.length === 0) return result(false, 0, null, 'ningún partido propone nada en esta pregunta');
@@ -248,4 +236,15 @@ function differences(a: Classification, b: Classification): string | null {
   const right = b.approaches.map(signature).sort();
   if (left.join(' | ') === right.join(' | ')) return null;
   return `las pasadas clasifican distinto: [${left.join(' | ')}] frente a [${right.join(' | ')}]`;
+}
+
+/**
+ * Puts a settled question into the dataset: the question when publishable (removed when not, so it
+ * is never played), and its report either way, replacing an earlier one of the same question.
+ */
+export function publishSettled<D extends Pick<Dataset, 'questions' | 'approachReports'>>(ds: D, result: SettleResult): D {
+  const id = result.report.question;
+  const questions = (ds.questions ?? []).filter((q) => q.id !== id);
+  if (result.question) questions.push(result.question);
+  return { ...ds, questions, approachReports: [...(ds.approachReports ?? []).filter((r) => r.question !== id), result.report] };
 }

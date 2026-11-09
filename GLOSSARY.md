@@ -68,6 +68,7 @@ Preguntar tab's one is `suggestedQuestion` and the voter-typed one `freeQuestion
 | pulso | `pulse` | The AI survey (CIS, manifestos, Reddit/web) that produces the frozen theme/question list. |
 | fecha de congelación | `frozenAt` | The date the pulse list was frozen (`Pulse.frozenAt`, `data/pulse.json`); published in the methodology. |
 | pregunta descartada | `RejectedQuestion` | A pulse candidate that did not enter, with its `reason` (`passesDisagree`, `networksOnly`, `notEnoughSources`, `notNeutral`, `noRegionalParties`, `themeIncomplete`, `surplus`) and a Spanish `detail`. |
+| informe de enfoques | `approachReport` | `settleApproaches`' report of one question (`ApproachReport`, dataset key `approachReports`, written by `publishSettled`): agreement of the two passes and approach checks; an unpublishable one carries its `reason` and is listed in the methodology ("Preguntas que no se publicaron"). |
 | elección | `questionChoices` | `GameState.questionChoices`: approach id (or `none`) per question id. |
 | destapar (temática) | `revealTheme` / `themeReveal` | Reveal every answered question of a theme at once (`GameState.revealedThemes`); after it only follow-up questions can still be answered. |
 | elegir temáticas / "Todas" | `selectThemes` / `selectedThemes` | `GameState.selectedThemes`: theme ids or `all` (also the themes of a later province). Playing a theme not picked adds it. Route `#elegir`. |
