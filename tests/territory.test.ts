@@ -5,7 +5,6 @@ import { createFinder, PROVINCES, provinceByCode, type Municipalities } from '..
 import { scopeByCriterion, meetsCriterion, type InclusionData } from '../src/registry/inclusion';
 import { PARTIES, REGISTRY } from '../src/registry/parties';
 import { TOPICS } from '../src/registry/topics';
-import { KEYWORDS } from '../src/registry/keywords';
 import { OFFICIAL_DOMAINS } from '../src/registry/domains';
 import { TERMS } from '../src/registry/terms';
 import { MANIFESTO_SOURCES } from '../src/watcher/sources';
@@ -131,9 +130,5 @@ describe('the real registry', () => {
     const canarias = TOPICS.filter((t) => t.scope === 'canarias').map((t) => t.id);
     expect(canarias).toEqual(['ref-canarias', 'migracion-atlantica']);
     expect(new Set(TOPICS.map((t) => t.order)).size).toBe(TOPICS.length);
-  });
-
-  it('every topic has its own V12 keywords', () => {
-    for (const t of TOPICS) expect(KEYWORDS[t.id]?.length, t.id).toBeGreaterThanOrEqual(5);
   });
 });

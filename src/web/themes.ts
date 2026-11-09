@@ -229,7 +229,7 @@ export function revealView(game: Game, themeId: string, actions: RevealActions):
           h('p', {}, `${left === 1 ? 'Una pregunta más' : `${left} preguntas más`} sobre ${v.theme.title}, opcionales, si quieres dar más fondo a tu resultado.`),
           h('a', { href: themeHref(themeId, v.nextFollowUp), class: 'secondary link-button' }, left === 1 ? 'Contestarla' : 'Contestarlas'))
       : null,
-    h('div', { class: 'list-links' }, repeat),
+    h('div', { class: 'list-links' }, h('a', { href: '#resultado' }, 'Ver mi resultado'), repeat),
     h('div', { class: 'action-bar' }, h('div', {},
       next
         ? button(`Seguir con ${next.title}`, 'primary', actions.next)

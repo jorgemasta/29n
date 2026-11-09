@@ -11,7 +11,7 @@ export function getStaticPaths() {
   return ids.map((id) => ({ params: { party: id }, props: { id, report: dataset.reports.find((r) => r.party === id) ?? null } }));
 }
 const { id } = Astro.props;
-const r = Astro.props.report ? reportSummary(Astro.props.report, dataset.topics, dataset.suggestedQuestions) : null;
+const r = Astro.props.report ? reportSummary(Astro.props.report, dataset.questions, dataset.suggestedQuestions) : null;
 const i = r?.report;
 const stances = partyStances(dataset, id);
 const party = dataset.parties.find((p) => p.id === id);
@@ -77,17 +77,17 @@ const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite
 
   {r.manifesto.length > 0 && (
     <>
-      <h2>Programa completo</h2>
+      <h3>Programa completo</h3>
       <ul class="entries">
         {r.manifesto.map((e) => <li><strong>{e.check} · {e.name}</strong>: {RESULT[e.result]}. <span class="grey">{e.detail}</span></li>)}
       </ul>
     </>
   )}
 
-  <h2>Por tema</h2>
-  {r.topics.map((t) => (
+  <h3>Comprobaciones por pregunta</h3>
+  {r.positions.map((t) => (
     <details class="report-topic">
-      <summary>{t.topic.title} · {STATE[t.state]}{t.rewrites > 0 && ` · ${t.rewrites} ${t.rewrites === 1 ? 'reescritura' : 'reescrituras'}`}</summary>
+      <summary>{t.question.text} · {STATE[t.state]}</summary>
       {t.reason && <p><strong>Motivo:</strong> {t.reason}</p>}
       <ul class="entries">
         {t.entries.map((e) => <li title={CHECKS[e.check].description}><strong>{e.check} · {e.name}</strong>: {RESULT[e.result]}. <span class="grey">{e.detail}</span></li>)}
@@ -96,7 +96,7 @@ const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite
   ))}
   {r.suggestedQuestions.length > 0 && (
     <>
-      <h2>Respuestas a las preguntas sugeridas</h2>
+      <h3>Respuestas a las preguntas sugeridas</h3>
       <p>Lo que se comprobó en cada respuesta de la pestaña Preguntar. Estas respuestas no cuentan para publicar o bloquear el programa.</p>
       {r.suggestedQuestions.map((p) => (
         <details class="report-topic">

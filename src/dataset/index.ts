@@ -10,6 +10,7 @@ import {
   type Theme,
   type SuggestedAnswer,
   type Topic,
+  type TopicPosition,
   type SourceType,
 } from './schema';
 
@@ -20,7 +21,7 @@ export interface ValidationResult {
   errors: string[];
 }
 
-/** V9: the dataset validates against the schema (and one state per party × topic). */
+/** V9: the dataset validates against the schema (and one state per party × question). */
 export function validateDataset(data: unknown): ValidationResult {
   const r = Dataset.safeParse(data);
   if (r.success) return { valid: true, errors: [] };
@@ -33,7 +34,9 @@ export function validateDataset(data: unknown): ValidationResult {
 /** Assembles a dataset from per-programme pipeline results. Does not validate: call validateDataset. */
 export function buildDataset(args: {
   parties: Party[];
-  topics: Topic[];
+  /** v1 (legacy) topics and their cards, while the v1 views still read them. */
+  topics?: Topic[];
+  topicPositions?: TopicPosition[];
   /** Suggested questions; their answers come from each result's `answers`. */
   suggestedQuestions?: SuggestedQuestion[];
   /** v2 themes and questions (with their approaches and stances). */
@@ -50,7 +53,8 @@ export function buildDataset(args: {
     origin: args.origin,
     ...(args.note ? { note: args.note } : {}),
     parties: args.parties,
-    topics: [...args.topics].sort((a, b) => a.order - b.order),
+    topics: [...(args.topics ?? [])].sort((a, b) => a.order - b.order),
+    topicPositions: args.topicPositions ?? [],
     positions: args.results.flatMap((r) => r.positions),
     reports: args.results.map((r) => r.report),
     ...(args.suggestedQuestions
@@ -84,6 +88,7 @@ export function applyMode(d: Dataset, mode: Mode): Dataset {
     ...d,
     parties: d.parties.map((p) => (provisionalIds.has(p.id) ? { ...p, manifesto: { state: 'pending' } } : p)),
     positions: d.positions.filter((p) => !provisionalIds.has(p.party)),
+    topicPositions: d.topicPositions.filter((p) => !provisionalIds.has(p.party)),
     reports: d.reports.filter((i) => !provisionalIds.has(i.party)),
     ...(d.answers ? { answers: d.answers.filter((r) => !provisionalIds.has(r.party)) } : {}),
   };

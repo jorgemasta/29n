@@ -220,7 +220,7 @@ pre.prompt { white-space: pre-wrap; background: var(--surface); padding: 0.75rem
 .link-button { display: grid; place-items: center; text-decoration: none; text-align: center; }
 .disabled { display: grid; place-items: center; opacity: 0.6; border-style: dashed; }
 .large { font-size: 1.3rem; font-weight: 600; }
-.result-block { min-height: 80vh; scroll-snap-align: start; padding: 1rem 0 2rem; }
+.result-block { padding: 1rem 0 1.5rem; }
 .result-block h2 { font-size: 1.5rem; }
 .next-block { display: inline-block; padding: 0.75rem 0; min-height: 3rem; }
 .ranking { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.75rem; }
@@ -229,8 +229,6 @@ pre.prompt { white-space: pre-wrap; background: var(--surface); padding: 0.75rem
 .tie-label { margin-left: 0.5rem; font-size: 0.8rem; border: 1px solid currentColor; border-radius: 0.25rem; padding: 0 0.3rem; }
 .bar { height: 0.75rem; background: var(--surface); border-radius: 0.375rem; overflow: hidden; }
 .bar span { display: block; height: 100%; background: var(--petrol); }
-.priorities { margin: 1.5rem 0; }
-.priorities h3 { font-size: 1rem; }
 .news { background: var(--aqua); border-left: 4px solid var(--petrol); border-radius: 0.5rem; padding: 0.5rem 0.75rem; margin: 1rem 0; }
 .news p { margin: 0.25rem 0; }
 .toggle-row { display: flex; align-items: center; gap: 0.5rem; min-height: 3rem; }
