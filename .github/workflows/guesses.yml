@@ -1,0 +1,38 @@
+# Bet hit-rate check (#13): weekly, reads aggregated bet hits/misses per topic from Umami and opens an
+# issue (label 'reneutralizar') for each topic where more than 60 % of bets guessed the party.
+# Disabled (exits 0) until UMAMI_API_KEY and UMAMI_WEBSITE_ID are set: see docs/deploy.md.
+name: Bet hit rate
+
+on:
+  schedule:
+    - cron: '41 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Days to look back'
+        required: false
+        default: '30'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check the hit rate per topic
+        env:
+          UMAMI_API_KEY: ${{ secrets.UMAMI_API_KEY }}
+          UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
+          UMAMI_API_URL: ${{ vars.UMAMI_API_URL }}
+          GH_TOKEN: ${{ github.token }}
+          DAYS: ${{ inputs.days || '30' }}
+        run: npx tsx scripts/guesses.ts --days "$DAYS"

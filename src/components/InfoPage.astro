@@ -1,0 +1,40 @@
+---
+// Shell of the static information pages (methodology, parties, reports, rubric).
+import '../styles/global.css';
+import { dataset } from '../transparency/data';
+import TextSizeInit from './TextSizeInit.astro';
+import Umami from './Umami.astro';
+import Robots from './Robots.astro';
+import Footer from './Footer.astro';
+interface Props { title: string; description: string; back?: { href: string; text: string } }
+const { title, description, back = { href: '/', text: '← Volver' } } = Astro.props;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Robots />
+    <title>{title} · 29N</title>
+    <meta name="description" content={description} />
+    <TextSizeInit />
+    <Umami />
+  </head>
+  <body>
+    <main class="info">
+      <div class="header-row">
+        <a href={back.href} class="back-link">{back.text}</a>
+        <button type="button" id="aa" class="text-size-button" aria-pressed="false" aria-label="Letra grande">Aa</button>
+      </div>
+      {dataset.origin !== 'real' && (
+        <p class="test-notice" role="note"><strong>Prototipo con datos de prueba.</strong> {dataset.note}</p>
+      )}
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import { mountTextSizeButton } from '../web/text-size';
+      mountTextSizeButton(document.getElementById('aa') as HTMLButtonElement);
+    </script>
+  </body>
+</html>

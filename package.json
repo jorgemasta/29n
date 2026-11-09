@@ -1,0 +1,37 @@
+{
+  "name": "29n",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "build:private": "SITE_MODE=private astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "schema": "tsx scripts/generate-schema.ts",
+    "process": "tsx scripts/process.ts",
+    "municipalities": "tsx scripts/generate-municipalities.ts",
+    "og": "tsx scripts/generate-og.ts",
+    "build:production": "PRODUCTION=1 astro build",
+    "deploy": "npm run build:production && wrangler deploy",
+    "deploy:private": "npm run build:private && wrangler deploy --env private",
+    "e2e": "npm run build && tsx tests/e2e/smoke.e2e.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
+    "astro": "7.4.1",
+    "unpdf": "^2.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "agent-browser": "0.41.2",
+    "pdf-lib": "^1.17.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0",
+    "wrangler": "^4.158.0"
+  }
+}

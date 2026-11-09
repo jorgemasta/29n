@@ -1,0 +1,19 @@
+---
+// Shared footer: information pages, authorship, non-affiliation and licences (code MIT, data CC BY 4.0).
+import { REPO } from '../transparency';
+interface Props { note?: string }
+const { note } = Astro.props;
+---
+<footer class="footer">
+  <nav class="footer-links" aria-label="Información">
+    <a href="/metodologia/">Cómo funciona</a> · <a href="/partidos/">Partidos y programas</a> ·
+    <a href="/privacidad/">Privacidad</a> · <a href={REPO}>Código abierto</a>
+  </nav>
+  <p>Proyecto personal de Jorge Masta, sin afiliación a ningún partido.{note && ` ${note}`}</p>
+  <p class="licences">
+    Código bajo <a href={`${REPO}/blob/main/LICENSE`} rel="license">licencia MIT</a>. Datos bajo
+    <a href="https://creativecommons.org/licenses/by/4.0/deed.es" rel="license">CC BY 4.0</a>
+    (<a href={`${REPO}/blob/main/data/LICENSE.md`}>cómo citarlos</a>). Los textos reescritos y las notas de viabilidad
+    están <a href="/privacidad/#ia">generados por IA</a>.
+  </p>
+</footer>

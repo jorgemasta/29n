@@ -1,0 +1,965 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "generated": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "real",
+        "simulated",
+        "test"
+      ]
+    },
+    "note": {
+      "type": "string"
+    },
+    "parties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "acronym": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scope": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "national"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "provinces"
+                  },
+                  "provinces": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "provinces"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "manifesto": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "const": "published"
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "manifesto-29n",
+                      "manifesto-2023",
+                      "party-document",
+                      "statements"
+                    ]
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "hashPdf": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "state",
+                  "url",
+                  "title"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "const": "pending"
+                  }
+                },
+                "required": [
+                  "state"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "test": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "acronym",
+          "scope",
+          "manifesto"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "topics": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "national",
+              "canarias"
+            ]
+          },
+          "order": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "question",
+          "scope",
+          "order"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "positions": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "party": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "topic": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versions": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "state": {
+                "type": "string",
+                "const": "proposes"
+              },
+              "text": {
+                "type": "object",
+                "properties": {
+                  "what": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "how": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "figure": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "what",
+                  "how",
+                  "figure"
+                ],
+                "additionalProperties": false
+              },
+              "quotes": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 40,
+                      "maxLength": 600
+                    },
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "text",
+                    "page"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "feasibility": {
+                "type": "object",
+                "properties": {
+                  "result": {
+                    "type": "string",
+                    "enum": [
+                      "viable",
+                      "viableWithCaveats",
+                      "difficult",
+                      "veryDifficult",
+                      "notConcrete",
+                      "noConsensus"
+                    ]
+                  },
+                  "why": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "url"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "assessments": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "level": {
+                            "type": "string",
+                            "enum": [
+                              "viable",
+                              "viableWithCaveats",
+                              "difficult",
+                              "veryDifficult",
+                              "notConcrete"
+                            ]
+                          },
+                          "reasons": {
+                            "type": "object",
+                            "properties": {
+                              "competence": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "cost": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "legal": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "precedents": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "majority": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "competence",
+                              "cost",
+                              "legal",
+                              "precedents",
+                              "majority"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "why": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "sources": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "format": "uri"
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "url"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "level",
+                          "reasons",
+                          "why",
+                          "sources"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "level": {
+                            "type": "string",
+                            "enum": [
+                              "viable",
+                              "viableWithCaveats",
+                              "difficult",
+                              "veryDifficult",
+                              "notConcrete"
+                            ]
+                          },
+                          "reasons": {
+                            "type": "object",
+                            "properties": {
+                              "competence": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "cost": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "legal": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "precedents": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "majority": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "competence",
+                              "cost",
+                              "legal",
+                              "precedents",
+                              "majority"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "why": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "sources": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "format": "uri"
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "url"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "level",
+                          "reasons",
+                          "why",
+                          "sources"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "versions": {
+                    "type": "object",
+                    "properties": {
+                      "prompt": {
+                        "type": "string"
+                      },
+                      "rubric": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "prompt",
+                      "rubric"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "result",
+                  "why",
+                  "sources",
+                  "assessments",
+                  "versions"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "party",
+              "topic",
+              "versions",
+              "state",
+              "text",
+              "quotes"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "party": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "topic": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versions": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "state": {
+                "type": "string",
+                "const": "noProposal"
+              }
+            },
+            "required": [
+              "party",
+              "topic",
+              "versions",
+              "state"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "party": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "topic": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versions": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "state": {
+                "type": "string",
+                "const": "unverified"
+              }
+            },
+            "required": [
+              "party",
+              "topic",
+              "versions",
+              "state"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "reports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "party": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "hashPdf": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "url": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "extracted": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "discarded": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "publishable": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "positions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "topic": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "proposes",
+                    "noProposal",
+                    "unverified"
+                  ]
+                },
+                "rewrites": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "topic",
+                "state",
+                "rewrites"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "topic": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "question": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                },
+                "check": {
+                  "type": "string",
+                  "enum": [
+                    "V1",
+                    "V2",
+                    "V3",
+                    "V4",
+                    "V5",
+                    "V6",
+                    "V7",
+                    "V8",
+                    "V9",
+                    "V10",
+                    "V11",
+                    "V12",
+                    "V13"
+                  ]
+                },
+                "result": {
+                  "type": "string",
+                  "enum": [
+                    "pass",
+                    "fix",
+                    "rewrite",
+                    "discard",
+                    "block",
+                    "extract",
+                    "warning"
+                  ]
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "origin": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$"
+                }
+              },
+              "required": [
+                "check",
+                "result",
+                "detail"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "party",
+          "hashPdf",
+          "promptVersion",
+          "extracted",
+          "discarded",
+          "publishable",
+          "positions",
+          "entries"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "keywords": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "order": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "keywords",
+          "order"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "party": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "question": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versions": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "state": {
+                "type": "string",
+                "const": "answers"
+              },
+              "text": {
+                "type": "object",
+                "properties": {
+                  "what": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "how": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "figure": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "what",
+                  "how",
+                  "figure"
+                ],
+                "additionalProperties": false
+              },
+              "quotes": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 40,
+                      "maxLength": 600
+                    },
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "text",
+                    "page"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "party",
+              "question",
+              "versions",
+              "state",
+              "text",
+              "quotes"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "party": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "question": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versions": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "state": {
+                "type": "string",
+                "const": "notMentioned"
+              }
+            },
+            "required": [
+              "party",
+              "question",
+              "versions",
+              "state"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "party": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "question": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "versions": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              },
+              "state": {
+                "type": "string",
+                "const": "unverified"
+              }
+            },
+            "required": [
+              "party",
+              "question",
+              "versions",
+              "state"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "version",
+    "generated",
+    "origin",
+    "parties",
+    "topics",
+    "positions",
+    "reports"
+  ],
+  "additionalProperties": false
+}

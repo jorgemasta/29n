@@ -1,0 +1,81 @@
+---
+// Public feasibility rubric, rendered from the versioned source (src/registry/rubric.ts).
+import '../styles/global.css';
+import TextSizeInit from '../components/TextSizeInit.astro';
+import { CRITERIA, OFF_SCALE, LEVELS, RUBRIC_VERSION } from '../registry/rubric';
+import { INSTITUTIONAL_DOMAINS } from '../registry/institutional-domains';
+import { FEASIBILITY_INSTRUCTIONS, FEASIBILITY_PROMPT_VERSION } from '../pipeline/prompts-feasibility';
+import { MODELS } from '../ai/claude';
+import Umami from '../components/Umami.astro';
+import Robots from '../components/Robots.astro';
+import Footer from '../components/Footer.astro';
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Robots />
+    <title>Cómo se valora la viabilidad · 29N</title>
+    <meta name="description" content="Rúbrica pública de la nota de viabilidad de 29N." />
+    <TextSizeInit />
+    <Umami />
+  </head>
+  <body>
+    <main>
+      <p><a href="/metodologia/#viabilidad">← Cómo funciona</a></p>
+      <h1>Cómo se valora si una propuesta se puede hacer</h1>
+      <p>
+        La viabilidad dice qué haría falta para aplicar una propuesta, <strong>no si es buena idea</strong>.
+        La genera una IA, sin revisión humana, y puede equivocarse.
+      </p>
+
+      <h2>A ciegas y dos veces</h2>
+      <ul>
+        <li>Dos evaluaciones independientes reciben solo el tema, la propuesta reescrita y las citas literales del programa. Nunca el nombre del partido: si una cita lo menciona, se sustituye por «[partido]».</li>
+        <li>Si las dos coinciden, se publica ese nivel. Si las dos dicen que no hay concreción, se publica «{OFF_SCALE.notConcrete.name}».</li>
+        <li>Si no coinciden, se publica «{OFF_SCALE.noConsensus.name}» con los dos argumentos. Preferimos enseñártelo a elegir uno.</li>
+      </ul>
+
+      <h2>Los cinco criterios</h2>
+      <p>Cada evaluación da una razón por criterio.</p>
+      <table class="rubric-table">
+        <thead><tr><th scope="col">Criterio</th><th scope="col">Qué se pregunta</th></tr></thead>
+        <tbody>
+          {CRITERIA.map((c) => <tr><th scope="row">{c.title}</th><td>{c.question}</td></tr>)}
+        </tbody>
+      </table>
+
+      <h2>Niveles</h2>
+      <ul>
+        {LEVELS.map((n) => <li><strong>{n.name}:</strong> {n.explanation}</li>)}
+        <li><strong>{OFF_SCALE.notConcrete.name}:</strong> {OFF_SCALE.notConcrete.explanation}</li>
+        <li><strong>{OFF_SCALE.noConsensus.name}:</strong> {OFF_SCALE.noConsensus.explanation}</li>
+      </ul>
+      <p class="grey">Los niveles se muestran en una escala de un solo tono, nunca con colores de semáforo.</p>
+
+      <h2>Fuentes</h2>
+      <p>
+        El «por qué» lleva de 2 a 3 frases y sus fuentes. Solo se aceptan fuentes institucionales que respondan
+        al comprobarlas; las demás se eliminan, y si el «por qué» se queda sin fuentes se repite la evaluación.
+        Si no hay fuente, no hay cifra.
+      </p>
+      <details>
+        <summary>Dominios permitidos ({INSTITUTIONAL_DOMAINS.length})</summary>
+        <ul>{INSTITUTIONAL_DOMAINS.map((d) => <li><code>{d}</code></li>)}</ul>
+      </details>
+
+      <h2>Versiones</h2>
+      <p>
+        Rúbrica <code>{RUBRIC_VERSION}</code> · instrucciones <code>{FEASIBILITY_PROMPT_VERSION}</code> ·
+        modelo <code>{MODELS['assess-feasibility']}</code>. Cada nota registra la versión de la rúbrica y de las
+        instrucciones con que se generó.
+      </p>
+      <details>
+        <summary>Instrucciones exactas que recibe la IA</summary>
+        <pre class="prompt">{FEASIBILITY_INSTRUCTIONS}</pre>
+      </details>
+    </main>
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,140 @@
+---
+// Privacy policy and AI-generated content notice (#16). Every "IA" label of the app lands on #ia.
+// Keep in sync with: src/analytics/events.ts (events), src/client/api.ts (what the client sends),
+// src/questions/free.ts (free question), docs/deploy.md (Anthropic retention, AI Gateway, logs).
+import InfoPage from '../components/InfoPage.astro';
+import { REPO, repoLink } from '../transparency';
+import { FREE_QUESTION_MODELS } from '../ai/claude';
+---
+<InfoPage title="Privacidad y contenido generado por IA" description="Qué datos usa 29N (ninguno personal), qué sale de tu móvil y qué contenido está generado por IA.">
+  <h1>Privacidad</h1>
+  <p class="zone-notice">
+    <strong>No pedimos ni guardamos datos personales.</strong> No hay cuentas ni registro. Lo que eliges, tus apuestas,
+    tu provincia y tu resultado se quedan en tu móvil y <strong>nunca salen del navegador</strong>.
+  </p>
+  <nav aria-label="Índice">
+    <ul>
+      <li><a href="#movil">Lo que se guarda en tu móvil</a></li>
+      <li><a href="#analitica">Recuento anónimo de uso (Umami)</a></li>
+      <li><a href="#afinidad">Sin estadísticas de afinidad</a></li>
+      <li><a href="#avisos">Si avisas de un error</a></li>
+      <li><a href="#pregunta">Si escribes tu propia pregunta (Anthropic)</a></li>
+      <li><a href="#alojamiento">Alojamiento y registros</a></li>
+      <li><a href="#ia">Contenido generado por IA</a></li>
+      <li><a href="#responsable">Responsable y licencias</a></li>
+    </ul>
+  </nav>
+
+  <h2 id="movil">Lo que se guarda en tu móvil</h2>
+  <p>
+    El juego entero (barajar, revelar, calcular tu resultado y dibujar la tarjeta para compartir) se hace en tu
+    navegador. Para recordar por dónde ibas, guarda en el almacenamiento local de tu navegador, y solo ahí:
+  </p>
+  <ul>
+    <li>tus elecciones, apuestas y temas prioritarios;</li>
+    <li>la semilla con la que se barajan las tarjetas;</li>
+    <li>tu provincia (o «Prefiero no decirlo»), si la indicas;</li>
+    <li>tus preferencias (apuestas activadas, ayuda vista) y el tamaño de letra.</li>
+  </ul>
+  <p>
+    Lo borras todo con «Borrar todo» en <a href="/#datos">Tus datos</a> o borrando los datos del sitio en tu navegador.
+    No usamos cookies.
+  </p>
+
+  <h2 id="analitica">Recuento anónimo de uso (Umami)</h2>
+  <p>
+    Para saber dónde abandona la gente, contamos de forma anónima y sin cookies, con
+    <a href="https://umami.is/">Umami Cloud</a> (servidores en la UE), las visitas y estos momentos: cuándo se empieza,
+    se completa un tema, se llega a 5, se ve el resultado y se comparte. Si apuestas, solo se cuenta en qué tema y si
+    acertaste o no, para detectar propuestas que se reconocen demasiado.
+  </p>
+  <p>
+    <strong>Nunca</strong> qué propuesta o partido eliges, a quién apuestas, tu provincia ni tu resultado. No se registra
+    la dirección completa de la página (ni <code>?provincia=</code> ni lo que va tras <code>#</code>) y se respeta
+    «No rastrear» (Do Not Track). <a href={repoLink('src/analytics/events.ts')}>Ver la lista exacta de eventos</a>.
+  </p>
+
+  <h2 id="afinidad">Sin estadísticas de afinidad</h2>
+  <p>
+    Tu resultado («con quién coincides») se calcula en tu móvil y no se envía a ningún sitio, así que no existe ningún
+    recuento de qué partido sale más. No publicamos ni publicaremos estadísticas agregadas de afinidad: además, la ley
+    electoral prohíbe difundir sondeos en los cinco días anteriores a la votación (art. 69 de la LOREG).
+  </p>
+
+  <h2 id="avisos">Si avisas de un error o de que falta un partido</h2>
+  <p>
+    Solo se envía el tema, la tarjeta y lo que escribas (nunca qué elegiste ni tu provincia). Se publica como un aviso
+    público en el <a href={`${REPO}/issues`}>repositorio del proyecto en GitHub</a>, sin tu nombre: no escribas datos
+    personales. Si el envío directo no está disponible, te damos un enlace para hacerlo tú con tu cuenta de GitHub
+    (entonces se aplica la <a href="https://docs.github.com/es/site-policy/privacy-policies/github-general-privacy-statement">política de privacidad de GitHub</a>).
+  </p>
+
+  <h2 id="pregunta">Si escribes tu propia pregunta</h2>
+  <ul>
+    <li>
+      El texto de tu pregunta se envía, sin ningún dato tuyo, a <strong>Anthropic</strong> (el modelo
+      <code>{FREE_QUESTION_MODELS['answer-question']?.model}</code> la responde y
+      <code>{FREE_QUESTION_MODELS['verify-fidelity']?.model}</code> la comprueba) junto con las páginas de los programas que hablan del tema. Pasa por Cloudflare AI
+      Gateway con el registro de peticiones desactivado. Nuestra función no lee tu IP ni guarda registros.
+    </li>
+    <li>
+      Para el límite de preguntas por sesión, tu navegador genera un identificador aleatorio que se borra al cerrar la
+      pestaña; la función solo guarda un resumen cifrado (hash) con un contador que caduca en 24 horas.
+    </li>
+    <li>
+      Las respuestas se guardan hasta 14 días, sin asociarlas a nadie, para responder gratis si alguien repite la pregunta.
+      Se guardan bajo un resumen cifrado (hash) de la pregunta, no bajo sus palabras. El texto de una pregunta solo se
+      guarda cuando la hace una segunda persona: entonces pasa a la lista de frecuentes que ven los demás, así que no
+      escribas datos personales.
+    </li>
+    <li>
+      <strong>Qué hace Anthropic con ella.</strong> Según su documentación, en la API borra automáticamente las entradas y
+      salidas en un plazo de <strong>30 días</strong>, salvo que se marquen por infringir su política de uso (hasta 2 años) o lo
+      exija la ley (<a href="https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data">plazo de conservación</a>),
+      y no entrena modelos con ellas (<a href="https://www.anthropic.com/legal/commercial-terms">condiciones comerciales</a>).
+      Existe la <strong>retención cero</strong> (no guardar nada tras responder), pero hay que pedirla a su equipo comercial y
+      Anthropic decide si la concede (<a href="https://platform.claude.com/docs/en/build-with-claude/zero-data-retention">retención cero</a>).
+      Este proyecto <strong>no tiene retención cero</strong>: aplica el plazo de 30 días.
+    </li>
+    <li>
+      Cloudflare documenta cómo desactivar el registro de cada petición en AI Gateway
+      (<a href="https://developers.cloudflare.com/ai-gateway/observability/logging/">registro de AI Gateway</a>), pero no hemos
+      encontrado en sus fuentes oficiales si su registro incluye la IP ni cuánto conserva Cloudflare otros datos de la petición.
+    </li>
+  </ul>
+  <p>Si no escribes ninguna pregunta propia, nada de lo que haces en la web llega a Anthropic.</p>
+
+  <h2 id="alojamiento">Alojamiento y registros</h2>
+  <p>
+    La web la sirve <a href="https://www.cloudflare.com/es-es/privacypolicy/">Cloudflare</a>. Los registros de peticiones y
+    trazas de nuestra función están desactivados. Los textos y PDF de los programas enlazan a las webs oficiales de cada partido.
+  </p>
+
+  <h2 id="ia">Contenido generado por IA</h2>
+  <p>
+    Por transparencia (y como pide el Reglamento europeo de Inteligencia Artificial), todo lo que escribe una IA lleva la
+    etiqueta <span class="ai-label">IA</span>. Lo genera Claude, de Anthropic, <strong>sin revisión humana</strong>:
+  </p>
+  <ul>
+    <li><strong>Las propuestas</strong> que ves a ciegas: reescritas por IA en un estilo común a partir del programa. La
+      <strong>cita</strong> que ves al revelar es el texto literal del documento, comprobado por un script.</li>
+    <li><strong>La nota de viabilidad</strong> de cada propuesta (<a href="/rubrica/">cómo se valora</a>).</li>
+    <li><strong>Las respuestas de «Preguntar»</strong>, también con su cita literal.</li>
+  </ul>
+  <p>
+    Puede equivocarse. <a href="/metodologia/">Cómo funciona</a> explica cada paso, las instrucciones exactas que recibe la
+    IA y las comprobaciones que hace un script. Si algo no cuadra, avísanos desde la propia tarjeta.
+  </p>
+
+  <h2 id="responsable">Responsable y licencias</h2>
+  <p>
+    29N es un proyecto personal de <strong>Jorge Masta</strong>, sin afiliación a ningún partido. Para cualquier consulta
+    sobre privacidad, abre un <a href={`${REPO}/issues`}>aviso en GitHub</a>.
+  </p>
+  <p>
+    El código es abierto bajo <a href={repoLink('LICENSE')} rel="license">licencia MIT</a>. Los datos
+    (<a href={repoLink('data/dataset.json')}>data/dataset.json</a>, con los textos reescritos, las citas y las notas)
+    se publican bajo <a href="https://creativecommons.org/licenses/by/4.0/deed.es" rel="license">CC BY 4.0</a>
+    (<a href={repoLink('data/LICENSE.md')}>cómo citarlos</a>). Los programas originales son de cada partido.
+  </p>
+</InfoPage>

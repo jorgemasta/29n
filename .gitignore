@@ -6,3 +6,5 @@ dist/
 .env.*
 .DS_Store
 .wrangler/
+.dev.vars
+dist-e2e-failure.png
