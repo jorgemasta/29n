@@ -216,6 +216,10 @@ for _k in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID ANTHROPIC_API_KEY UMAMI_WEB
   _v=$(_existing "$_k") && [[ -n "$_v" ]] && printf -v "$_k" '%s' "$_v"  || true
 done
 unset _k _v
+# Free question already set up (stage 5) ⇔ the KV binding is uncommented in wrangler.jsonc.
+if [[ -z "${DO_FREE:-}" ]]; then
+  if grep -q '^ *"kv_namespaces"' wrangler.jsonc; then DO_FREE=1; else DO_FREE=0; fi
+fi
 
 # done_already KEY…: true when every KEY is in .env; loads them so later stages can use them.
 done_already() {
