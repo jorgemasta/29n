@@ -10,9 +10,8 @@ import type { CacheStore } from '../ai/cache';
 import { processManifesto, type ProcessOptions } from '../pipeline';
 import { verifySource } from '../pipeline/source';
 import { hashPdf } from '../pipeline/pdf';
-import { publishedContext, mergeManifesto } from '../pipeline/publish';
+import { mergeManifesto } from '../pipeline/publish';
 import { OFFICIAL_DOMAINS } from '../registry/domains';
-import { TOPICS } from '../registry/topics';
 import { textPath } from '../questions/texts';
 
 /** A page (official site or aggregator) or a PDF URL where a party's programme may appear. */
@@ -61,8 +60,8 @@ export interface WatchOptions {
   party?: string;
   /** Process even if the PDF has not changed. */
   force?: boolean;
-  /** Passed through to processManifesto (topics, terms, domains…). */
-  processResult?: ProcessOptions;
+  /** Pipeline options; `questions` defaults to the dataset's published questions (the pulse's list, #23). */
+  processResult?: Partial<ProcessOptions>;
 }
 
 export type PartyResult = {
@@ -102,7 +101,7 @@ export async function watch(
   if (options.party && !input.parties[options.party])
     throw new Error(`Partido desconocido: ${options.party}`);
   const domains = options.processResult?.domains ?? OFFICIAL_DOMAINS;
-  const topics = options.processResult?.topics ?? TOPICS;
+  const questions = options.processResult?.questions ?? input.dataset.questions ?? [];
 
   let dataset = input.dataset;
   let state = input.state;
@@ -160,12 +159,11 @@ export async function watch(
     try {
       const result = await processManifesto(bytes, party, ports.ai, {
         ...options.processResult,
-        ...publishedContext(dataset),
+        questions,
         cache: ports.cache ?? options.processResult?.cache,
         date,
       });
       const merge = mergeManifesto(dataset, party, result, {
-        topics,
         generated: now.toISOString(),
         date,
         registry: input.parties,

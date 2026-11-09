@@ -57,7 +57,7 @@ describe('production build', () => {
   });
 
   it('an invalid dataset fails the build', () => {
-    const c = prod({ ...real, positions: [...real.positions, real.positions[0]!] });
+    const c = prod({ ...real, topicPositions: [...real.topicPositions, real.topicPositions[0]!] });
     expect(c.errors.length).toBeGreaterThan(0);
   });
 

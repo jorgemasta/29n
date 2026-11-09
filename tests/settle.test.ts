@@ -236,7 +236,7 @@ describe("settleApproaches (test point A')", () => {
     const dataset = {
       version: 2, generated: '2026-11-09', origin: 'test', parties,
       topics: [{ id: 'vivienda', title: 'Vivienda', question: '¿Qué harían con la vivienda?', scope: 'national', order: 1 }],
-      positions: [], reports: [],
+      topicPositions: [], positions: [], reports: [],
       themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }],
       questions: [q],
     };

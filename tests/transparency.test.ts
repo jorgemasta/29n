@@ -11,13 +11,13 @@ import {
 import { CHECKS } from '../src/registry/checks';
 import { createFeedback, FEEDBACK_LIMIT, DAILY_FEEDBACK_LIMIT } from '../src/transparency/feedback';
 import { createMemoryStore } from '../src/questions/free';
-import { Check, type Dataset, type Report, type FeasibilityNote, type Position } from '../src/dataset/schema';
+import { Check, type Dataset, type Report, type FeasibilityNote, type TopicPosition } from '../src/dataset/schema';
 import { sampleDataset, sampleNote } from './fixtures/sample-dataset';
 
 const note = (result: FeasibilityNote['result']): FeasibilityNote => ({ ...sampleNote, result, why: result === 'noConsensus' ? null : 'Por esto.' });
 const withNote = (ds: Dataset, party: string, topic: string, result: FeasibilityNote['result']): Dataset => ({
   ...ds,
-  positions: ds.positions.map((p) => (p.party === party && p.topic === topic && p.state === 'proposes' ? ({ ...p, feasibility: note(result) } as Position) : p)),
+  topicPositions: ds.topicPositions.map((p) => (p.party === party && p.topic === topic && p.state === 'proposes' ? ({ ...p, feasibility: note(result) } as TopicPosition) : p)),
 });
 
 describe('feasibilityDistribution', () => {
@@ -96,24 +96,29 @@ describe('reportSummary', () => {
     discarded: 1,
     publishable: true,
     positions: [
-      { topic: 'ref', state: 'unverified', rewrites: 0, reason: 'V1: la cita no aparece' },
-      { topic: 'vivienda', state: 'proposes', rewrites: 1 },
+      { question: 'ref-fiscal', state: 'unverified', reason: 'V1: la cita no aparece' },
+      { question: 'vivienda-asequible', state: 'proposes' },
+      { question: 'sin-publicar', state: 'noProposal' },
     ],
     entries: [
       { check: 'V7', result: 'pass', detail: 'dominio oficial' },
-      { topic: 'vivienda', check: 'V1', result: 'pass', detail: 'ok' },
-      { topic: 'vivienda', check: 'V3', result: 'rewrite', detail: 'marca' },
-      { topic: 'ref', check: 'V1', result: 'discard', detail: 'no aparece' },
+      { question: 'vivienda-asequible', check: 'V1', result: 'pass', detail: 'ok' },
+      { question: 'vivienda-asequible', check: 'V13', result: 'pass', detail: 'consenso' },
+      { question: 'ref-fiscal', check: 'V1', result: 'discard', detail: 'no aparece' },
     ],
   };
+  const questions = [
+    { id: 'vivienda-asequible', text: '¿Qué harían para que la vivienda sea asequible?' },
+    { id: 'ref-fiscal', text: '¿Qué harían con el REF?' },
+  ];
 
-  it('groups the entries by topic in the published topic order, programme-level ones apart', () => {
-    const r = reportSummary(report, sampleDataset.topics);
+  it('groups the entries by question in the published question order, programme-level ones apart', () => {
+    const r = reportSummary(report, questions);
     expect(r.manifesto.map((e) => e.check)).toEqual(['V7']);
-    expect(r.topics.map((t) => t.topic.id)).toEqual(['vivienda', 'ref']);
-    expect(r.topics[0]!).toMatchObject({ state: 'proposes', rewrites: 1 });
-    expect(r.topics[0]!.entries.map((e) => e.check)).toEqual(['V1', 'V3']);
-    expect(r.topics[1]!).toMatchObject({ state: 'unverified', reason: 'V1: la cita no aparece' });
+    expect(r.positions.map((t) => t.question)).toEqual([...questions, { id: 'sin-publicar', text: 'sin-publicar' }]);
+    expect(r.positions[0]!).toMatchObject({ state: 'proposes' });
+    expect(r.positions[0]!.entries.map((e) => e.check)).toEqual(['V1', 'V13']);
+    expect(r.positions[1]!).toMatchObject({ state: 'unverified', reason: 'V1: la cita no aparece' });
     expect(r.published).toBe(1);
   });
 
@@ -126,11 +131,11 @@ describe('reportSummary', () => {
         { suggestedQuestion: 'luz', check: 'V1', result: 'pass', detail: 'ok' },
       ],
     };
-    const questions = [
+    const suggested = [
       { id: 'mili', text: '¿Servicio militar?', keywords: ['mili'], order: 2 },
       { id: 'luz', text: '¿IVA de la luz?', keywords: ['luz'], order: 1 },
     ];
-    const r = reportSummary(withAnswers, sampleDataset.topics, questions);
+    const r = reportSummary(withAnswers, questions, suggested);
     expect(r.manifesto.map((e) => e.check)).toEqual(['V7']);
     expect(r.suggestedQuestions.map((p) => [p.question.text, p.entries.map((e) => e.check)])).toEqual([
       ['¿IVA de la luz?', ['V1']],
@@ -139,7 +144,7 @@ describe('reportSummary', () => {
   });
 
   it('labels each entry with its barrier name', () => {
-    const r = reportSummary(report, sampleDataset.topics);
+    const r = reportSummary(report, questions);
     expect(r.manifesto[0]!.name).toBe(CHECKS.V7.name);
   });
 });

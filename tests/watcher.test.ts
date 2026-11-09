@@ -7,14 +7,14 @@ import { createMemoryCache } from '../src/ai/cache';
 import { watch, type Alert, type Change, type Download, type WatcherState, type WatchedSource } from '../src/watcher';
 import { createIssueAlert, WATCHER_LABEL } from '../src/watcher/issue';
 import { createTestPdf } from './fixtures/pdf';
-import { testDomains, sampleParty, housingTopic, testTerms } from './fixtures/registry';
+import { testDomains, sampleParty, housingQuestion, testTerms } from './fixtures/registry';
 
 const QUOTE =
   'Limitaremos el precio del alquiler en las zonas tensionadas y ampliaremos el parque público de vivienda.';
 const pages = [['Programa electoral 2026'], ['Vivienda', QUOTE]];
-const neutral = {
-  what: 'Limitar por ley el precio del alquiler de vivienda en las zonas tensionadas del país.',
-  how: 'Declarando esas zonas y ampliando además el parque público de vivienda disponible para alquilar.',
+const proposal = {
+  what: 'Limitar el precio del alquiler en las zonas tensionadas.',
+  how: 'Declarando zonas tensionadas y ampliando el parque público de vivienda.',
   figure: null,
 };
 const reasons = { competence: 'a', cost: 'b', legal: 'c', precedents: 'd', majority: 'e' };
@@ -22,12 +22,12 @@ const INE_SOURCE = { title: 'INE', url: 'https://www.ine.es/alquiler' };
 
 function answers(extra: Partial<FakeResponses> = {}): FakeResponses {
   return {
-    'extract-position': () => ({ proposes: true, quotes: [{ text: QUOTE, page: 2 }] }),
-    neutralize: () => neutral,
+    'extract-position': () => ({ proposes: true, quotes: [{ text: QUOTE, page: 2 }], proposal }),
+    neutralize: () => proposal,
     'assess-feasibility': () => ({ level: 'viable', reasons, why: 'Es viable con una ley ordinaria.', sources: [INE_SOURCE] }),
     'verify-fidelity': () => ({ adds: false, omits: false, changesMeaning: false, explanation: '' }),
     'guess-party': () => ({ assignments: [] }),
-    'confirm-absence': () => ({ proposes: false, quotes: [] }),
+    'confirm-absence': () => ({ proposes: false, quotes: [], proposal: null }),
     'answer-question': () => ({ mentions: false, what: '', how: '', figure: null, quotes: [] }),
     ...extra,
   };
@@ -38,6 +38,7 @@ const inventedAnswers = () =>
     'extract-position': () => ({
       proposes: true,
       quotes: [{ text: 'Regalaremos una vivienda a cada joven que cumpla dieciocho años en todo el país.', page: 2 }],
+      proposal,
     }),
   });
 
@@ -47,7 +48,7 @@ const PDF_PEJ = 'https://ejemplo.org/docs/programa-29n.pdf';
 const AGGREGATOR = 'https://agregador.example/programas-29n';
 
 const initialDataset = (): Dataset =>
-  buildDataset({ parties: [], topics: [housingTopic], results: [], generated: '2026-11-01T00:00:00.000Z', origin: 'simulated' });
+  buildDataset({ parties: [], results: [], generated: '2026-11-01T00:00:00.000Z', origin: 'simulated' });
 
 function html(...links: string[]) {
   return `<html><body>${links.map((e) => `<a href="${e}">enlace</a>`).join('\n')}</body></html>`;
@@ -98,7 +99,7 @@ async function mount(o: {
       },
       {
         ...opts,
-        processResult: { topics: [housingTopic], terms: testTerms, domains: testDomains, checkUrl: async () => true },
+        processResult: { questions: [housingQuestion], terms: testTerms, domains: testDomains, checkUrl: async () => true },
       },
     );
     dataset = r.dataset;
@@ -125,7 +126,7 @@ describe('watch', () => {
     expect(ds.parties).toEqual([
       expect.objectContaining({ id: 'pej', manifesto: expect.objectContaining({ url: PDF_PEJ, hashPdf: expect.stringMatching(/^[0-9a-f]{64}$/) }) }),
     ]);
-    expect(ds.positions).toEqual([expect.objectContaining({ party: 'pej', topic: 'vivienda', state: 'proposes' })]);
+    expect(ds.positions).toEqual([expect.objectContaining({ party: 'pej', question: 'vivienda-asequible', state: 'proposes', proposal })]);
     expect(json(change, 'data/reports/pej.json')).toEqual(expect.objectContaining({ party: 'pej', publishable: true }));
     // Page text for the live free question, from the same PDF.
     expect(json(change, 'public/texts/pej.json')).toEqual({ party: 'pej', hashPdf: ds.parties[0]!.manifesto.state === 'published' ? ds.parties[0]!.manifesto.hashPdf : '', pages: expect.any(Array) });
@@ -291,6 +292,20 @@ describe('watch', () => {
     const r = await m.run();
     expect(r.results).toEqual([expect.objectContaining({ party: 'pej', result: 'published' })]);
     expect(r.sourceErrors).toEqual([expect.objectContaining({ url: 'https://ejemplo.org/caida', error: expect.stringContaining('404') })]);
+  });
+
+  it("extracts one position per question of the current dataset when no question list is given", async () => {
+    const m = await mount({ web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() } });
+    const questions = [
+      { ...housingQuestion, theme: 'vivienda', followUp: false, order: 1, origin: { cis: null, manifestos: 1 }, otherProposals: [] },
+    ].map((q) => ({ ...q, approaches: ['a', 'b', 'c'].map((id) => ({ id, what: id, how: id, figure: null, filler: true, stances: [] })) }));
+    const dataset = { ...initialDataset(), themes: [{ id: 'vivienda', title: 'Vivienda', order: 1 }], questions };
+    const r = await watch(
+      { dataset, state: {}, sources: [{ party: 'pej', url: PEJ_PAGE }], parties: { pej: pejRegistry } },
+      { download: m.web.download, ai: createFakeAI(answers()), save: async () => {}, sendAlert: async () => {}, now: () => new Date('2026-11-08T10:00:00Z') },
+      { processResult: { terms: testTerms, domains: testDomains, checkUrl: async () => true } },
+    );
+    expect(r.dataset.positions).toEqual([expect.objectContaining({ party: 'pej', question: 'vivienda-asequible', state: 'proposes' })]);
   });
 
   describe('manual relaunch', () => {
