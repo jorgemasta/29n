@@ -72,7 +72,7 @@ Cerradas en la sesión de *grilling* del 8-nov-2026. El detalle de la UX está e
 - **Privacidad**: todo se procesa en el navegador. Sin cuentas, sin guardar elecciones y sin estadísticas agregadas de afinidad. La tarjeta para compartir se genera en el cliente.
   Página propia `/privacidad/` (incluye Umami, avisos, pregunta libre y retención de Anthropic) y aviso de contenido generado por IA (`/privacidad/#ia`); cada etiqueta «IA» de la app enlaza ahí (la de viabilidad, a la metodología). Una prueba (`tests/launch.test.ts`) impide que nada fuera del cliente calcule el resultado de afinidad.
 - **Lanzamiento (#16)**: solo el build de producción (`PRODUCTION=1`, `npm run deploy`) es indexable y falla con datos de prueba, partidos fuera del registro o fuentes no oficiales; las fuentes provisionales se excluyen con aviso. El prototipo privado va a otro Worker (`29n-privado`, workers.dev), nunca al dominio público. Licencias: código MIT (`LICENSE`), datos CC BY 4.0 (`data/LICENSE.md`; las citas literales son de cada partido).
-- **Analítica**: Umami Cloud (región UE), con eventos de embudo y la tasa de acierto de la apuesta. Nunca qué partido elige cada usuario.
+- **Analítica**: Umami en servidor propio (`stats.padelful.com`), con eventos de embudo y la tasa de acierto de la apuesta. Nunca qué partido elige cada usuario.
 
 ## Proyecto
 - Proyecto personal firmado con nombre y con declaración de no afiliación.

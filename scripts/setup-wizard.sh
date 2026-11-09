@@ -50,8 +50,9 @@ banner() {
 # stage "Name" clears the screen, then announces a stage and shows progress.
 # Clearing keeps only the current step on screen.
 stage() {
-  _clear
   _STAGE_INDEX=$((_STAGE_INDEX + 1))
+  (( _STAGE_INDEX >= ${FROM_STAGE:-1} )) || return 1
+  _clear
   printf '\n%s%s▸ Stage %s/%s · %s%s\n' \
     "$BOLD" "$BLUE" "$_STAGE_INDEX" "$TOTAL_STAGES" "$1" "$RESET"
 }
@@ -206,16 +207,28 @@ REPO="jorgemasta/29n"
 # wrangler without a login: every call uses the token captured in stage 1.
 wr() { CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" CLOUDFLARE_ACCOUNT_ID="$CLOUDFLARE_ACCOUNT_ID" npx --yes wrangler "$@"; }
 
-TOTAL_STAGES=9
+TOTAL_STAGES=8
+# ./scripts/setup-wizard.sh 4 → start at stage 4 (earlier ones are skipped).
+FROM_STAGE="${1:-1}"
+[[ "$FROM_STAGE" =~ ^[1-8]$ ]] || { printf 'Uso: %s [paso 1-8]\n' "$0"; exit 1; }
+
+# done_already KEY…: true when every KEY is in .env; loads them so later stages can use them.
+done_already() {
+  local k v
+  for k in "$@"; do v=$(_existing "$k") && [[ -n "$v" ]] || return 1; done
+  for k in "$@"; do printf -v "$k" '%s' "$(_existing "$k")"; done
+  printf '  %s✓%s ya hecho (%s en .env): lo salto\n' "$GREEN" "$RESET" "$*"
+}
 
 banner "29N · cuentas y secretos (vigilante, analítica, pregunta libre)"
 
 # ── 1 ─────────────────────────────────────────────────────────────────────
-stage "Cloudflare: API token y Account ID"
+if stage "Cloudflare: API token y Account ID"; then
+if ! done_already CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; then
 say "Necesario para desplegar (a mano y desde el vigilante) y para crear el KV."
 open_url "https://dash.cloudflare.com/profile/api-tokens"
 step "Create Token → plantilla «Edit Cloudflare Workers» → Use template."
-step "Añade un permiso más: Zone · DNS · Edit."
+step "Añade dos permisos más: Zone · DNS · Edit y Zone · Zone · Read."
 step "Zone Resources: Include · Specific zone · jorgemasta.com. Account Resources: tu cuenta."
 step "Continue to summary → Create Token → copia el token (solo se muestra una vez)."
 ask_secret CLOUDFLARE_API_TOKEN "Pega el API token:"
@@ -228,10 +241,13 @@ ask CLOUDFLARE_ACCOUNT_ID "Account ID:"
 write_env CLOUDFLARE_ACCOUNT_ID "$CLOUDFLARE_ACCOUNT_ID"
 set_secret CLOUDFLARE_API_TOKEN "$CLOUDFLARE_API_TOKEN"
 set_secret CLOUDFLARE_ACCOUNT_ID "$CLOUDFLARE_ACCOUNT_ID"
+fi
 pause
+fi
 
 # ── 2 ─────────────────────────────────────────────────────────────────────
-stage "Anthropic: workspace con límite de gasto y API key"
+if stage "Anthropic: workspace con límite de gasto y API key"; then
+if ! done_already ANTHROPIC_API_KEY; then
 say "La usan el proceso de datos (vigilante) y la pregunta libre. El límite del workspace es el tope duro."
 open_url "https://console.anthropic.com/settings/workspaces"
 step "Crea un workspace «29n»."
@@ -240,21 +256,12 @@ step "Settings → API keys → Create key, asignada al workspace «29n» → co
 ask_secret ANTHROPIC_API_KEY "Pega la API key:"
 write_env ANTHROPIC_API_KEY "$ANTHROPIC_API_KEY"
 set_secret ANTHROPIC_API_KEY "$ANTHROPIC_API_KEY"
+fi
 pause
+fi
 
 # ── 3 ─────────────────────────────────────────────────────────────────────
-stage "Avisos del vigilante: issues de GitHub"
-say "Cada programa publicado o fallo del vigilante abre un issue (etiqueta «vigilante») asignado a ti."
-say "Solo tienes que recibir las notificaciones de GitHub en el móvil."
-open_url "https://github.com/mobile"
-step "Instala la app de GitHub e inicia sesión."
-step "Ajustes → Notifications → activa las push de «Assigned» (o deja el correo de GitHub activo)."
-open_url "https://github.com/$REPO"
-step "En el repo: Watch → «Participating and @mentions» como mínimo (los issues asignados siempre avisan)."
-pause
-
-# ── 4 ─────────────────────────────────────────────────────────────────────
-stage "GitHub: permisos de Actions y etiquetas"
+if stage "GitHub: permisos de Actions y etiquetas"; then
 say "El vigilante hace push a main y los avisos sin cuenta usan etiquetas."
 step "Workflow permissions de $REPO → «Read and write»."
 step "Etiquetas «reporte», «falta-partido» y «vigilante» («reneutralizar» la crea el job de apuestas)."
@@ -276,31 +283,42 @@ else
   SKIPPED+=("Workflow permissions «Read and write» y etiquetas reporte / falta-partido / vigilante")
 fi
 pause
+fi
 
-# ── 5 ─────────────────────────────────────────────────────────────────────
-stage "Umami (opcional): analítica sin cookies en la UE"
+# ── 4 ─────────────────────────────────────────────────────────────────────
+if stage "Umami (opcional): analítica sin cookies en stats.padelful.com"; then
+say "Tu instancia self-hosted. El script sale de https://stats.padelful.com/script.js (ya es el valor por defecto)."
 if confirm "¿Configuramos Umami ahora?"; then
-  open_url "https://cloud.umami.is/signup"
-  step "Crea la cuenta eligiendo la región UE (Europe)."
-  step "Websites → Add website → nombre 29N, dominio 29n.jorgemasta.com."
+  open_url "https://stats.padelful.com/settings/websites"
+  step "Settings → Websites → Add website → nombre 29N, dominio 29n.jorgemasta.com."
   step "Abre el sitio → Edit → copia el Website ID (formato uuid)."
   ask UMAMI_WEBSITE_ID "Website ID:"
   write_env UMAMI_WEBSITE_ID "$UMAMI_WEBSITE_ID"
   set_var UMAMI_WEBSITE_ID "$UMAMI_WEBSITE_ID"
-  step "Si el código de seguimiento usa otra URL de script que https://cloud.umami.is/script.js, cópiala; si no, Enter."
-  ask UMAMI_SCRIPT_URL "URL del script (opcional):"
-  [[ -n "${UMAMI_SCRIPT_URL:-}" ]] && write_env UMAMI_SCRIPT_URL "$UMAMI_SCRIPT_URL"
-  step "Settings → API keys → Create key → cópiala (para la comprobación semanal de apuestas)."
-  ask_secret UMAMI_API_KEY "Umami API key:"
-  write_env UMAMI_API_KEY "$UMAMI_API_KEY"
-  set_secret UMAMI_API_KEY "$UMAMI_API_KEY"
+  say ""
+  say "La comprobación semanal de apuestas (guesses.yml) lee la API. Self-hosted no tiene API keys: usa un login."
+  step "Recomendado: Settings → Users → Add user, rol «View only», con acceso al sitio 29N."
+  ask UMAMI_USERNAME "Usuario de Umami:"
+  ask_secret UMAMI_PASSWORD "Contraseña de ese usuario:"
+  if curl -fsS -m 15 -H 'content-type: application/json' \
+      -d "$(jq -n --arg u "$UMAMI_USERNAME" --arg p "$UMAMI_PASSWORD" '{username:$u,password:$p}')" \
+      https://stats.padelful.com/api/auth/login | jq -e '.token' >/dev/null 2>&1; then
+    printf '  %s✓%s login correcto\n' "$GREEN" "$RESET"
+  else
+    warn "el login falló: revisa usuario y contraseña (los guardo igualmente)"
+  fi
+  write_env UMAMI_USERNAME "$UMAMI_USERNAME"
+  write_env UMAMI_PASSWORD "$UMAMI_PASSWORD"
+  set_secret UMAMI_USERNAME "$UMAMI_USERNAME"
+  set_secret UMAMI_PASSWORD "$UMAMI_PASSWORD"
 else
-  SKIPPED+=("Umami: UMAMI_WEBSITE_ID (variable) y UMAMI_API_KEY (secreto)")
+  SKIPPED+=("Umami: UMAMI_WEBSITE_ID (variable) y UMAMI_USERNAME / UMAMI_PASSWORD (secretos)")
 fi
 pause
+fi
 
-# ── 6 ─────────────────────────────────────────────────────────────────────
-stage "Pregunta libre (opcional, ~18-nov): KV QUESTIONS"
+# ── 5 ─────────────────────────────────────────────────────────────────────
+if stage "Pregunta libre (opcional, ~18-nov): KV QUESTIONS"; then
 DO_FREE=0
 say "Las etapas 6–9 preparan la pregunta libre y los avisos sin cuenta. No la abren:"
 note "eso es FREE_QUESTION=\"1\" en wrangler.jsonc + PUBLIC_FREE_QUESTION=1 al desplegar (docs/deploy.md)."
@@ -327,9 +345,10 @@ else
   SKIPPED+=("Pregunta libre: KV, AI Gateway, GITHUB_TOKEN y secretos del Worker (re-ejecuta el wizard ~18-nov)")
 fi
 pause
+fi
 
-# ── 7 ─────────────────────────────────────────────────────────────────────
-stage "Pregunta libre: AI Gateway sin registros"
+# ── 6 ─────────────────────────────────────────────────────────────────────
+if stage "Pregunta libre: AI Gateway sin registros"; then
 if (( DO_FREE )); then
   open_url "https://dash.cloudflare.com/$CLOUDFLARE_ACCOUNT_ID/ai/ai-gateway"
   step "Create Gateway → nombre, por ejemplo «29n»."
@@ -346,9 +365,10 @@ else
   note "Saltada."
 fi
 pause
+fi
 
-# ── 8 ─────────────────────────────────────────────────────────────────────
-stage "Avisos sin cuenta: token de GitHub (Issues)"
+# ── 7 ─────────────────────────────────────────────────────────────────────
+if stage "Avisos sin cuenta: token de GitHub (Issues)"; then
 if (( DO_FREE )); then
   open_url "https://github.com/settings/personal-access-tokens/new"
   step "Fine-grained token · nombre «29n-avisos» · caducidad: después del 29-nov."
@@ -361,9 +381,10 @@ else
   note "Saltada."
 fi
 pause
+fi
 
-# ── 9 ─────────────────────────────────────────────────────────────────────
-stage "Secretos del Worker (Cloudflare)"
+# ── 8 ─────────────────────────────────────────────────────────────────────
+if stage "Secretos del Worker (Cloudflare)"; then
 if (( DO_FREE )); then
   say "Los secretos del Worker 29n se guardan en Cloudflare, no en el repo."
   if wr secret list >/dev/null 2>&1; then
@@ -384,6 +405,7 @@ else
   note "Saltada."
 fi
 pause
+fi
 
 finish
 say "Siguiente: datos reales (npm run process) y npm run deploy. Ver docs/deploy.md."

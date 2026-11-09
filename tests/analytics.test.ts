@@ -174,7 +174,7 @@ describe('bet check adapters', () => {
     const urls: string[] = [];
     const count = createUmamiCounter({
       base: 'https://api.umami.is/v1/',
-      apiKey: 'clave',
+      auth: { apiKey: 'clave' },
       websiteId: 'web-1',
       days: 30,
       now: () => 30 * 86_400_000,
@@ -190,8 +190,35 @@ describe('bet check adapters', () => {
     expect(urls[0]).toContain('propertyName=topic');
   });
 
+  it('logs in to a self-hosted instance and sends its bearer token', async () => {
+    const calls: { url: string; init: { method?: string; headers: Record<string, string>; body?: string } }[] = [];
+    const count = createUmamiCounter({
+      base: 'https://stats.example.com/api',
+      auth: { username: 'admin', password: 'pw' },
+      websiteId: 'web-1',
+      days: 1,
+      now: () => 86_400_000,
+      request: async (url, init) => {
+        calls.push({ url, init });
+        if (url.endsWith('/auth/login')) return { ok: true, status: 200, json: async () => ({ token: 'tok' }) };
+        return { ok: true, status: 200, json: async () => [] };
+      },
+    });
+    await count();
+    expect(calls[0]).toEqual(expect.objectContaining({ url: 'https://stats.example.com/api/auth/login' }));
+    expect(JSON.parse(calls[0]!.init.body!)).toEqual({ username: 'admin', password: 'pw' });
+    expect(calls.slice(1).every((c) => c.init.headers.authorization === 'Bearer tok')).toBe(true);
+    expect(calls.filter((c) => c.url.endsWith('/auth/login'))).toHaveLength(1);
+  });
+
+  it('fails loudly when the self-hosted login is rejected', async () => {
+    const count = createUmamiCounter({ base: 'https://x', auth: { username: 'u', password: 'bad' }, websiteId: 'w', days: 1, now: () => 0,
+      request: async () => ({ ok: false, status: 401, json: async () => ({}) }) });
+    await expect(count()).rejects.toThrow(/login 401/);
+  });
+
   it('fails loudly on an API error instead of reporting zero bets', async () => {
-    const count = createUmamiCounter({ base: 'https://x', apiKey: 'k', websiteId: 'w', days: 1, now: () => 0,
+    const count = createUmamiCounter({ base: 'https://x', auth: { apiKey: 'k' }, websiteId: 'w', days: 1, now: () => 0,
       request: async () => ({ ok: false, status: 401, json: async () => ({}) }) });
     await expect(count()).rejects.toThrow(/401/);
   });
