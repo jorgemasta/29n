@@ -14,6 +14,7 @@ import {
 } from '../src/share';
 import { createGame, type Affinity, type AffinityRow, type ThemeAffinity } from '../src/game';
 import { themesDataset } from './fixtures/themes-dataset';
+import { joinList, plural } from '../src/spanish';
 
 const party = (id: string, name = `Partido ${id.toUpperCase()}`) => ({ id, name, acronym: id.toUpperCase(), test: true });
 const row = (id: string, percent: number, rank: number, tie = false): AffinityRow =>
@@ -210,5 +211,15 @@ describe('link preview and ?r=reto', () => {
     expect(challenge).toBe(
       `<title>29N</title><meta property="og:title" content="${OG.challengeTitle}" /><meta name="twitter:title" content="${OG.challengeTitle}" /><p>${OG.title}</p>`,
     );
+  });
+});
+
+describe('Spanish list and plural helpers (shared by the result, the share card and the province notice)', () => {
+  it('joins with commas and "y", and pluralises with the number', () => {
+    expect(joinList([])).toBe('');
+    expect(joinList(['A'])).toBe('A');
+    expect(joinList(['A', 'B', 'C'])).toBe('A, B y C');
+    expect(plural(1, 'temática', 'temáticas')).toBe('1 temática');
+    expect(plural(0, 'temática', 'temáticas')).toBe('0 temáticas');
   });
 });

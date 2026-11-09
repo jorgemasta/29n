@@ -4,6 +4,7 @@ import type { Game } from '../game';
 import { createFinder, PROVINCES, provinceByCode, type Finder, type Place, type Municipalities } from '../registry/territory';
 import { h } from './dom';
 import { icon } from './icons';
+import { joinList } from '../spanish';
 
 
 let finder: Finder = createFinder({ municipalities: {} });
@@ -113,8 +114,4 @@ export function partiesBlock(game: Game): HTMLElement {
     game.province === null ? h('p', { class: 'grey' }, 'Solo partidos de toda España. Elige provincia para incluir los de tu zona.') : null,
     h('a', { href: '#provincia' }, 'Cambiar provincia'),
   );
-}
-
-function joinList(l: string[]): string {
-  return l.length <= 1 ? (l[0] ?? '') : `${l.slice(0, -1).join(', ')} y ${l.at(-1)}`;
 }

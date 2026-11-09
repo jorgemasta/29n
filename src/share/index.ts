@@ -3,6 +3,7 @@
 // names no party; the ranking goes on it only if the voter picks it.
 // Nothing the voter chose is ever put in a link: the shared URL is always the same clean ?r=reto.
 import type { Affinity } from '../game';
+import { joinList, plural } from '../spanish';
 
 export type Variant = 'no-parties' | 'ranking';
 export type Format = 'story' | 'square';
@@ -58,8 +59,6 @@ export interface CardContent {
 /** Themes named on the default card; beyond this they are counted ("5 temáticas"). */
 const MAX_NAMED_THEMES = 3;
 
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-const joinList = (l: string[]): string => (l.length <= 1 ? (l[0] ?? '') : `${l.slice(0, -1).join(', ')} y ${l.at(-1)}`);
 const questionsIn = (a: Affinity) => a.themes.reduce((s, t) => s + t.questions, 0);
 const noneIn = (a: Affinity) => a.themes.reduce((s, t) => s + t.none, 0);
 

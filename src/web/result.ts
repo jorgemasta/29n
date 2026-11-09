@@ -5,10 +5,9 @@ import { guessScoreBlock } from './guess';
 import { provinceName } from './province';
 import { button, h } from './dom';
 import { icon } from './icons';
+import { joinList, plural } from '../spanish';
 
 const link = (text: string, href: string, cls = '') => h('a', { href, class: cls }, text);
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-const joinList = (l: string[]): string => (l.length <= 1 ? (l[0] ?? '') : `${l.slice(0, -1).join(', ')} y ${l.at(-1)}`);
 
 /** Inline confirmation for "Empezar de cero" (no browser dialog). */
 export function startOver(onClear: () => void, text = 'Empezar de cero'): HTMLElement {
