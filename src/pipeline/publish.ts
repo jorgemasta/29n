@@ -8,6 +8,13 @@ import type { ProcessResult } from './index';
 
 export type Merge = { ok: true; dataset: Dataset } | { ok: false; reason: string };
 
+/** The pulse's themes, plus the previous themes of published questions no longer in the pulse (a
+ * published question stays published, so its theme must too, or V9 rejects the dataset). */
+export function pulseThemes(pulse: readonly Theme[], previous: readonly Theme[] | undefined, questions: readonly { theme: string }[]): Theme[] {
+  const kept = (previous ?? []).filter((t) => !pulse.some((p) => p.id === t.id) && questions.some((q) => q.theme === t.id));
+  return [...pulse, ...kept].sort((a, b) => a.order - b.order);
+}
+
 /** New dataset with the programme published, or the V9 reason it cannot be. */
 export function mergeManifesto(
   previous: Dataset,
@@ -25,8 +32,9 @@ export function mergeManifesto(
     /** The published questions (and their settle reports) with this party classified into their
      * frozen approaches (`classifyLateParty`, #28). Default: the previous ones, as they were. */
     settled?: Pick<Dataset, 'questions' | 'approachReports'>;
-    /** Themes of the frozen pulse (data/pulse.json). Default: the previous ones. The first real
-     * manifesto replaces the simulated dataset, so this is where a real dataset gets its themes. */
+    /** Themes of the frozen pulse (data/pulse.json), plus the previous themes of published questions
+     * no longer in it (`pulseThemes`). Default: the previous ones. The first real manifesto replaces
+     * the simulated dataset, so this is where a real dataset gets its themes. */
     themes?: Theme[];
   },
 ): Merge {
@@ -52,7 +60,11 @@ export function mergeManifesto(
   const questions = args.settled?.questions ?? priorData.questions;
   const dataset = buildDataset({
     parties,
-    ...((args.themes ?? priorData.themes) ? { themes: args.themes ?? priorData.themes } : {}),
+    ...(args.themes
+      ? { themes: pulseThemes(args.themes, priorData.themes, questions ?? []) }
+      : priorData.themes
+        ? { themes: priorData.themes }
+        : {}),
     ...(questions ? { questions: dropped.size ? withoutParties(questions, dropped) : questions } : {}),
     topics: priorData.topics,
     topicPositions: priorData.topicPositions.filter((p) => p.party !== party.id),

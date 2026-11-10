@@ -388,6 +388,20 @@ describe('watch', () => {
     const texts = (q: Question) => q.approaches.map(({ id, what, how, figure }) => ({ id, what, how, figure }));
     const published = (ds: Dataset) => ds.questions!.find((q) => q.id === housingQuestion.id)!;
 
+    it('keeps the theme of a published question that is no longer in the pulse', async () => {
+      // A later pulse without "vivienda": the frozen housing question stays published, with its theme.
+      const later: Pulse = {
+        ...pulseOf([unpublished]),
+        themes: [{ id: 'economia', title: 'Economía', order: 1 }],
+        questions: pulseOf([unpublished]).questions.map((q) => ({ ...q, theme: 'economia' })),
+      };
+      const m = await lateMount(placing(1), { pulse: later });
+      const r = await m.run();
+
+      expect(r.results).toEqual([expect.objectContaining({ party: 'pej', result: 'published' })]);
+      expect(m.dataset.themes!.map((t) => t.id).sort()).toEqual(['economia', 'vivienda']);
+    });
+
     it('classifies the new party into the frozen approaches and publishes on its own', async () => {
       const m = await lateMount(placing(1));
       const r = await m.run();

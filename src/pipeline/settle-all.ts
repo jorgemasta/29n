@@ -12,6 +12,7 @@ import type { Dataset, Question } from '../dataset/schema';
 import type { Pulse } from '../pulse';
 import { GUESS_ROUNDS, MAX_REWRITES } from './approach-checks';
 import { SETTLE_PROMPT_VERSION } from './prompts-settle';
+import { pulseThemes } from './publish';
 import { MAX_ROUNDS, publishSettled, settleApproaches, type QuestionSpec, type SettleOptions, type SettleReport } from './settle';
 
 /**
@@ -110,8 +111,7 @@ export async function settleAll(
   const reports = results.map((r) => r.report);
   // The pulse's themes, plus those of published questions no longer in it (a published question stays).
   const questions = sortQuestions(settled.questions ?? []);
-  const kept = (dataset.themes ?? []).filter((t) => !pulse.themes.some((p) => p.id === t.id) && questions.some((q) => q.theme === t.id));
-  const themes = [...pulse.themes, ...kept].sort((a, b) => a.order - b.order);
+  const themes = pulseThemes(pulse.themes, dataset.themes, questions);
   const next: Dataset = { ...dataset, themes, ...settled, questions };
   const v = validateDataset(next);
   if (!v.valid) return { ok: false, reason: `V9: el dataset no valida: ${v.errors.join('; ')}`, reports, held };
