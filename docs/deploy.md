@@ -14,7 +14,11 @@ No hay credenciales de Cloudflare ni de Anthropic en el repo.
      oficiales del 29N incluye las fuentes provisionales (programas de 2023, documentos del partido y
      declaraciones), marcadas «solo privado» al revelar. Se despliega en **otro Worker** (`29n-privado`, en
      `*.workers.dev`, entorno `private` de `wrangler.jsonc`), nunca en el dominio público, sin indexar.
-3. Comprobar `https://29n.jorgemasta.com/`, `https://29n.jorgemasta.com/privacidad/` y que `robots.txt` devuelve
+3. **Al hacer merge a `main`** lo despliega solo `.github/workflows/deploy.yml` (también a mano: Actions → «Deploy»
+   → Run workflow). Elige el Worker según el dataset: si es real (`origin: "real"`), `npm run deploy` a producción;
+   si es simulado, `npm run deploy:private`, sin analítica ni pregunta libre. Usa los secretos `CLOUDFLARE_API_TOKEN`
+   y `CLOUDFLARE_ACCOUNT_ID` de GitHub Actions. Los commits del vigilante no lo lanzan (el vigilante ya despliega).
+4. Comprobar `https://29n.jorgemasta.com/`, `https://29n.jorgemasta.com/privacidad/` y que `robots.txt` devuelve
    `Allow: /` (solo el build de producción es indexable; cualquier otro build lleva `Disallow: /` y `noindex`).
 
 ## Modo producción
