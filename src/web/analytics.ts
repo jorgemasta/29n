@@ -7,6 +7,7 @@ import {
   sharedEvent,
   startedEvent,
   confirmEvents,
+  guessEvents,
   sawResultEvent,
   type AnalyticsEvent,
   type ShareVariant,
@@ -40,14 +41,31 @@ const once = (e: AnalyticsEvent) => {
 export const setupAnalytics = (ids: readonly string[]) => {
   parties = ids;
 };
-/** A topic is on screen: a player with nothing done yet has started. */
+/** A question is on screen: a player with nothing answered yet has started. */
+export const trackStarted = (game: Game) => {
+  if (Object.keys(game.state.questionChoices ?? {}).length === 0) once(startedEvent());
+};
+/** v1: a topic is on screen: a player with nothing done yet has started. */
 export const trackViewTopic = (game: Game) => {
   if (game.done().length === 0) once(startedEvent());
 };
 export const trackConfirm = (before: Game, after: Game, topic: string) =>
   confirmEvents(before, after, topic).forEach(send);
+/** Questions whose guess outcome was already sent in this page load. */
+const sentGuesses = new Set<string>();
+/**
+ * Hit or miss of the guesses on these questions, once revealed (never the party). At most once per
+ * question: the engine makes a revealed choice final and offers no guess after "Repetir", so a
+ * question's outcome can only be sent again within a page load, and that is filtered here.
+ */
+export const trackGuesses = (game: Game, questionIds: string[]) =>
+  guessEvents(game, questionIds.filter((q) => !sentGuesses.has(q))).forEach((e) => {
+    sentGuesses.add(e.data!.question!);
+    send(e);
+  });
+/** "Mi resultado" is on screen with at least one revealed theme in it. */
 export const trackResult = (game: Game) => {
-  if (game.result().available) once(sawResultEvent());
+  if (game.affinity().themes.length) once(sawResultEvent());
 };
 /** For the share button (#9). */
 export const trackShare = (variant: ShareVariant) => send(sharedEvent(variant));

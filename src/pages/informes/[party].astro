@@ -1,29 +1,74 @@
 ---
 // Verification report of one programme (story 45): every check the programme and its positions went through.
 import InfoPage from '../../components/InfoPage.astro';
+import Icon from '../../components/Icon.astro';
 import { dataset, dayDate } from '../../transparency/data';
-import { reportSummary, repoLink } from '../../transparency';
+import { reportSummary, repoLink, partyStances, partiesWithStances } from '../../transparency';
 import { CHECKS } from '../../registry/checks';
 
 export function getStaticPaths() {
-  return dataset.reports.map((report) => ({ params: { party: report.party }, props: { report } }));
+  // Every party with a verification report or a stance in some question.
+  const ids = [...new Set([...dataset.reports.map((r) => r.party), ...partiesWithStances(dataset)])];
+  return ids.map((id) => ({ params: { party: id }, props: { id, report: dataset.reports.find((r) => r.party === id) ?? null } }));
 }
-const r = reportSummary(Astro.props.report, dataset.topics, dataset.questions);
-const i = r.report;
-const party = dataset.parties.find((p) => p.id === i.party);
+const { id } = Astro.props;
+const r = Astro.props.report ? reportSummary(Astro.props.report, dataset.questions, dataset.suggestedQuestions) : null;
+const i = r?.report;
+const stances = partyStances(dataset, id);
+const party = dataset.parties.find((p) => p.id === id);
 const manifesto = party?.manifesto.state === 'published' ? party.manifesto : null;
-const name = party?.name ?? i.party;
+const name = party?.name ?? id;
+const STANCE = { full: 'De lleno', partial: 'En parte' } as const;
 const STATE = { proposes: 'Publicada', noProposal: 'No propone nada', unverified: 'Descartada: no pudimos verificarla' } as const;
 const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite: 'reescribir', discard: 'descartada', block: 'bloqueado', extract: 'encontrada', warning: 'aviso' };
 ---
-<InfoPage title={`Informe de verificación: ${name}`} description={`Qué comprobaciones pasó el programa de ${name} y qué se descartó.`} back={{ href: '/partidos/', text: '← Partidos y programas' }}>
-  <h1>Informe de verificación: {name}</h1>
+<InfoPage title={`Informe: ${name}`} description={`Dónde queda ${name} en cada pregunta, con sus citas, y qué comprobaciones pasó su programa.`} back={{ href: '/partidos/', text: 'Partidos y programas' }}>
+  <h1>Informe: {name}</h1>
   <p>
-    Todo lo que hizo el proceso automático con este programa: qué propuestas se publicaron, cuáles se
-    reescribieron y qué se descartó y por qué. <a href="/metodologia/#barreras">Qué es cada comprobación</a>.
+    Dónde queda este partido en cada pregunta, con la cita de su programa que lo justifica, y todo lo que hizo
+    el proceso automático con su programa. <a href="/metodologia/#enfoques">Cómo se agrupan los enfoques</a> ·
+    <a href="/metodologia/#barreras">qué es cada comprobación</a>.
   </p>
+
+  {stances.length > 0 && (
+    <>
+      <h2 id="posturas">Posturas por pregunta</h2>
+      <p class="grey">
+        De lleno cuenta 1 y en parte 0,5. La agrupación la hace una IA, sin revisión humana: si algo no cuadra con la
+        cita, avísanos.
+      </p>
+      {stances.map((t) => (
+        <>
+          <h3>{t.theme.title}</h3>
+          {t.questions.map((q) => (
+            <details class="report-topic">
+              <summary>
+                {q.text}{' · '}
+                {q.stances.length === 0 ? 'No propone nada' : q.stances.map((s) => (s.kind === 'approach' ? STANCE[s.stance] : 'Propone otra cosa')).join(', ')}
+              </summary>
+              {q.stances.length === 0 && <p class="grey">No está en ningún enfoque de esta pregunta.</p>}
+              {q.stances.map((s) => (
+                <div class="report-stance">
+                  {s.kind === 'approach' ? (
+                    <p><strong>{STANCE[s.stance]}</strong> en el enfoque: {s.approach.what} <span class="grey">{s.approach.how}</span></p>
+                  ) : (
+                    <p><strong>Propone otra cosa</strong>: no encaja en ninguno de los 3 enfoques.</p>
+                  )}
+                  <blockquote>«{s.quote.text}»</blockquote>
+                  <p class="grey">pág. {s.quote.page}{s.quote.link.startsWith('http') && <> · <a href={s.quote.link} target="_blank" rel="noopener">Abrir PDF en la página<Icon name="external" /></a></>}</p>
+                </div>
+              ))}
+            </details>
+          ))}
+        </>
+      ))}
+    </>
+  )}
+
+  {i && r && (<>
+  <h2>Verificación del programa</h2>
   <ul>
-    {manifesto && <li>Documento: <a href={manifesto.url} target="_blank" rel="noopener">{manifesto.title} (PDF ↗)</a></li>}
+    {manifesto && <li>Documento: <a href={manifesto.url} target="_blank" rel="noopener">{manifesto.title} (PDF)<Icon name="external" /></a></li>}
     {i.url && <li>Descargado de: <code>{i.url}</code>{i.date && ` el ${dayDate(i.date)}`}</li>}
     <li>Huella del PDF (SHA-256): <code class="footprint">{i.hashPdf}</code></li>
     <li>Versión de las instrucciones: <code>{i.promptVersion}</code> (<a href={repoLink('src/pipeline/prompts.ts')}>ver</a>)</li>
@@ -33,28 +78,28 @@ const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite
 
   {r.manifesto.length > 0 && (
     <>
-      <h2>Programa completo</h2>
+      <h3>Programa completo</h3>
       <ul class="entries">
         {r.manifesto.map((e) => <li><strong>{e.check} · {e.name}</strong>: {RESULT[e.result]}. <span class="grey">{e.detail}</span></li>)}
       </ul>
     </>
   )}
 
-  <h2>Por tema</h2>
-  {r.topics.map((t) => (
+  <h3>Comprobaciones por pregunta</h3>
+  {r.positions.map((t) => (
     <details class="report-topic">
-      <summary>{t.topic.title} · {STATE[t.state]}{t.rewrites > 0 && ` · ${t.rewrites} ${t.rewrites === 1 ? 'reescritura' : 'reescrituras'}`}</summary>
+      <summary>{t.question.text} · {STATE[t.state]}</summary>
       {t.reason && <p><strong>Motivo:</strong> {t.reason}</p>}
       <ul class="entries">
         {t.entries.map((e) => <li title={CHECKS[e.check].description}><strong>{e.check} · {e.name}</strong>: {RESULT[e.result]}. <span class="grey">{e.detail}</span></li>)}
       </ul>
     </details>
   ))}
-  {r.questions.length > 0 && (
+  {r.suggestedQuestions.length > 0 && (
     <>
-      <h2>Respuestas a las preguntas sugeridas</h2>
+      <h3>Respuestas a las preguntas sugeridas</h3>
       <p>Lo que se comprobó en cada respuesta de la pestaña Preguntar. Estas respuestas no cuentan para publicar o bloquear el programa.</p>
-      {r.questions.map((p) => (
+      {r.suggestedQuestions.map((p) => (
         <details class="report-topic">
           <summary>{p.question.text}</summary>
           <ul class="entries">
@@ -64,5 +109,6 @@ const RESULT: Record<string, string> = { pass: 'pasa', fix: 'corregido', rewrite
       ))}
     </>
   )}
+  </>)}
   <p class="grey">El informe completo en JSON está en el <a href={repoLink('data/dataset.json')}>dataset publicado</a>.</p>
 </InfoPage>

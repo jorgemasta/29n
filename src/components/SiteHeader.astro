@@ -1,0 +1,30 @@
+---
+// Header of every page (no bottom bar, #18): logo, "Temáticas · n/N" (the app fills it in), the
+// large-text button "Aa" and a menu. Icons are inline SVG. The menu is a native popover: light
+// dismiss and Escape come from the browser.
+interface Props { app?: boolean }
+const { app = false } = Astro.props;
+---
+<header class="site-header">
+  <div class="site-header-inner">
+    <a href="/" class="logo" aria-label="29N, inicio"><span class="logo-mark" aria-hidden="true"></span>29N</a>
+    <div class="header-actions">
+      {app && <a href="#tematicas" id="themes-chip" class="header-chip" hidden>Temáticas</a>}
+      <button type="button" id="aa" class="header-chip text-size-button" aria-pressed="false" aria-label="Letra grande">Aa</button>
+      <button type="button" class="header-chip" popovertarget="menu" aria-label="Menú">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+      </button>
+    </div>
+  </div>
+  <nav id="menu" class="menu" popover aria-label="Menú">
+    <ul role="list">
+      <li><a href="/#tematicas">Temáticas</a></li>
+      <li><a href="/#resultado">Mi resultado</a></li>
+      <li><a href="/#preguntar">Preguntar</a></li>
+      <li><a href="/#datos">Tus datos</a></li>
+      <li><a href="/partidos/">Partidos y programas</a></li>
+      <li><a href="/metodologia/">Cómo lo hacemos</a></li>
+      <li><a href="/privacidad/">Privacidad</a></li>
+    </ul>
+  </nav>
+</header>

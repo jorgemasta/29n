@@ -1,0 +1,6 @@
+---
+// Inline SVG icon for static pages (same set as src/web/icons.ts): no emoji, no font glyphs.
+import { iconMarkup, type IconName } from '../web/icons';
+interface Props { name: IconName }
+---
+<Fragment set:html={iconMarkup(Astro.props.name)} />

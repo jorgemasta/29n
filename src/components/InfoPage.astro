@@ -1,19 +1,26 @@
 ---
 // Shell of the static information pages (methodology, parties, reports, rubric).
+import '@fontsource/quicksand/latin-500.css';
+import '@fontsource/quicksand/latin-600.css';
+import '@fontsource/quicksand/latin-700.css';
 import '../styles/global.css';
-import { dataset } from '../transparency/data';
 import TextSizeInit from './TextSizeInit.astro';
 import Umami from './Umami.astro';
 import Robots from './Robots.astro';
 import Footer from './Footer.astro';
+import SiteHeader from './SiteHeader.astro';
+import TestRibbon from './TestRibbon.astro';
+import Icon from './Icon.astro';
 interface Props { title: string; description: string; back?: { href: string; text: string } }
-const { title, description, back = { href: '/', text: '← Volver' } } = Astro.props;
+const { title, description, back = { href: '/', text: 'Volver' } } = Astro.props;
 ---
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F7F3ED" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B242C" media="(prefers-color-scheme: dark)" />
     <Robots />
     <title>{title} · 29N</title>
     <meta name="description" content={description} />
@@ -21,14 +28,10 @@ const { title, description, back = { href: '/', text: '← Volver' } } = Astro.p
     <Umami />
   </head>
   <body>
+    <SiteHeader />
+    <TestRibbon />
     <main class="info">
-      <div class="header-row">
-        <a href={back.href} class="back-link">{back.text}</a>
-        <button type="button" id="aa" class="text-size-button" aria-pressed="false" aria-label="Letra grande">Aa</button>
-      </div>
-      {dataset.origin !== 'real' && (
-        <p class="test-notice" role="note"><strong>Prototipo con datos de prueba.</strong> {dataset.note}</p>
-      )}
+      <a href={back.href} class="back-link"><Icon name="arrowLeft" />{back.text}</a>
       <slot />
     </main>
     <Footer />

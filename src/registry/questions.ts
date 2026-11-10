@@ -3,9 +3,9 @@
 // `keywords` find the candidate pages (ignoring case and accents, as word prefixes, like
 // V12's keywords): only those pages go to the AI. Wide on purpose: a false hit costs one more page;
 // a miss wrongly says "El programa de X no lo menciona". Public, as part of the methodology.
-import type { Question } from '../dataset/schema';
+import type { SuggestedQuestion } from '../dataset/schema';
 
-export const SUGGESTED_QUESTIONS: Question[] = [
+export const SUGGESTED_QUESTIONS: SuggestedQuestion[] = [
   {
     id: 'iva-luz',
     text: '¿Quién propone bajar el IVA de la luz?',

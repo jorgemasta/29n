@@ -1,8 +1,32 @@
 // Game engine (test point B). Pure functions over the dataset, no I/O: runs in the browser.
 //   createGame(dataset, province, seed, state?, options?) → Game (immutable; actions return a new one)
 import { applyMode, isPrivateOnly, sourceOf } from '../dataset';
-import type { Dataset, Mode, FeasibilityNote, Party, Position, Question, QuestionAnswer, Topic, SourceType } from '../dataset/schema';
+import type { Dataset, Mode, FeasibilityNote, Party, TopicPosition, SuggestedQuestion, SuggestedAnswer, Topic, SourceType } from '../dataset/schema';
 import { shuffle } from './random';
+import { themeGame, type ThemeGame, type ThemeState } from './themes';
+export { MIN_THEMES_FOR_RANKING, MINUTES_PER_QUESTION } from './themes';
+import { byName, linkQuote, revealParty, type RevealedParty } from './party';
+import { noSources } from './proposal';
+
+export type { PartyProposal } from './proposal';
+export type {
+  Affinity,
+  AffinityRow,
+  ApproachChoiceOptions,
+  BlindApproach,
+  GuessReveal,
+  OtherProposalReveal,
+  QuestionItem,
+  QuestionProgress,
+  QuestionReveal,
+  QuestionSummary,
+  QuestionView,
+  RevealedApproach,
+  RevealedStance,
+  ThemeAffinity,
+  ThemeReveal,
+  ThemeView,
+} from './themes';
 
 export const NONE = 'none' as const;
 export type None = typeof NONE;
@@ -11,13 +35,11 @@ export type None = typeof NONE;
 export const CANARY_PROVINCES = ['35', '38'];
 
 /** Serializable state: what the voter chose per topic (party id, never leaves the browser). */
-export interface GameState {
+export interface GameState extends ThemeState {
   /** Insertion order = order in which topics were done. */
   choices: Record<string, string | None>;
   /** Optional bet per topic: the party the voter thought their card was from. */
   guesses?: Record<string, string>;
-  /** Up to MAX_PRIORITIES done topics that count double. */
-  priorities?: string[];
   /** Times each topic was re-shuffled ("Volver a elegir", "Barajar otra vez"). */
   reshuffles?: Record<string, number>;
   /** Parties with a card in each done topic when it was chosen (to spot new proposals). */
@@ -31,12 +53,11 @@ export interface ChoiceOptions {
   guess?: string;
 }
 
-/** Topics that can be marked as important (they count double). */
-export const MAX_PRIORITIES = 3;
-
 export interface GameOptions {
   /** 'public' (default) only uses official programmes; 'private' adds provisional sources. */
   mode?: Mode;
+  /** False after "No volver a preguntarme": the guess is neither offered nor accepted. Default true. */
+  guess?: boolean;
 }
 
 /** Visible goal: the result is offered after this many topics; later ones are "extra". */
@@ -79,12 +100,7 @@ export interface TopicView {
   noProposal: number;
 }
 
-export interface RevealedParty {
-  id: string;
-  name: string;
-  acronym: string;
-  test: boolean;
-}
+export type { RevealedParty, LinkedQuote } from './party';
 
 /** Who wrote a card, with its quotes linked to the PDF page (topics and questions alike). */
 export interface PartyCard extends Card {
@@ -123,44 +139,6 @@ export type Journey =
   | { type: 'newParty'; party: RevealedParty }
   | { type: 'different'; topics: number; parties: number };
 
-export interface RankingRow {
-  party: ZoneParty;
-  /** 1 per choice, 2 in a priority topic. */
-  points: number;
-  /** Rounded share of the points possible over every done topic ("Ninguna" included). */
-  percent: number;
-  /** Topics where this party's card was chosen. */
-  topics: number;
-  /** Same place for ties (1, 2, 2, 4). */
-  rank: number;
-  tie: boolean;
-}
-
-export interface Result {
-  /** True from GOAL_TOPICS done topics. */
-  available: boolean;
-  topics: number;
-  /** Topics where nothing convinced the voter (they add to no party). */
-  none: number;
-  allNone: boolean;
-  distinctParties: number;
-  /** Every party in play with a programme, also at 0 %. Empty if every choice was "Ninguna". */
-  ranking: RankingRow[];
-  /** "⏳ Falta [Partido]": parties in play without a published programme. */
-  pending: ZoneParty[];
-  /** "Solo partidos nacionales…": the voter did not give a province. */
-  noProvince: boolean;
-  /** Done topics with proposals the voter has not seen yet. */
-  topicsWithNews: number;
-  guesses: {
-    total: number;
-    /** Bets where the chosen card was not from the party guessed. */
-    wrong: number;
-    /** Failed bets grouped by the party actually chosen, by name. */
-    surprises: { party: RevealedParty; topics: Topic[] }[];
-  };
-}
-
 export interface News {
   /** Parties that published their programme since they were last announced. */
   parties: ZoneParty[];
@@ -180,12 +158,12 @@ export interface ZoneParties {
   pending: ZoneParty[];
 }
 
-/** Question to answer: a suggested one (dataset) or a live free question (#15). */
-export type QuestionSummary = Pick<Question, 'id' | 'text'>;
+/** SuggestedQuestion to answer: a suggested one (dataset) or a live free question (#15). */
+export type SuggestedQuestionSummary = Pick<SuggestedQuestion, 'id' | 'text'>;
 
 /** Preguntar, blind phase: anonymous answers A, B, C… ("Cita disponible al descubrir"). */
-export interface QuestionView {
-  question: QuestionSummary;
+export interface SuggestedQuestionView {
+  question: SuggestedQuestionSummary;
   cards: Card[];
   /** Parties in play whose programme does not mention it. */
   notMentioned: number;
@@ -195,12 +173,12 @@ export interface QuestionView {
   noneAtAll: boolean;
 }
 
-export type RevealedQuestionCard = PartyCard;
+export type RevealedAnswerCard = PartyCard;
 
 /** Preguntar, after "Ver de quién es cada una". No feasibility note; does not count for the result. */
-export interface QuestionReveal {
-  question: QuestionSummary;
-  cards: RevealedQuestionCard[];
+export interface SuggestedQuestionReveal {
+  question: SuggestedQuestionSummary;
+  cards: RevealedAnswerCard[];
   /** "El programa de X no lo menciona". */
   notMentioned: RevealedParty[];
   /** "No pudimos verificar su respuesta". */
@@ -209,7 +187,7 @@ export interface QuestionReveal {
   noneAtAll: boolean;
 }
 
-export interface Game {
+export interface Game extends ThemeGame<Game> {
   readonly state: GameState;
   /** INE province code, or null for "Prefiero no decirlo" (national parties only). */
   readonly province: string | null;
@@ -226,12 +204,6 @@ export interface Game {
   chooseAgain(topicId: string): Game;
   /** Re-shuffle a topic not chosen yet. */
   reshuffle(topicId: string): Game;
-  /** Mark (or unmark) a done topic as important; throws on a 4th one. */
-  markPriority(topicId: string, marked: boolean): Game;
-  /** Priority topics that are done here. */
-  priorities(): string[];
-  /** Affinity result: full ranking in percentages. */
-  result(): Result;
   /** What changed since the last visit. */
   news(): News;
   /** The voter has seen the published-programme news. */
@@ -249,18 +221,18 @@ export interface Game {
   /** Topic list: 5 suggested topics first, then the extra ones alphabetically, then the hidden ones. */
   list(): TopicList;
   /** Suggested questions of the Preguntar tab, in their fixed order. */
-  questions(): Question[];
+  suggestedQuestions(): SuggestedQuestion[];
   /**
    * Anonymous answers to a suggested question (by id, answers from the dataset), or to any
    * question with the given answers (live free question, #15). Same province and pending rules
    * as the topics; order shuffled stably per seed and question.
    */
-  question(question: string | QuestionSummary, answers?: QuestionAnswer[]): QuestionView;
+  suggestedQuestion(question: string | SuggestedQuestionSummary, answers?: SuggestedAnswer[]): SuggestedQuestionView;
   /** Who wrote each answer, with quotes. Revealing never changes the game state. */
-  revealQuestion(question: string | QuestionSummary, answers?: QuestionAnswer[]): QuestionReveal;
+  revealSuggestedQuestion(question: string | SuggestedQuestionSummary, answers?: SuggestedAnswer[]): SuggestedQuestionReveal;
 }
 
-type ProposingPosition = Extract<Position, { state: 'proposes' }>;
+type ProposingPosition = Extract<TopicPosition, { state: 'proposes' }>;
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 export function createGame(
@@ -278,7 +250,7 @@ export function createGame(
   const byId = new Map(published.map((p) => [p.id, p]));
   const isCanaryIslands = province !== null && CANARY_PROVINCES.includes(province);
   const proposalsIn = (topicId: string) =>
-    dataset.positions.filter((p) => p.topic === topicId && p.state === 'proposes' && byId.has(p.party)).length;
+    dataset.topicPositions.filter((p) => p.topic === topicId && p.state === 'proposes' && byId.has(p.party)).length;
   const inZone = dataset.topics.filter((t) => t.scope === 'national' || isCanaryIslands).sort((a, b) => a.order - b.order);
   const topics = inZone.filter((t) => proposalsIn(t.id) >= MIN_PROPOSALS);
   const hidden = inZone.filter((t) => !topics.includes(t));
@@ -288,7 +260,7 @@ export function createGame(
     if (!topic) throw new Error(`Tema no disponible: ${topicId}`);
     return topic;
   };
-  const positionsOf = (topicId: string) => dataset.positions.filter((p) => p.topic === topicId && byId.has(p.party));
+  const positionsOf = (topicId: string) => dataset.topicPositions.filter((p) => p.topic === topicId && byId.has(p.party));
 
   /** "4F2A", then "4F2A-1", "4F2A-2"… after each re-shuffle of the topic. */
   const shuffleId = (topicId: string) => {
@@ -306,28 +278,28 @@ export function createGame(
     }));
   };
 
-  const questions = [...(dataset.questions ?? [])].sort((a, b) => a.order - b.order);
+  const questions = [...(dataset.suggestedQuestions ?? [])].sort((a, b) => a.order - b.order);
   /** Answers of the parties in play, in their shuffled order (stable per seed and question). */
-  const answersOf = (q: string | QuestionSummary, given?: QuestionAnswer[]) => {
+  const answersOf = (q: string | SuggestedQuestionSummary, given?: SuggestedAnswer[]) => {
     const question = typeof q === 'string' ? questions.find((p) => p.id === q) : q;
     if (!question) throw new Error(`Pregunta no disponible: ${String(q)}`);
     const givenInPlay = (given ?? dataset.answers ?? []).filter((r) => r.question === question.id && byId.has(r.party));
     // A published party in play with no answer at all did not mention it: say so, never hide it.
     const withAny = new Set(givenInPlay.map((r) => r.party));
-    const all: QuestionAnswer[] = [
+    const all: SuggestedAnswer[] = [
       ...givenInPlay,
       ...[...byId.keys()]
         .filter((id) => !withAny.has(id))
-        .map((party): QuestionAnswer => ({ party, question: question.id, state: 'notMentioned', versions: { prompt: '' } })),
+        .map((party): SuggestedAnswer => ({ party, question: question.id, state: 'notMentioned', versions: { prompt: '' } })),
     ];
     const withAnswer = all
-      .filter((r): r is Extract<QuestionAnswer, { state: 'answers' }> => r.state === 'answers')
+      .filter((r): r is Extract<SuggestedAnswer, { state: 'answers' }> => r.state === 'answers')
       .sort((a, b) => a.party.localeCompare(b.party));
     const shuffledCards = shuffle(withAnswer, `${seed}:pregunta:${question.id}`).map((answer, i) => ({
       answer,
       card: toCard(answer, LETTERS[i]!),
     }));
-    const withState = (e: QuestionAnswer['state']) =>
+    const withState = (e: SuggestedAnswer['state']) =>
       all.filter((r) => r.state === e).map((r) => revealParty(byId.get(r.party)!)).sort((a, b) => a.name.localeCompare(b.name, 'es'));
     return { question: { id: question.id, text: question.text }, shuffledCards, withState };
   };
@@ -342,11 +314,10 @@ export function createGame(
       ...card,
       party: revealParty(party),
       manifestoTitle: manifesto?.title ?? '',
-      quotes: quotes.map((c) => ({ ...c, link: `${manifesto?.url ?? ''}#page=${c.page}` })),
+      quotes: quotes.map((c) => linkQuote(party, c)),
       source: { type, privateOnly: isPrivateOnly(type) },
     };
   };
-  const byName = (a: RevealedParty, b: RevealedParty) => a.name.localeCompare(b.name, 'es');
   const zonePending = () => pending.map(zone).sort(byName);
   /** Same dataset, province and options; new state. */
   const withChanges = (changes: Partial<GameState>) => createGame(dataset, province, seed, { ...state, ...changes }, options);
@@ -361,6 +332,7 @@ export function createGame(
   };
 
   return {
+    ...themeGame<Game>({ dataset, province, seed, state, published: byId, guess: options.guess ?? true, withChanges }),
     state,
     province,
     parties: () => ({ withManifesto: published.map(zone).sort(byName), pending: zonePending() }),
@@ -413,22 +385,12 @@ export function createGame(
       if (state.choices[topicId] !== undefined) throw new Error(`Ya has elegido en ${topicId}: usa «Volver a elegir»`);
       return withChanges({ reshuffles: { ...state.reshuffles, [topicId]: (state.reshuffles?.[topicId] ?? 0) + 1 } });
     },
-    markPriority(topicId, marked) {
-      findTopic(topicId);
-      const currentOnes = priorities();
-      if (!marked) return withChanges({ priorities: (state.priorities ?? []).filter((t) => t !== topicId) });
-      if (currentOnes.includes(topicId)) return withChanges({});
-      if (!done().includes(topicId)) throw new Error(`Solo se pueden marcar temas hechos: ${topicId}`);
-      if (currentOnes.length >= MAX_PRIORITIES) throw new Error(`Ya tienes ${MAX_PRIORITIES}. Quita uno.`);
-      return withChanges({ priorities: [...currentOnes, topicId] });
-    },
-    priorities,
     reveal(topicId) {
       const topic = findTopic(topicId);
       const choice = state.choices[topicId];
       if (choice === undefined) return null;
       const list = shuffledCards(topicId);
-      const withState = (e: Position['state']) =>
+      const withState = (e: TopicPosition['state']) =>
         positionsOf(topicId).filter((p) => p.state === e).map((p) => revealParty(byId.get(p.party)!));
       const guessed = state.guesses?.[topicId];
       return {
@@ -478,8 +440,8 @@ export function createGame(
         hidden,
       };
     },
-    questions: () => questions,
-    question(q, given) {
+    suggestedQuestions: () => questions,
+    suggestedQuestion(q, given) {
       const { question, shuffledCards, withState } = answersOf(q, given);
       return {
         question,
@@ -489,7 +451,7 @@ export function createGame(
         noneAtAll: shuffledCards.length === 0 && withState('unverified').length === 0,
       };
     },
-    revealQuestion(q, given) {
+    revealSuggestedQuestion(q, given) {
       const { question, shuffledCards, withState } = answersOf(q, given);
       return {
         question,
@@ -498,61 +460,6 @@ export function createGame(
         unverified: withState('unverified'),
         pending: zonePending(),
         noneAtAll: shuffledCards.length === 0 && withState('unverified').length === 0,
-      };
-    },
-    result() {
-      const doneIds = done();
-      const weight = (t: string) => (priorities().includes(t) ? 2 : 1);
-      const possible = doneIds.reduce((s, t) => s + weight(t), 0);
-      const points = new Map<string, { points: number; topics: number }>();
-      let none = 0;
-      for (const t of doneIds) {
-        const e = state.choices[t]!;
-        if (e === NONE) none++;
-        else if (byId.has(e)) {
-          const p = points.get(e) ?? { points: 0, topics: 0 };
-          points.set(e, { points: p.points + weight(t), topics: p.topics + 1 });
-        }
-      }
-      const allNone = doneIds.length > 0 && none === doneIds.length;
-      const rows = published
-        .map(zone)
-        .map((party) => {
-          const p = points.get(party.id) ?? { points: 0, topics: 0 };
-          return { party, ...p, percent: possible ? Math.round((100 * p.points) / possible) : 0 };
-        })
-        .sort((a, b) => b.points - a.points || byName(a.party, b.party));
-      const ranking: RankingRow[] = allNone
-        ? []
-        : rows.map((f) => {
-            const equal = rows.filter((g) => g.points === f.points).length;
-            return { ...f, rank: 1 + rows.filter((g) => g.points > f.points).length, tie: equal > 1 };
-          });
-
-      const guessedTopics = doneIds.filter((t) => state.guesses?.[t] !== undefined);
-      const wrong = guessedTopics.filter((t) => state.guesses![t] !== state.choices[t]);
-      const surprises = new Map<string, Topic[]>();
-      for (const t of wrong) {
-        const e = state.choices[t]!;
-        if (byId.has(e)) surprises.set(e, [...(surprises.get(e) ?? []), findTopic(t)]);
-      }
-      return {
-        available: doneIds.length >= GOAL_TOPICS,
-        topics: doneIds.length,
-        none,
-        allNone,
-        distinctParties: [...points.keys()].length,
-        ranking,
-        pending: zonePending(),
-        noProvince: province === null,
-        topicsWithNews: doneIds.filter((t) => newIn(t) > 0).length,
-        guesses: {
-          total: guessedTopics.length,
-          wrong: wrong.length,
-          surprises: [...surprises]
-            .map(([id, topics]) => ({ party: revealParty(byId.get(id)!), topics }))
-            .sort((a, b) => byName(a.party, b.party)),
-        },
       };
     },
     news() {
@@ -580,11 +487,6 @@ export function createGame(
     return Object.keys(state.choices).filter((id) => topics.some((t) => t.id === id));
   }
 
-  function priorities(): string[] {
-    const h = done();
-    return (state.priorities ?? []).filter((t) => h.includes(t));
-  }
-
   /** Label for the topic as it was when chosen: only choices made up to it count. */
   function journey(topicId: string): Journey | null {
     const list = done();
@@ -607,19 +509,4 @@ function toCard(p: { text: ProposingPosition['text'] }, letter: string): Card {
     headline: p.text.what,
     detail: p.text.figure ? `${p.text.how} Cifra: ${p.text.figure}.` : p.text.how,
   };
-}
-
-/**
- * The published argument lacks verifiable sources: V8 gave up after its repeats. With consensus,
- * the published argument has none; without it, one of the two evaluations has none.
- * "Sin concreción" never needs sources.
- */
-function noSources(note: FeasibilityNote): boolean {
-  if (note.result === 'notConcrete') return false;
-  if (note.result === 'noConsensus') return note.assessments.some((e) => e.level !== 'notConcrete' && e.sources.length === 0);
-  return note.sources.length === 0;
-}
-
-function revealParty(p: Party): RevealedParty {
-  return { id: p.id, name: p.name, acronym: p.acronym, test: p.test === true };
 }

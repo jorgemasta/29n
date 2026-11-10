@@ -1,16 +1,20 @@
 ---
+import '@fontsource/quicksand/latin-500.css';
+import '@fontsource/quicksand/latin-600.css';
+import '@fontsource/quicksand/latin-700.css';
 import '../styles/global.css';
 import { dataset, mode } from '../transparency/data';
 import TextSizeInit from '../components/TextSizeInit.astro';
 import Umami from '../components/Umami.astro';
 import Robots from '../components/Robots.astro';
 import Footer from '../components/Footer.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import TestRibbon from '../components/TestRibbon.astro';
 import { OG } from '../share';
 
 // Mode switch, at build time (src/launch): `SITE_MODE=private` (private prototype) also ships provisional
 // sources (2023 programmes, party documents, public statements). Anything else ships only official
 // programmes, so provisional data never reaches the public site; PRODUCTION=1 also refuses test data.
-const isTest = dataset.origin !== 'real';
 // Safe to inline in a <script type="application/json">: escape "<" so no "</script>" can close it.
 const ogImage = new URL(OG.image.path, Astro.site).href;
 const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
@@ -19,7 +23,9 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#F7F3ED" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B242C" media="(prefers-color-scheme: dark)" />
     <Robots />
     <title>29N · Elige a ciegas</title>
     <meta name="description" content="Lee lo que proponen los partidos sin saber de quién es." />
@@ -36,38 +42,26 @@ const json = JSON.stringify(dataset).replace(/</g, '\\u003c');
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content={String(OG.image.width)} />
     <meta property="og:image:height" content={String(OG.image.height)} />
-    <meta property="og:image:alt" content="Tres tarjetas boca abajo con las letras A, B y C. Elecciones generales · 29 de noviembre." />
+    <meta property="og:image:alt" content={OG.image.alt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={OG.title} />
     <meta name="twitter:description" content={OG.description} />
     <meta name="twitter:image" content={ogImage} />
   </head>
   <body>
-    <header class="top-bar">
-      <a href="/" class="brand">29N</a>
-      <button type="button" id="aa" class="text-size-button" aria-pressed="false" aria-label="Letra grande">Aa</button>
-    </header>
+    <SiteHeader app />
+    <TestRibbon />
     <main id="app" data-mode={mode}>
-      {isTest && (
-        <p class="test-notice" role="note">
-          <strong>Prototipo con datos de prueba.</strong> {dataset.note}
-        </p>
-      )}
       {mode === 'private' && (
-        <p class="test-notice" role="note">
-          <strong>Modo privado:</strong> incluye fuentes provisionales (programas de 2023, documentos y declaraciones), marcadas como «solo privado» al revelar.
+        <p class="test-ribbon" role="note">
+          <strong>Modo privado:</strong> incluye fuentes provisionales, marcadas «solo privado».
         </p>
       )}
       <div id="view">
-        <p class="grey">Cargando los temas…</p>
+        <p class="grey">Cargando las temáticas…</p>
         <noscript><p>Esta página necesita JavaScript para barajar las propuestas en tu móvil.</p></noscript>
       </div>
     </main>
-    <nav class="tabs" aria-label="Secciones" hidden>
-      <a href="#temas"><span aria-hidden="true">☰</span> Temas</a>
-      <a href="#preguntar"><span aria-hidden="true">💬</span> Preguntar</a>
-      <a href="#resultado"><span aria-hidden="true">📊</span> Mi resultado</a>
-    </nav>
     <Footer note="Nada de lo que eliges sale de tu móvil." />
     <script is:inline type="application/json" id="dataset" set:html={json} />
     <script>

@@ -1,6 +1,7 @@
 ---
 // Screen 13 "Partidos y programas": who is in, under which criterion, and each programme's state.
 import InfoPage from '../components/InfoPage.astro';
+import Icon from '../components/Icon.astro';
 import { dataset, shortDate, dayDate } from '../transparency/data';
 import { manifestos, missingPartyUrl } from '../transparency';
 import { SOURCE_LABEL } from '../web/labels';
@@ -25,14 +26,14 @@ const provisionalIds = REGISTRY.some((r) => r.inclusion.candidatures.state === '
         <p class="name">{p.name} {p.test && <span class="label">PRUEBA</span>}</p>
         <p class="grey">{p.scope}{p.date && ` · publicado el ${dayDate(p.date)}`}{p.source && p.source !== 'manifesto-29n' && ` · ${SOURCE_LABEL[p.source]}`}</p>
         <p>
-          <a href={p.url!} target="_blank" rel="noopener">{p.title ?? 'Programa'} (PDF ↗)</a>
+          <a href={p.url!} target="_blank" rel="noopener">{p.title ?? 'Programa'} (PDF)<Icon name="external" /></a>
           {p.report && <> · <a href={`/informes/${p.id}/`}>Informe de verificación</a></>}
         </p>
       </li>
     ))}
   </ul>
 
-  <h2>⏳ Pendientes ({pending.length})</h2>
+  <h2><Icon name="clock" /> Pendientes ({pending.length})</h2>
   {pending.length === 0 ? <p class="grey">Ninguno.</p> : (
     <>
       <ul class="party-rows" role="list">
@@ -98,7 +99,7 @@ const provisionalIds = REGISTRY.some((r) => r.inclusion.candidatures.state === '
       <p class="note">Se publica como aviso público en GitHub, sin tu nombre y sin cuenta.</p>
       <div id="missing-party-state" role="status" aria-live="polite"></div>
     </form>
-    <noscript><p><a href={missingPartyUrl()}>Abrir el aviso en GitHub ↗</a> (necesitas una cuenta de GitHub).</p></noscript>
+    <noscript><p><a href={missingPartyUrl()}>Abrir el aviso en GitHub<Icon name="external" /></a> (necesitas una cuenta de GitHub).</p></noscript>
   </details>
   <script>
     import { sendFeedback } from '../client/api';

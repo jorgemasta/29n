@@ -1,4 +1,4 @@
-import type { Dataset, FeasibilityNote, Party, Position } from '../../src/dataset/schema';
+import type { Dataset, FeasibilityNote, Party, TopicPosition } from '../../src/dataset/schema';
 
 const published = (n: string) => ({
   state: 'published' as const,
@@ -18,7 +18,7 @@ const party = (id: string, scope: Party['scope'] = { type: 'national' }, manifes
 const NEUTRAL: Record<string, string> = { aaa: 'uno', bbb: 'dos', ccc: 'tres', isla: 'cuatro', bcn: 'cinco' };
 
 const quote = (p: string) => ({ text: `Cita literal del programa de ${p} sobre vivienda, con más de cuarenta caracteres.`, page: 7 });
-const proposes = (p: string, topic = 'vivienda'): Position => ({
+const proposes = (p: string, topic = 'vivienda'): TopicPosition => ({
   party: p,
   topic,
   state: 'proposes',
@@ -43,7 +43,7 @@ export const sampleNote: FeasibilityNote = {
  * (35 Las Palmas, 38 Santa Cruz de Tenerife), 1 regional pending party in 35, 1 regional party in 08 (Barcelona).
  */
 export const sampleDataset: Dataset = {
-  version: 1,
+  version: 2,
   generated: '2026-11-08T00:00:00.000Z',
   origin: 'test',
   parties: [
@@ -60,8 +60,8 @@ export const sampleDataset: Dataset = {
     { id: 'vivienda', title: 'Vivienda y alquiler', question: '¿Qué harían con la vivienda?', scope: 'national', order: 1 },
     { id: 'ref', title: 'Régimen fiscal canario', question: '¿Qué harían con el REF?', scope: 'canarias', order: 2 },
   ],
-  positions: [
-    { ...proposes('aaa'), feasibility: sampleNote } as Position,
+  topicPositions: [
+    { ...proposes('aaa'), feasibility: sampleNote } as TopicPosition,
     proposes('bbb'),
     proposes('ccc'),
     { party: 'nada', topic: 'vivienda', state: 'noProposal', versions: { prompt: 'v1' } },
@@ -74,5 +74,6 @@ export const sampleDataset: Dataset = {
     proposes('bcn'),
     { party: 'bcn', topic: 'ref', state: 'noProposal', versions: { prompt: 'v1' } },
   ],
+  positions: [],
   reports: [],
 };

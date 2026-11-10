@@ -3,6 +3,8 @@
 import type { Game } from '../game';
 import { createFinder, PROVINCES, provinceByCode, type Finder, type Place, type Municipalities } from '../registry/territory';
 import { h } from './dom';
+import { icon } from './icons';
+import { joinList } from '../spanish';
 
 
 let finder: Finder = createFinder({ municipalities: {} });
@@ -21,17 +23,25 @@ function loadMunicipalities(): Promise<void> {
 export const provinceName = (code: string | null): string =>
   code === null ? 'Toda España' : (provinceByCode(code)?.name ?? code);
 
-/** Header chip: "📍 Las Palmas", a link to change it. */
+/** Chip "Votas en Las Palmas", a link to change it. */
 export function provinceChip(code: string | null): HTMLElement {
-  return h('a', { href: '#provincia', class: 'province-chip', 'aria-label': `Dónde votas: ${provinceName(code)}. Cambiar` }, `📍 ${provinceName(code)}`);
+  return h('a', { href: '#provincia', class: 'province-chip', 'aria-label': `Dónde votas: ${provinceName(code)}. Cambiar` }, `Votas en ${provinceName(code)}`);
+}
+
+/** "Telde → Las Palmas" with an SVG arrow (read as "Telde, Las Palmas"); a province is just its name. */
+function placeName(p: Place): Node | string {
+  if (p.type === 'province') return p.name;
+  const f = document.createDocumentFragment();
+  f.append(p.name, icon('arrowRight'), h('span', { class: 'visually-hidden' }, ', '), provinceByCode(p.province)?.name ?? '');
+  return f;
 }
 
 /** `onChoose(null)` = "Prefiero no decirlo". */
 export function provinceView(current: string | null | undefined, onChoose: (code: string | null) => void): HTMLElement {
-  const row = (text: string, code: string | null, secondary?: string) => {
+  const row = (text: string | Node, code: string | null, secondary?: string) => {
     const b = h('button', { type: 'button', class: `topic-row province-row${code === current ? ' done' : ''}` },
       h('span', { class: 'name' }, text),
-      secondary ? h('span', { class: 'state' }, secondary) : code === current && current !== undefined ? h('span', { class: 'state' }, '✓ Ahora') : null);
+      secondary ? h('span', { class: 'state' }, secondary) : code === current && current !== undefined ? h('span', { class: 'state' }, icon('check'), 'Ahora') : null);
     b.addEventListener('click', () => onChoose(code));
     return h('li', {}, b);
   };
@@ -54,7 +64,7 @@ export function provinceView(current: string | null | undefined, onChoose: (code
     const places: Place[] = finder.search(q);
     if (!places.length)
       return results.replaceChildren(h('li', { class: 'grey' }, 'No lo encontramos. Prueba con el nombre de tu provincia.'));
-    results.replaceChildren(...places.map((l) => row(l.resolution, l.province, l.type === 'island' ? 'Isla' : l.type === 'municipality' ? undefined : 'Provincia')));
+    results.replaceChildren(...places.map((l) => row(placeName(l), l.province, l.type === 'island' ? 'Isla' : l.type === 'municipality' ? undefined : 'Provincia')));
   };
   input.addEventListener('input', renderResults);
   input.addEventListener('focus', () => void loadMunicipalities().then(renderResults), { once: true });
@@ -79,18 +89,18 @@ export function zoneNotice(game: Game): HTMLElement {
   const { withManifesto, pending } = game.parties();
   const total = withManifesto.length + pending.length;
   const regionals = [...withManifesto, ...pending].filter((p) => p.regional).map((p) => p.name);
-  const canaryTopics = game.topics().filter((t) => t.scope === 'canarias').length;
+  const regionalTheme = game.themes().find((t) => t.region !== undefined);
   const sentence =
     game.province === null
       ? `Solo partidos de toda España: ${total}.`
       : `${provinceName(game.province)}: ${total} ${total === 1 ? 'partido' : 'partidos'}${regionals.length ? `, incluidos ${joinList(regionals)}` : ''}.`;
   return h('div', { class: 'zone-notice', role: 'status' },
     h('p', {}, sentence, pending.length ? ` ${pending.length} con programa pendiente.` : '', ' ', h('a', { href: '#provincia' }, 'Cambiar')),
-    canaryTopics ? h('p', {}, `Además, ${canaryTopics} temas solo de Canarias.`) : null,
+    regionalTheme ? h('p', {}, `Además, una temática solo de tu comunidad: ${regionalTheme.title}.`) : null,
   );
 }
 
-/** "Partidos" block for the topic list: who is in play here and who is still pending. */
+/** "Partidos" block for the theme list: who is in play here and who is still pending. */
 export function partiesBlock(game: Game): HTMLElement {
   const { withManifesto, pending } = game.parties();
   return h('section', { class: 'parties-block', 'aria-labelledby': 'parties-title' },
@@ -98,14 +108,10 @@ export function partiesBlock(game: Game): HTMLElement {
     h('p', { class: 'grey' }, `Con programa (${withManifesto.length}): ${withManifesto.map((p) => p.name).join(', ') || 'ninguno todavía'}.`),
     pending.length
       ? h('ul', { class: 'pending', role: 'list' },
-          ...pending.map((p) => h('li', {}, h('strong', {}, p.name), ' · ⏳ programa pendiente')))
+          ...pending.map((p) => h('li', {}, h('strong', {}, p.name), ' · programa pendiente')))
       : null,
-    pending.length ? h('p', { class: 'grey' }, 'Aún no han publicado su programa. Mientras falte, no aparecen en los temas.') : null,
+    pending.length ? h('p', { class: 'grey' }, 'Aún no han publicado su programa. Mientras falte, no aparecen en las temáticas.') : null,
     game.province === null ? h('p', { class: 'grey' }, 'Solo partidos de toda España. Elige provincia para incluir los de tu zona.') : null,
     h('a', { href: '#provincia' }, 'Cambiar provincia'),
   );
-}
-
-function joinList(l: string[]): string {
-  return l.length <= 1 ? (l[0] ?? '') : `${l.slice(0, -1).join(', ')} y ${l.at(-1)}`;
 }

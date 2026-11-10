@@ -4,6 +4,7 @@ import type { Assessment, Source, FeasibilityNote } from '../dataset/schema';
 import { CRITERIA, OFF_SCALE, LEVELS, levelName } from '../registry/rubric';
 import { aiLabel } from './ai';
 import { h } from './dom';
+import { icon } from './icons';
 
 export const RUBRIC_URL = '/rubrica/';
 
@@ -44,7 +45,7 @@ export function feasibilityNote(note: FeasibilityNote | null, noSources = false)
     published ? rubric(published) : null,
     h('p', { class: 'method' },
       'Evaluación hecha por IA, sin revisión humana, dos veces y sin saber de qué partido era. Puede equivocarse. ',
-      h('a', { href: RUBRIC_URL }, 'Cómo se valora →'),
+      h('a', { href: RUBRIC_URL }, 'Cómo se valora', icon('arrowRight')),
     ),
   );
 }
@@ -79,7 +80,7 @@ function why(text: string, sources: Source[]): HTMLElement {
     h('p', {}, h('strong', {}, 'Por qué: '), text),
     sources.length
       ? h('ul', { class: 'sources', 'aria-label': 'Fuentes' },
-          ...sources.map((f) => h('li', {}, h('a', { href: f.url, target: '_blank', rel: 'noopener' }, `${f.title} ↗`))))
+          ...sources.map((f) => h('li', {}, h('a', { href: f.url, target: '_blank', rel: 'noopener' }, f.title, icon('external')))))
       : h('p', { class: 'grey' }, 'Sin fuentes verificables.'),
   );
 }

@@ -2,14 +2,15 @@
 // with "Ver de quién es cada una", then the reveal with quote and PDF (no feasibility note).
 // The free text box (#15) is live only when built with PUBLIC_FREE_QUESTION=1 (and the function's
 // own flag is on); otherwise it is shown disabled ("Muy pronto"). Live answers are anonymised by the
-// same engine calls (Game.question / revealQuestion with the answers); this only renders.
+// same engine calls (Game.question / revealSuggestedQuestion with the answers); this only renders.
 import { FREE_QUESTION_OPEN, askLive, type FreeQuestionResponse, type Offline } from '../client/api';
-import type { Game, QuestionSummary, QuestionReveal, QuestionView } from '../game';
-import type { QuestionAnswer } from '../dataset/schema';
+import type { Game, SuggestedQuestionSummary, SuggestedQuestionReveal, SuggestedQuestionView } from '../game';
+import type { SuggestedAnswer } from '../dataset/schema';
 import { SESSION_LIMIT, MAX_CHARS, MIN_CHARS } from '../questions/limits';
 import { provinceChip } from './province';
 import { aiLabel } from './ai';
 import { button, h, type Child } from './dom';
+import { icon } from './icons';
 import { greyCard, revealedCard } from './card';
 
 /** Questions left this session, from the last answer of the function (null = not asked yet). */
@@ -21,19 +22,19 @@ const AI_NOTICE = () =>
 
 const header = (game: Game, back: { href: string; text: string }) =>
   h('header', { class: 'header' },
-    h('div', { class: 'header-row' }, h('a', { href: back.href, class: 'back-link' }, back.text), provinceChip(game.province)));
+    h('div', { class: 'header-row' }, h('a', { href: back.href, class: 'back-link' }, icon('arrowLeft'), back.text), provinceChip(game.province)));
 
 /** List of suggested questions plus the (disabled) free text box. */
 export function questionsView(game: Game): HTMLElement {
-  const questions = game.questions();
+  const questions = game.suggestedQuestions();
   return h('section', { class: 'ask' },
-    header(game, { href: '#temas', text: '← Temas' }),
+    header(game, { href: '#tematicas', text: 'Temáticas' }),
     h('h1', { tabindex: '-1' }, 'Pregunta a los programas'),
     h('p', {}, 'Respondemos solo con lo que está escrito en los programas, siempre con cita. Si no lo dicen, te lo decimos.'),
     questions.length
       ? h('ul', { class: 'rows', role: 'list' },
           ...questions.map((p) => h('li', {}, h('a', { href: `#preguntar/${encodeURIComponent(p.id)}`, class: 'topic-row question-row' },
-            h('span', { class: 'name' }, p.text), h('span', { class: 'state', 'aria-hidden': 'true' }, '→')))))
+            h('span', { class: 'name' }, p.text), h('span', { class: 'state' }, icon('arrowRight'))))))
       : h('p', { class: 'grey' }, 'Todavía no hay preguntas respondidas.'),
     FREE_QUESTION_OPEN ? freeForm(game) : closedForm(),
     AI_NOTICE(),
@@ -110,7 +111,7 @@ function noAnswerMessage(r: Exclude<FreeQuestionResponse, { state: 'ok' }> | Off
         h('p', {}, 'Preguntas frecuentes, ya respondidas:'),
         h('ul', { class: 'rows', role: 'list' },
           ...r.frequent.map((q) => {
-            const b = h('button', { type: 'button', class: 'topic-row question-row' }, h('span', { class: 'name' }, q), h('span', { class: 'state', 'aria-hidden': 'true' }, '→'));
+            const b = h('button', { type: 'button', class: 'topic-row question-row' }, h('span', { class: 'name' }, q), h('span', { class: 'state' }, icon('arrowRight')));
             b.addEventListener('click', () => ask(q));
             return h('li', {}, b);
           })))
@@ -120,22 +121,22 @@ function noAnswerMessage(r: Exclude<FreeQuestionResponse, { state: 'ok' }> | Off
 
 interface AnswerOptions {
   /** Live answers (free question); absent = the dataset's precomputed ones. */
-  answers?: QuestionAnswer[];
+  answers?: SuggestedAnswer[];
   /** "Otra pregunta" for an in-memory answer (default: back to #preguntar). */
   onBack?: (section: HTMLElement) => void;
 }
 
 /** One question: anonymous answers first; "Ver de quién es cada una" reveals them in place. */
-export function answerView(game: Game, questionId: string | QuestionSummary, options: AnswerOptions = {}): HTMLElement {
+export function answerView(game: Game, questionId: string | SuggestedQuestionSummary, options: AnswerOptions = {}): HTMLElement {
   const section = h('section', { class: 'answer' });
   const { answers } = options;
   const render = (revealed: boolean) => {
-    const view = game.question(questionId, answers);
+    const view = game.suggestedQuestion(questionId, answers);
     const children: Child[] = [
-      header(game, { href: '#preguntar', text: '← Preguntas' }),
+      header(game, { href: '#preguntar', text: 'Preguntas' }),
       h('p', { class: 'kicker' }, 'Pregunta a los programas'),
       h('h1', { tabindex: '-1' }, view.question.text),
-      ...(revealed || view.cards.length === 0 ? reveal(game.revealQuestion(questionId, answers)) : blindPhase(view)),
+      ...(revealed || view.cards.length === 0 ? reveal(game.revealSuggestedQuestion(questionId, answers)) : blindPhase(view)),
       h('p', { class: 'note' }, 'Esto no cuenta para tu resultado.'),
       AI_NOTICE(),
       h('div', { class: 'sticky-bar' },
@@ -153,7 +154,7 @@ export function answerView(game: Game, questionId: string | QuestionSummary, opt
   return section;
 }
 
-function blindPhase(v: QuestionView): Child[] {
+function blindPhase(v: SuggestedQuestionView): Child[] {
   const notMentioned = v.notMentioned
     ? ` ${v.notMentioned} ${v.notMentioned === 1 ? 'programa no lo menciona' : 'programas no lo mencionan'} (los verás al descubrir).`
     : '';
@@ -172,7 +173,7 @@ function blindPhase(v: QuestionView): Child[] {
   ];
 }
 
-function reveal(r: QuestionReveal): Child[] {
+function reveal(r: SuggestedQuestionReveal): Child[] {
   const warning = (text: string) => h('p', { class: 'zone-notice', role: 'status' }, h('strong', {}, text));
   return [
     r.noneAtAll ? warning('Ningún programa habla de esto.') : null,
@@ -183,6 +184,6 @@ function reveal(r: QuestionReveal): Child[] {
     ...r.cards.map((t) => revealedCard(t, { open: true, title: `La ${t.letter} es de ${t.party.name}` })),
     ...r.notMentioned.map((p) => greyCard(p, `El programa de ${p.name} no lo menciona`)),
     ...r.unverified.map((p) => greyCard(p, 'No pudimos verificar su respuesta')),
-    r.pending.length ? h('p', { class: 'grey-row' }, `⏳ Sin programa todavía: ${r.pending.map((p) => p.name).join(', ')}`) : null,
+    r.pending.length ? h('p', { class: 'grey-row' }, icon('clock'), ` Sin programa todavía: ${r.pending.map((p) => p.name).join(', ')}`) : null,
   ];
 }

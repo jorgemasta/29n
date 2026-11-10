@@ -9,12 +9,15 @@ import { MODELS } from '../ai/claude';
 import Umami from '../components/Umami.astro';
 import Robots from '../components/Robots.astro';
 import Footer from '../components/Footer.astro';
+import Icon from '../components/Icon.astro';
 ---
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F7F3ED" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B242C" media="(prefers-color-scheme: dark)" />
     <Robots />
     <title>Cómo se valora la viabilidad · 29N</title>
     <meta name="description" content="Rúbrica pública de la nota de viabilidad de 29N." />
@@ -23,7 +26,7 @@ import Footer from '../components/Footer.astro';
   </head>
   <body>
     <main>
-      <p><a href="/metodologia/#viabilidad">← Cómo funciona</a></p>
+      <p><a href="/metodologia/#viabilidad"><Icon name="arrowLeft" />Cómo funciona</a></p>
       <h1>Cómo se valora si una propuesta se puede hacer</h1>
       <p>
         La viabilidad dice qué haría falta para aplicar una propuesta, <strong>no si es buena idea</strong>.

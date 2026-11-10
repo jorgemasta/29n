@@ -9,7 +9,7 @@
 // Privacy: nothing here logs. The session id (random, generated in the voter's browser) is only
 // stored hashed, as a bare counter that expires; cached answers are keyed by the normalised question
 // and never carry a session. No IP is ever received. No Node-only dependency: runs in a Worker.
-import type { Dataset, Party, QuestionAnswer } from '../dataset/schema';
+import type { Dataset, Party, SuggestedAnswer } from '../dataset/schema';
 import type { AIAdapter, Task } from '../ai/adapter';
 import { normalizeTerm } from '../pipeline/normalize';
 import type { IdentifyingTerms } from '../registry/terms';
@@ -68,7 +68,7 @@ export const ESTIMATED_COST: Partial<Record<Task, number>> = {
 const defaultCost = (t: Task) => ESTIMATED_COST[t] ?? 0.03;
 
 export type FreeQuestionResponse =
-  | { state: 'ok'; question: { id: string; text: string }; answers: QuestionAnswer[]; remaining: number; fromCache: boolean }
+  | { state: 'ok'; question: { id: string; text: string }; answers: SuggestedAnswer[]; remaining: number; fromCache: boolean }
   | { state: 'closed'; message: string }
   | { state: 'invalid'; message: string }
   | { state: 'offTopic'; message: string }
@@ -126,7 +126,7 @@ type PublishedParty = Party & { manifesto: Extract<Party['manifesto'], { state: 
 // Privacy (/privacidad/): the cache keeps answers under a hash of the question, never its words.
 // A question's wording is stored only once a second person asks it (it becomes "frecuente").
 interface Cached {
-  answers: QuestionAnswer[];
+  answers: SuggestedAnswer[];
 }
 interface Frequent {
   key: string;
@@ -251,10 +251,10 @@ export function createFreeQuestion(ports: FreeQuestionPorts, config: FreeQuestio
           return ports.ai.complete(p);
         },
       };
-      let answers: QuestionAnswer[];
+      let answers: SuggestedAnswer[];
       try {
         answers = await Promise.all(
-          withText.map(async ({ party, text: t }): Promise<QuestionAnswer> => {
+          withText.map(async ({ party, text: t }): Promise<SuggestedAnswer> => {
             const base = { party: party.id, question: question.id, versions: { prompt: QUESTION_PROMPT_VERSION } };
             // No text published for this programme (or a stale one): we cannot check any quote.
             if (!t) return { ...base, state: 'unverified' };

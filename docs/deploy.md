@@ -36,9 +36,21 @@ partidos sin programa oficial publicado, y lo dice en la consola.
 
 ### Pasar de los datos simulados a los reales
 
+0. Tomar el pulso y congelar la lista (`npm run pulse -- --sources <fuentes.json>` → `data/pulse.json`, commit). Sin
+   ella, `npm run process` y el watcher solo procesan las preguntas ya publicadas.
 1. Procesar cada programa oficial del 29N cuando se publique: `npm run process -- --party <id> --pdf <pdf> --url
    <URL oficial>` (o dejar que lo haga el watcher). El **primer** programa real sustituye todo el dataset simulado
-   (`origin: "real"`, los partidos `prueba-*` desaparecen y el resto del registro queda como «pendiente»).
+   (`origin: "real"`, los partidos `prueba-*` desaparecen y el resto del registro queda como «pendiente»). Cada programa
+   saca una postura en **cada** pregunta del pulso y el dataset toma las temáticas del pulso, pero aún sin preguntas
+   publicadas: hasta el paso siguiente no hay nada que jugar.
+1b. **Asentar los enfoques** cuando estén los programas que se esperan: `npm run settle -- --dry-run` (qué preguntas y
+   cuántas llamadas a la IA, sin coste) y luego `npm run settle`. Agrupa en 3 enfoques cada pregunta del pulso aún no
+   publicada con las posturas de todos los partidos, publica las que pasan y deja el informe de todas en
+   `approachReports` (las que no, salen en la metodología con su motivo). Commit de `data/dataset.json` y
+   `data/cache/ai/`. Las preguntas publicadas quedan congeladas: los programas que lleguen después los clasifica el
+   watcher en esos enfoques (#28); para publicar una que no salió, volver a ejecutar `npm run settle` (solo toca las no
+   publicadas, o `--question <id>`). Si una pregunta sale como «retenida» le falta la postura de algún partido
+   publicado: reprocesar ese partido (`npm run process`, contra todo el pulso) y volver a ejecutar `npm run settle`.
 2. Borrar los ficheros simulados: `git rm public/programas/prueba-*.pdf public/texts/prueba-*.json` (el build de
    producción ya los excluye, pero así no avisa).
 3. **No** volver a ejecutar `scripts/generate-simulated.ts`: sobrescribe el dataset real.
@@ -67,7 +79,8 @@ Nada de esto lo hace el código ni un agente. Detalle de cada paso en las seccio
    quitar `contrato` del `pattern` y procesarlo a mano con `--source party-document`).
 8. **PDF reales**: descargar a mano los programas que el watcher no alcance y procesarlos (`npm run process`);
    commit de `data/dataset.json`, `data/reports/`, `data/cache/ai/` y `public/texts/`.
-9. **Pasar a datos reales** («Pasar de los datos simulados a los reales», arriba) y `npm run build:production` sin errores.
+9. **Pasar a datos reales** («Pasar de los datos simulados a los reales», arriba): pulso congelado, programas procesados,
+   `npm run settle` (#32) y `npm run build:production` sin errores.
 10. **Candidaturas**: las listas de `src/registry/parties.ts` son estimaciones provisionales. Cuando el BOE publique
     las candidaturas proclamadas, corregir las provincias de cada partido, añadir los que entren por representación
     autonómica y poner `state: 'proclaimed'` con la fuente.
@@ -180,7 +193,7 @@ Node: Astro está fijado a 7.4.1 porque esta máquina tiene Node 22.23.2 (Astro 
 Eventos (lista cerrada en `src/analytics/events.ts`, validados antes de enviarse; `src/web/analytics.ts`
 es el único módulo del cliente que habla con Umami, vía `window.umami.track`): `started`,
 `topic-completed {topic}`, `five-topics`, `saw-result`, `shared {variant}`,
-`guess-hit {topic}`, `guess-miss {topic}`. Nunca el partido elegido o apostado, la provincia ni el
+`guess-hit {question}`, `guess-miss {question}` (solo si se acertó, nunca el partido). Nunca el partido elegido o apostado, la provincia ni el
 ranking. El script no registra la query (`?provincia=`, `?r=`) ni el hash, y respeta Do Not Track.
 
 **Sin `UMAMI_WEBSITE_ID` en el build no se carga el script de Umami y no se envía nada.** Pasos humanos:
@@ -196,6 +209,8 @@ ranking. El script no registra la query (`?provincia=`, `?r=`) ni el hash, y res
      opcional `UMAMI_API_URL` (por defecto `https://stats.padelful.com/api`).
    - Secreto: `UMAMI_API_KEY` (stats.padelful.com → Settings → API keys).
    - El job usa `github.token` (permiso `issues: write`) y crea la etiqueta `reneutralizar` si no existe.
-   - Abre un issue por cada tema con más del 60 % de acierto y al menos 30 apuestas en los últimos 30 días,
-     salvo que ya haya uno abierto para ese tema. Sin las dos variables, el job termina sin hacer nada.
+   - Abre un issue por cada pregunta cuyo acierto supere claramente su azar (test binomial unilateral, z > 2,33) con al
+     menos 30 apuestas en los últimos 30 días, salvo que ya haya uno abierto para esa pregunta. El azar de cada pregunta
+     sale de `data/dataset.json`: partidos que defienden el enfoque más defendido entre los que se ofrecen, en la provincia
+     más generosa. Sin las dos variables, el job termina sin hacer nada.
    - En local: `UMAMI_API_KEY=… UMAMI_WEBSITE_ID=… npx tsx scripts/guesses.ts --no-publish`.
