@@ -12,8 +12,9 @@
 // Late manifesto (#28): with `input.frozen` (a published question) the approaches are not settled
 // again. Only `frozen.parties` are classified into them (the AI sees only their quotes, with the
 // frozen approaches); every other party keeps the stance it was published with, and a classified
-// party that fits none "proposes something else". The same two passes must agree and the same
-// checks run, but a frozen approach is never rewritten: a failing check makes it unpublishable.
+// party that fits none "proposes something else". The same two passes must agree (each party in the
+// same frozen approach in both) and the same checks run, but a frozen approach is never rewritten:
+// a failing check makes it unpublishable.
 import { z } from 'zod';
 import type { AIAdapter } from '../ai/adapter';
 import {
@@ -157,7 +158,7 @@ async function settle(
     rounds++;
     // Independent passes: run at once.
     const [first, second] = await Promise.all([runPass(ai, input, proposing, 1, rounds), runPass(ai, input, proposing, 2, rounds)]);
-    const disagreement = !first.ok ? `pasada 1 no válida: ${first.reason}` : !second.ok ? `pasada 2 no válida: ${second.reason}` : differences(first.classification, second.classification);
+    const disagreement = !first.ok ? `pasada 1 no válida: ${first.reason}` : !second.ok ? `pasada 2 no válida: ${second.reason}` : differences(first.classification, second.classification, !!input.frozen);
     if (!disagreement && first.ok) {
       settled = first.classification;
       entries.push({ check: 'agreement', result: 'pass', detail: `las dos pasadas coinciden (ronda ${rounds})` });
@@ -303,11 +304,16 @@ function findQuote(text: string, position: SettlePosition): Quote | null {
   return found ? { ...found } : null;
 }
 
-/** How two passes differ (null when they agree): approaches compared by who defends them and how. */
-function differences(a: Classification, b: Classification): string | null {
+/**
+ * How two passes differ (null when they agree): approaches compared by who defends them and how.
+ * New approaches may come in any order (compared as a set); frozen ones have fixed ids, so each
+ * party must land in the same approach in both passes (compared position by position).
+ */
+function differences(a: Classification, b: Classification, frozen: boolean): string | null {
   const signature = (x: Approach) => (x.filler ? 'inventado' : x.stances.filter((s) => s.stance !== 'none').map((s) => `${s.party}:${s.stance}`).sort().join(', '));
-  const left = a.approaches.map(signature).sort();
-  const right = b.approaches.map(signature).sort();
+  const signatures = (c: Classification) => (frozen ? c.approaches.map((x) => `${x.id}: ${signature(x)}`) : c.approaches.map(signature).sort());
+  const left = signatures(a);
+  const right = signatures(b);
   if (left.join(' | ') === right.join(' | ')) return null;
   return `las pasadas clasifican distinto: [${left.join(' | ')}] frente a [${right.join(' | ')}]`;
 }

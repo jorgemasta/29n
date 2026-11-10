@@ -1183,6 +1183,29 @@ describe('createGame: affinity by theme and overall (#25)', () => {
     ]);
   });
 
+  it('a stored choice of an approach that no longer exists counts as unanswered, at the reveal and in the affinity', () => {
+    const played = pick(pick(fresh(), 'alquiler', 'uno'), 'compra', 'cinco');
+    // The dataset changed since: the approach chosen on "compra" has another id now.
+    const renamed: Dataset = {
+      ...themesDataset,
+      questions: themesDataset.questions!.map((q) => (q.id !== 'compra' ? q : { ...q, approaches: q.approaches.map((a) => (a.what === 'Enfoque cinco' ? { ...a, id: `${a.id}-nuevo` } : a)) })),
+    };
+    const restored = createGame(renamed, null, 's', JSON.parse(JSON.stringify(played.state)));
+    expect(restored.theme('vivienda').questions.find((q) => q.question.id === 'compra')!.choice).toBeNull();
+    expect(restored.theme('vivienda').done).toBe(false);
+    // Answered again, it reveals and counts normally.
+    const game = pick(restored, 'compra', 'cinco').revealTheme('vivienda');
+    expect(game.themeReveal('vivienda')!.questions.every((q) => q.choice !== null)).toBe(true);
+    expect(game.affinity().themes[0]!.questions).toBe(2);
+    // Revealed with only the stale one left unanswered: it is neither shown nor counted.
+    const stale = createGame(renamed, null, 's', JSON.parse(JSON.stringify(played.state)));
+    expect(stale.themeReveal('vivienda')).toBeNull();
+    const counted = createGame(renamed, null, 's', JSON.parse(JSON.stringify({ ...played.state, revealedThemes: ['vivienda'] })));
+    expect(counted.themeReveal('vivienda')!.questions.map((q) => q.question.id)).toEqual(['alquiler']);
+    expect(counted.themeReveal('vivienda')!.questions.every((q) => q.choice !== null)).toBe(true);
+    expect(counted.affinity().themes[0]!.questions).toBe(1);
+  });
+
   it('a filler approach and "Ninguna me convence" add to nobody, but the question still counts', () => {
     // alquiler "ayudas" is a filler; listas "Ninguna".
     const game = pick(fresh(), 'alquiler', 'tres').chooseApproach('compra', NONE).revealTheme('vivienda');

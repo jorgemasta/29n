@@ -33,22 +33,26 @@ export async function classifyLateParty(
 ): Promise<LateClassification> {
   // A simulated dataset is replaced entirely by the first real manifesto: nothing is frozen yet.
   if (dataset.origin !== 'real' || !dataset.questions) return { ok: true, settled: undefined, reports: [] };
+  // Every published question needs the party's new position: its old one is replaced by the merge,
+  // so a question left out of this run would lose it (and V9 would reject the dataset).
+  const missing = dataset.questions.filter((q) => !positions.some((p) => p.party === party && p.question === q.id)).map((q) => q.id);
+  if (missing.length)
+    return { ok: false, reason: `sin postura de ${party} en la pregunta publicada ${missing.join(', ')}: procésalo con todas las preguntas publicadas (npm run process usa el pulso)`, reports: [] };
+  // Questions are independent: settle them at once, then fold them in the published order.
+  const results = await Promise.all(
+    dataset.questions.map((published) => {
+      const position = positions.find((p) => p.party === party && p.question === published.id)!;
+      const { approaches, otherProposals, ...question } = published;
+      const others = dataset.positions.filter((p) => p.question === published.id && p.party !== party);
+      return settleApproaches({ question, positions: [...others, position], frozen: { approaches, otherProposals, parties: [party] } }, ai, options);
+    }),
+  );
   let settledData: Settled = { questions: dataset.questions, approachReports: dataset.approachReports ?? [] };
   const reports: SettleReport[] = [];
-  for (const published of dataset.questions) {
-    const position = positions.find((p) => p.party === party && p.question === published.id);
-    // Not processed in this run (not in its question list): the question stays as published.
-    if (!position) continue;
-    const { approaches, otherProposals, ...question } = published;
-    const others = dataset.positions.filter((p) => p.question === published.id && p.party !== party);
-    const settled = await settleApproaches(
-      { question, positions: [...others, position], frozen: { approaches, otherProposals, parties: [party] } },
-      ai,
-      options,
-    );
+  for (const settled of results) {
     reports.push(settled.report);
     // A failure leaves the published question and its report untouched (the party is blocked).
-    if (!settled.question) return { ok: false, reason: `enfoques de ${published.id}: ${settled.report.reason ?? 'no publicable'}`, reports };
+    if (!settled.question) return { ok: false, reason: `enfoques de ${settled.report.question}: ${settled.report.reason ?? 'no publicable'}`, reports };
     settledData = publishSettled(settledData, settled);
   }
   return { ok: true, settled: settledData, reports };

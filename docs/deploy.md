@@ -49,7 +49,8 @@ partidos sin programa oficial publicado, y lo dice en la consola.
    `approachReports` (las que no, salen en la metodología con su motivo). Commit de `data/dataset.json` y
    `data/cache/ai/`. Las preguntas publicadas quedan congeladas: los programas que lleguen después los clasifica el
    watcher en esos enfoques (#28); para publicar una que no salió, volver a ejecutar `npm run settle` (solo toca las no
-   publicadas, o `--question <id>`).
+   publicadas, o `--question <id>`). Si una pregunta sale como «retenida» le falta la postura de algún partido
+   publicado: reprocesar ese partido (`npm run process`, contra todo el pulso) y volver a ejecutar `npm run settle`.
 2. Borrar los ficheros simulados: `git rm public/programas/prueba-*.pdf public/texts/prueba-*.json` (el build de
    producción ya los excluye, pero así no avisa).
 3. **No** volver a ejecutar `scripts/generate-simulated.ts`: sobrescribe el dataset real.

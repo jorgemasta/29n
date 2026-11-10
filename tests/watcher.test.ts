@@ -11,7 +11,7 @@ import { createTestPdf } from './fixtures/pdf';
 import { testDomains, sampleParty, housingQuestion, otherParty, testTerms } from './fixtures/registry';
 import { samplePulse } from './fixtures/pulse';
 import type { Pulse } from '../src/pulse';
-import { estimateSettle, settleAll } from '../src/pipeline/settle-all';
+import { estimateSettle, settleAll, settleCache } from '../src/pipeline/settle-all';
 
 const QUOTE =
   'Limitaremos el precio del alquiler en las zonas tensionadas y ampliaremos el parque público de vivienda.';
@@ -472,6 +472,35 @@ describe('watch', () => {
       expect(settled.dataset.approachReports!.find((r) => r.question === 'pensiones')).toMatchObject({ publishable: true });
     });
 
+    it('classifies the new party into every published question concurrently, keeping their order', async () => {
+      const pensionsQuestion: Question = {
+        ...frozenQuestion, id: 'pensiones', text: unpublished.text, keywords: unpublished.keywords, order: 2,
+        approaches: frozenQuestion.approaches.map((a, i) => ({ ...a, id: `pensiones-${i + 1}` })),
+      };
+      const m = await lateMount(placing(0), { questions: [housingQuestion, unpublished] });
+      const dataset = Dataset.parse({ ...publishedDataset(), questions: [frozenQuestion, pensionsQuestion], approachReports: [approachReports[0]] });
+      const run = await mount({ web: m.web.pages, answers: answers({ 'settle-approaches': placing(0) }), dataset, parties: registry, questions: [housingQuestion, unpublished] });
+      await run.run();
+
+      // Both questions' passes go out before any approach check.
+      const from = run.ai.calls.findIndex((c) => c.task === 'settle-approaches');
+      expect(run.ai.calls.slice(from, from + 4).map((c) => [c.task, (c.input as { question: { id: string } }).question.id])).toEqual([
+        ['settle-approaches', housingQuestion.id], ['settle-approaches', housingQuestion.id], ['settle-approaches', 'pensiones'], ['settle-approaches', 'pensiones'],
+      ]);
+      expect(run.dataset.questions!.map((q) => q.id)).toEqual([housingQuestion.id, 'pensiones']);
+      expect(run.dataset.questions!.every((q) => q.approaches[0]!.stances.some((s) => s.party === 'pej' && s.stance === 'partial'))).toBe(true);
+    });
+
+    it('a run without a published question blocks the party, naming that question (it would lose its position there)', async () => {
+      const m = await lateMount(placing(0), { questions: [unpublished] });
+      const before = m.dataset;
+      const r = await m.run();
+
+      expect(r.results).toEqual([expect.objectContaining({ party: 'pej', result: 'blocked', reason: expect.stringMatching(new RegExp(`^sin postura de pej en la pregunta publicada ${housingQuestion.id}`)) })]);
+      expect(m.dataset).toEqual(before);
+      expect(m.ai.calls.some((c) => c.task === 'settle-approaches')).toBe(false);
+    });
+
     it('a changed manifesto moves only that party, and a forced re-run gives the same result', async () => {
       const m = await lateMount(placing(1));
       await m.run();
@@ -516,6 +545,92 @@ describe('watch', () => {
       // Only the questions given with `only`.
       const one = await settleAll(m.dataset, pulse, createFakeAI(answers({ 'settle-approaches': threeOn('pej') })), { only: ['pensiones'] });
       expect(one.ok && one.dataset.questions!.map((x) => x.id)).toEqual(['pensiones']);
+    });
+
+    /** The dataset with OTP published too, with a position only on these questions. */
+    const withOtp = (ds: Dataset, questions: string[], state: 'proposes' | 'noProposal' = 'noProposal', hashPdf = 'a'.repeat(64)): Dataset =>
+      Dataset.parse({
+        ...ds,
+        parties: [...ds.parties, { ...otherParty, manifesto: { ...otherParty.manifesto, state: 'published', hashPdf } }],
+        positions: [
+          ...ds.positions,
+          ...questions.map((question) =>
+            state === 'proposes'
+              ? { party: 'otp', question, versions: { prompt: 'v2' }, state, proposal: { what: 'Vivienda pública.', how: 'En suelo del Estado.', figure: null }, quotes: [{ text: 'Construiremos vivienda pública en alquiler social en suelo del Estado en todas las provincias.', page: 4 }] }
+              : { party: 'otp', question, versions: { prompt: 'v2' }, state },
+          ),
+        ],
+        reports: [...ds.reports, { party: 'otp', hashPdf, promptVersion: 'v2', extracted: 0, discarded: 0, publishable: true, positions: [], entries: [] }],
+      });
+    const settledIds = (ai: { calls: { task: string; input: unknown }[] }) =>
+      new Set(ai.calls.filter((c) => c.task === 'settle-approaches').map((c) => (c.input as { question: { id: string } }).question.id));
+
+    it('npm run settle holds back a question a published party has no position on, says which party to reprocess, and publishes the rest', async () => {
+      const pulse = pulseOf([housingQuestion, pensions]);
+      const m = await mount({ web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() }, pulse });
+      await m.run();
+      const dataset = withOtp(m.dataset, [housingQuestion.id]);
+      const ai = createFakeAI(answers({ 'settle-approaches': threeOn('pej') }));
+      const r = await settleAll(dataset, pulse, ai);
+      if (!r.ok) throw new Error(r.reason);
+
+      expect(r.dataset.questions!.map((q) => q.id)).toEqual([housingQuestion.id]);
+      expect(r.held).toEqual([{ question: 'pensiones', parties: ['otp'] }]);
+      expect(settledIds(ai)).toEqual(new Set([housingQuestion.id]));
+      // The dry run says it too, before any cost.
+      expect(estimateSettle(dataset, pulse).held).toEqual([{ question: 'pensiones', parties: ['otp'] }]);
+      // Once OTP is reprocessed against the whole pulse, the held question settles.
+      const again = await settleAll(withOtp(m.dataset, [housingQuestion.id, 'pensiones']), pulse, createFakeAI(answers({ 'settle-approaches': threeOn('pej') })));
+      expect(again.ok && again.dataset.questions!.map((q) => q.id).sort()).toEqual(['pensiones', housingQuestion.id].sort());
+    });
+
+    it('npm run settle keeps the theme of a published question that is no longer in the pulse', async () => {
+      const m = await mount({ web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() }, pulse: pulseOf([housingQuestion, pensions]) });
+      await m.run();
+      const first = await settleAll(m.dataset, pulseOf([housingQuestion, pensions]), createFakeAI(answers({ 'settle-approaches': threeOn('pej') })), { only: [housingQuestion.id] });
+      if (!first.ok) throw new Error(first.reason);
+      // A later pulse without "vivienda": the housing question stays published, with its theme.
+      const later: Pulse = { ...pulseOf([pensions]), themes: [{ id: 'economia', title: 'Economía', order: 1 }], questions: pulseOf([pensions]).questions.map((q) => ({ ...q, theme: 'economia' })) };
+      const r = await settleAll(first.dataset, later, createFakeAI(answers({ 'settle-approaches': threeOn('pej') })));
+      if (!r.ok) throw new Error(r.reason);
+
+      expect(r.dataset.questions!.map((q) => q.id).sort()).toEqual(['pensiones', housingQuestion.id].sort());
+      expect(r.dataset.themes!.map((t) => t.id).sort()).toEqual(['economia', 'vivienda']);
+    });
+
+    it('npm run settle settles the questions concurrently, with the same result as one by one', async () => {
+      const pulse = pulseOf([housingQuestion, pensions]);
+      const m = await mount({ web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() }, pulse });
+      await m.run();
+      const ai = createFakeAI(answers({ 'settle-approaches': threeOn('pej') }));
+      const r = await settleAll(m.dataset, pulse, ai);
+      if (!r.ok) throw new Error(r.reason);
+
+      // Both questions' first passes go out before any approach check.
+      expect(ai.calls.slice(0, 4).map((c) => [c.task, (c.input as { question: { id: string } }).question.id])).toEqual([
+        ['settle-approaches', housingQuestion.id],
+        ['settle-approaches', housingQuestion.id],
+        ['settle-approaches', 'pensiones'],
+        ['settle-approaches', 'pensiones'],
+      ]);
+      const one = await settleAll(m.dataset, pulse, createFakeAI(answers({ 'settle-approaches': threeOn('pej') })), { only: [housingQuestion.id] });
+      const two = one.ok && (await settleAll(one.dataset, pulse, createFakeAI(answers({ 'settle-approaches': threeOn('pej') })), { only: ['pensiones'] }));
+      expect(two && two.ok && two.dataset.questions).toEqual(r.dataset.questions);
+      expect(r.reports.map((x) => x.question)).toEqual([housingQuestion.id, 'pensiones']);
+    });
+
+    it('npm run settle cache: a new manifesto of a party with nothing to say on the questions costs no AI call', async () => {
+      const pulse = pulseOf([housingQuestion, pensions]);
+      const m = await mount({ web: { [PEJ_PAGE]: html(PDF_PEJ), [PDF_PEJ]: await pdf() }, pulse });
+      await m.run();
+      const store = createMemoryCache();
+      const ids = [housingQuestion.id, 'pensiones'];
+      const first = await settleAll(withOtp(m.dataset, ids), pulse, settleCache(createFakeAI(answers({ 'settle-approaches': threeOn('pej') })), store));
+      const ai = createFakeAI(answers({ 'settle-approaches': threeOn('pej') }));
+      const second = await settleAll(withOtp(m.dataset, ids, 'noProposal', 'b'.repeat(64)), pulse, settleCache(ai, store));
+
+      expect(ai.calls).toEqual([]);
+      expect(second.ok && second.dataset.questions).toEqual(first.ok && first.dataset.questions);
     });
 
     it('npm run settle refuses a simulated dataset (nothing real to settle)', async () => {

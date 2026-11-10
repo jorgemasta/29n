@@ -5,16 +5,13 @@
 // Published questions are frozen and skipped (late manifestos are classified into them by the
 // watcher). AI answers are cached in data/cache/ai (commit it: re-runs are then free and identical).
 // Writes the dataset only if it passes V9; settle reports go into `approachReports`.
-import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import { Dataset } from '../src/dataset';
 import { Pulse } from '../src/pulse';
 import { createClaudeAI } from '../src/ai/claude';
 import { createDiskCache } from '../src/ai/disk-cache';
-import { withCache } from '../src/ai/cache';
-import { estimateSettle, settleAll } from '../src/pipeline/settle-all';
-import { SETTLE_PROMPT_VERSION } from '../src/pipeline/prompts-settle';
+import { estimateSettle, settleAll, settleCache, type HeldQuestion } from '../src/pipeline/settle-all';
 
 const { values } = parseArgs({
   options: {
@@ -43,6 +40,7 @@ if (unknown.length) {
 
 const estimate = estimateSettle(dataset, pulse, only);
 for (const q of estimate.questions) console.log(`- ${q.id}: ${q.proposing} partido(s) proponen algo${q.proposing ? '' : ' (no se publicará, sin llamar a la IA)'}`);
+printHeld(estimate.held);
 if (estimate.frozen.length) console.log(`Ya publicadas (congeladas, no se tocan): ${estimate.frozen.join(', ')}`);
 console.log(`Coste estimado: entre ${estimate.calls.min} y ${estimate.calls.max} llamadas a la IA (menos si ya están en la caché).`);
 
@@ -55,12 +53,9 @@ if (dataset.origin !== 'real') {
   process.exit(1);
 }
 
-// Cache keyed by every manifesto hash, so a re-run with the same programmes is free and identical.
-const hashes = dataset.reports.map((r) => `${r.party}:${r.hashPdf}`).sort().join(',');
-const ai = withCache(createClaudeAI(), createDiskCache('data/cache/ai'), {
-  hashPdf: createHash('sha256').update(hashes).digest('hex'),
-  promptVersion: SETTLE_PROMPT_VERSION,
-});
+// Cache keyed by each call's input (question, quotes, approaches): a re-run is free and identical,
+// and a new manifesto only pays for the questions it changes.
+const ai = settleCache(createClaudeAI(), createDiskCache('data/cache/ai'));
 const r = await settleAll(dataset, pulse, ai, { only });
 for (const report of r.reports)
   console.log(`${report.question}: ${report.publishable ? 'publicada' : `no publicada (${report.reason ?? 'no pasa las comprobaciones'})`}`);
@@ -70,3 +65,13 @@ if (!r.ok) {
 }
 await writeFile(values.dataset, JSON.stringify(r.dataset, null, 2) + '\n');
 console.log(`\n${r.dataset.questions?.length ?? 0} pregunta(s) publicadas en ${values.dataset}.`);
+if (r.held.length) console.log('Quedan preguntas retenidas: reprocesa esos partidos y vuelve a ejecutar npm run settle.');
+
+/** Questions held back because a published party has no position on them, and who to reprocess. */
+function printHeld(held: HeldQuestion[]) {
+  if (!held.length) return;
+  console.log('Retenidas (no se asientan ni se publican: les falta la postura de algún partido publicado):');
+  for (const h of held) console.log(`- ${h.question}: falta ${h.parties.join(', ')}`);
+  const parties = [...new Set(held.flatMap((h) => h.parties))].sort();
+  console.log(`Reprocesa contra todo el pulso: ${parties.map((p) => `npm run process -- --party ${p} …`).join(' ; ')}`);
+}

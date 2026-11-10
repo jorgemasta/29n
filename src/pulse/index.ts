@@ -136,7 +136,9 @@ export async function takePulse(input: PulseSources, ai: AIAdapter, options: Pul
       const origin = originOf(x, sources);
       const refusal = !twin
         ? DISAGREE
-        : (regionRefusal(t.region, regions) ??
+        : !sameWording(x.text, twin.text)
+          ? REWORDED
+          : (regionRefusal(t.region, regions) ??
           wordingRefusal(x.text) ??
           entryRefusal(origin, x) ??
           entryRefusal(originOf(twin, sources), twin));
@@ -192,7 +194,18 @@ function regionRefusal(region: string | null, regions: Region[]): Refusal | null
 
 const DISAGREE: Refusal = { reason: 'passesDisagree', detail: 'Solo la propuso una de las dos pasadas independientes.' };
 
-/** Two passes agree on a question when both put the same id in the same theme with the same role. */
+const REWORDED: Refusal = { reason: 'passesDisagree', detail: 'Las dos pasadas independientes la redactan distinto.' };
+
+/** The wording both passes must give (the published text): equal up to case, spacing and Unicode form. */
+const sameWording = (a: string, b: string) => {
+  const norm = (t: string) => t.normalize('NFC').toLocaleLowerCase('es').replace(/\s+/g, ' ').trim();
+  return norm(a) === norm(b);
+};
+
+/**
+ * Two passes propose the same question when both put the same id in the same theme with the same
+ * role; they agree on it only if they also word it the same (`sameWording`).
+ */
 const matchKey = (theme: string, x: { id: string; followUp: boolean }) => `${theme}/${x.id}/${x.followUp ? 'followUp' : 'base'}`;
 
 type ResponseQuestion = PulseResponse['themes'][number]['questions'][number];

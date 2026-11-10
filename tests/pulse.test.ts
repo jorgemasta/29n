@@ -162,6 +162,17 @@ describe('takePulse', () => {
       expect(pulse.questions.map((x) => x.id)).not.toContain('dentista');
       expect(pulse.rejected).toContainEqual(expect.objectContaining({ id: 'dentista', reason: 'passesDisagree' }));
     });
+    it('a question the passes word differently does not match: the wording is what gets published', async () => {
+      const t = healthTheme();
+      const reworded = (text: string) => response({ ...t, questions: t.questions.map((x) => (x.id === 'dentista' ? { ...x, text } : x)) });
+      const pulse = await takePulse(sources, pulseAI(response(t), reworded('¿Qué harían con el dentista en la sanidad pública?')), options);
+      expect(pulse.questions.map((x) => x.id)).not.toContain('dentista');
+      expect(pulse.rejected).toEqual([expect.objectContaining({ id: 'dentista', reason: 'passesDisagree', detail: expect.stringMatching(/redact/) })]);
+
+      // Case and spacing alone are the same wording.
+      const same = await takePulse(sources, pulseAI(response(t), reworded('  ¿QUÉ   harían con dentista? ')), options);
+      expect(same.questions.map((x) => x.id)).toContain('dentista');
+    });
   });
 
   describe('size: 3 base and 2 follow-up questions per national theme', () => {

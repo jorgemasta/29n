@@ -339,6 +339,24 @@ describe("settleApproaches (test point A')", () => {
       expect(result.publishable).toBe(false);
       expect(result.report.reason).toMatch(/no coinciden/);
     });
+
+    it('two passes that put the new party in different frozen approaches disagree, even when the approaches look alike (#18 review)', async () => {
+      // Two frozen fillers: the party in the first or in the second gives the same multiset of defenders.
+      const base = await published();
+      const q: Question = {
+        ...base,
+        approaches: [
+          base.approaches[0]!,
+          { ...base.approaches[1]!, ...taxCut, filler: true, stances: base.approaches[1]!.stances.map((s) => ({ party: s.party, stance: 'none' as const })) },
+          { ...base.approaches[2]!, ...filler, filler: true, stances: base.approaches[2]!.stances.map((s) => ({ party: s.party, stance: 'none' as const })) },
+        ],
+      };
+      const late = [...positions.filter((p) => p.party === 'pej' || p.party === 'cua'), proposes('qui')];
+      const result = await settleApproaches({ question, positions: late, frozen: frozenOf(q, ['qui']) }, fakeAi((_: unknown, attempt: number) => placing(q, 'qui', 1 + (attempt % 2))));
+
+      expect(result.publishable).toBe(false);
+      expect(result.report.reason).toMatch(/no coinciden/);
+    });
   });
 
   it('runs the two passes, and the checks of every approach, concurrently (#18 review)', async () => {

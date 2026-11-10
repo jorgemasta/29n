@@ -245,7 +245,15 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
   const questions = (dataset.questions ?? [])
     .filter((q) => themes.some((t) => t.id === q.theme))
     .sort((a, b) => a.order - b.order);
-  const choices = state.questionChoices ?? {};
+  // A stored choice of an approach that no longer exists (the dataset changed since) is unanswered:
+  // dropped here, so it neither counts nor reaches the reveal. Choices of other questions are kept.
+  const allQuestions = dataset.questions ?? [];
+  const choices = Object.fromEntries(
+    Object.entries(state.questionChoices ?? {}).filter(([questionId, id]) => {
+      const q = allQuestions.find((x) => x.id === questionId);
+      return !q || id === NONE || q.approaches.some((a) => a.id === id);
+    }),
+  );
   const revealed = new Set(state.revealedThemes ?? []);
   const guesses = state.questionGuesses ?? {};
   const repeated = new Set(state.repeatedThemes ?? []);
@@ -345,7 +353,7 @@ export function themeGame<G>(ctx: ThemeContext<G>): ThemeGame<G> {
     };
     return {
       question: summary(q),
-      choice: choiceOf(q)!,
+      choice: choiceOf(q)!, // answered (stale choices are dropped above)
       approaches: shuffled(q).map(({ approach: a, letter }) => {
         const parties = inPlay(a.stances)
           .flatMap((s) => (s.stance === 'none' ? [] : [{ ...detail(s.party), stance: s.stance, quote: linkQuote(party(s.party), s.quote) }]))
